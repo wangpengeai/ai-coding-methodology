@@ -1,0 +1,13 @@
+{
+  "triggerReason": "回调处理超时导致消息丢失",
+  "scope": "回调消费链路",
+  "currentBehavior": "超时后消息未重试",
+  "behaviorAssumptions": ["超时消息进入重试队列"],
+  "acceptanceAssumptions": ["重试后消息不丢"],
+  "risks": ["重试风暴"],
+  "plannedVerification": "对账数据核对 + 监控指标",
+  "finalizationTrigger": "follow-up deadline 前",
+  "reproTest": null,
+  "cannotReproduceReason": "生产数据无法在预发重建",
+  "substituteVerification": "对账数据核对 + 监控指标"
+}

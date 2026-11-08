@@ -1,0 +1,58 @@
+{
+  "$comment": "templateId: atomic.gate-report | atomicSchemaAssetId: schema.gate-report | validationMode: 由使用方填写，本文件是 JSON 结构模板",
+  "schemaVersion": "1.0.0",
+  "taskId": "{{TASK_ID}}",
+  "generatedAt": "{{GENERATED_AT}}",
+  "finalStatus": "partial",
+  "applicability": {
+    "sdd": "required",
+    "ddd": "not-applicable",
+    "tdd": "strict",
+    "reasons": ["{{APPLICABILITY_REASONS}}"]
+  },
+  "preferences": [],
+  "prerequisites": [
+    { "name": "design-doc-system", "status": "satisfied", "gapAction": "无" }
+  ],
+  "gates": [
+    {
+      "ruleId": "RULE-FLOW-002",
+      "status": "passed",
+      "checkMethod": "{{CHECK_METHOD}}",
+      "evidenceReferences": ["{{EVIDENCE_REF}}"],
+      "failureAction": "停止实现，路由 spec-backfill 或 spec-writing"
+    }
+  ],
+  "artifactsChanged": ["{{ARTIFACTS_CHANGED}}"],
+  "domainChanges": [],
+  "tddCycles": [
+    {
+      "redClassification": "behavior-assertion",
+      "selectionHash": "{{SELECTION_HASH}}",
+      "redEvidence": {
+        "command": "{{RED_COMMAND}}",
+        "workingDirectory": "{{WORKING_DIRECTORY}}",
+        "selectionCriteria": "{{SELECTION_CRITERIA}}",
+        "exitCode": 1,
+        "executedAt": "{{EXECUTED_AT}}",
+        "keyOutputSummary": "{{KEY_OUTPUT_SUMMARY}}"
+      },
+      "greenEvidence": {
+        "command": "{{GREEN_COMMAND}}",
+        "workingDirectory": "{{WORKING_DIRECTORY}}",
+        "selectionCriteria": "{{SELECTION_CRITERIA}}",
+        "exitCode": 0,
+        "executedAt": "{{EXECUTED_AT}}",
+        "keyOutputSummary": "{{KEY_OUTPUT_SUMMARY}}"
+      },
+      "testsChangedAfterRed": false,
+      "redReestablished": false
+    }
+  ],
+  "validationRuns": [],
+  "confirmations": [],
+  "waivers": [],
+  "unverifiedItems": ["{{UNVERIFIED_ITEMS}}"],
+  "openItems": [],
+  "residualRisks": ["{{RESIDUAL_RISKS}}"]
+}

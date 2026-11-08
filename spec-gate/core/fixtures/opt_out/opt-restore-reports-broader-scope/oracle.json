@@ -1,0 +1,8 @@
+{
+  "expectedRemainingCount": 1,
+  "expectedStillSuppressed": true,
+  "expectedNotesContain": [
+    "still-suppressed"
+  ],
+  "expectedRuleIds": []
+}

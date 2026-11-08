@@ -1,0 +1,6 @@
+{
+  "expectedRuleIds": ["RULE-FAST-002"],
+  "expectedExitCode": 1,
+  "expectedStatus": "temporary-mitigation",
+  "note": "台账写入失败时必须标最高优先级未验证项并保持 temporary-mitigation 补录"
+}

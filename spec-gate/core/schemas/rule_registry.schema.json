@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.rule-registry",
+  "title": "Stable rule registry",
+  "description": "每条硬要求必须绑定检查方法、证据格式、失败动作与豁免策略；blocking 规则四元组不得为空。ruleId 发布后不可复用，不兼容变化创建新 ID 并在 manifest retiredRuleIds 登记。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "ruleId": { "type": "string", "pattern": "^RULE-[A-Z]+-\\d{3}$" },
+          "owner": {
+            "type": "string",
+            "enum": ["sdd-ddd-tdd", "spec-backfill", "spec-writing", "sdd-methodology-core"]
+          },
+          "severity": { "type": "string", "enum": ["blocking", "warning", "guidance"] },
+          "appliesWhen": { "type": "string", "minLength": 1 },
+          "statement": { "type": "string", "minLength": 1 },
+          "checkMethod": { "type": "string" },
+          "evidenceRequired": { "type": "string" },
+          "failureAction": { "type": "string" },
+          "waiverPolicy": { "type": "string" }
+        },
+        "required": [
+          "ruleId",
+          "owner",
+          "severity",
+          "appliesWhen",
+          "statement",
+          "checkMethod",
+          "evidenceRequired",
+          "failureAction",
+          "waiverPolicy"
+        ]
+      }
+    }
+  },
+  "required": ["schemaVersion", "rules"]
+}

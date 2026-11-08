@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.adr-registry",
+  "title": "ADR registry",
+  "description": "编号唯一且不可复用；取代关系必须记录；已退役编号进入 retiredIds 后不得重新分配。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^ADR-\\d+$" },
+          "status": {
+            "type": "string",
+            "enum": ["proposed", "accepted", "deprecated", "superseded", "rejected"]
+          },
+          "supersedes": { "type": ["string", "null"], "pattern": "^(ADR-\\d+)?$" },
+          "supersededBy": { "type": ["string", "null"], "pattern": "^(ADR-\\d+)?$" }
+        },
+        "required": ["id", "status", "supersedes", "supersededBy"]
+      }
+    },
+    "retiredIds": { "type": "array", "items": { "type": "string", "pattern": "^ADR-\\d+$" } }
+  },
+  "required": ["schemaVersion", "entries", "retiredIds"]
+}

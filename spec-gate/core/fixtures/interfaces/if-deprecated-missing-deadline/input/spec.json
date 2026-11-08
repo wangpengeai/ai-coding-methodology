@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.1.0",
+  "interfaces": [
+    {
+      "id": "IF-Order-1",
+      "kind": "external",
+      "ownerModule": "order-api",
+      "consumerModules": [],
+      "operations": [
+        "POST /orders -> OrderReceipt"
+      ],
+      "errorSemantics": [
+        "ORD-409 状态冲突；幂等键重放返回原结果"
+      ],
+      "lifecycle": "deprecated",
+      "version": "2",
+      "compatPolicy": "strict-backward",
+      "contractArtifacts": [
+        {
+          "artifactType": "openapi",
+          "path": "contracts/order-api.yaml",
+          "contentHash": "sha256:aa11",
+          "driftCheckCommand": "py tools/check_contract.py contracts/order-api.yaml"
+        }
+      ],
+      "tracesTo": [
+        "FR-Order-3",
+        "R-12"
+      ],
+      "deprecation": {
+        "migrationNote": "迁移说明"
+      }
+    }
+  ]
+}

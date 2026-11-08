@@ -1,0 +1,6 @@
+{
+  "name": "team-governance",
+  "version": "0.23.4",
+  "description": "团队级 AI Coding 治理（可选安装）：AI Run Manifest、模型策略、上下文信任、Change Set/CAS Lease、内容绑定审批、replay-first Agent Eval 与治理报告 —— 触发条件：团队需要治理配置、租约/审批管控、replay 评测或治理报告时按需启用。",
+  "author": "wangp"
+}

@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "id": "内部未决-2",
+      "status": "accepted-risk",
+      "owner": "dev",
+      "impact": "低频竞态",
+      "blocking": false,
+      "resolutionTrigger": "出现事故时",
+      "evidence": "无"
+    }
+  ]
+}

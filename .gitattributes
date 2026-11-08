@@ -1,0 +1,9 @@
+# 统一仓库行尾为 LF（内部变更-9）：core 基线哈希与 manifest.json 内嵌哈希均按 LF 内容
+# 计算；无此声明时 Windows 工作树 CRLF 检出会导致 159+ 条基线哈希误报过期。
+# 二进制类文件按二进制处理，不做行尾转换。
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary
+*.pyc binary

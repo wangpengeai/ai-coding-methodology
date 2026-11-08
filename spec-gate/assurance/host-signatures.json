@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "hosts": {
+    "zcode": { "darwin": ["/Applications/ZCode.app", "~/Applications/ZCode.app"], "win32": ["~/AppData/Local/Programs/ZCode"], "linux": ["~/.zcode/server/releases"] },
+    "mcode": { "darwin": ["/Applications/MiniMax Code.app", "~/Applications/MiniMax Code.app"], "win32": ["~/AppData/Local/Programs/MiniMax Code"], "linux": [] },
+    "kimi": { "darwin": ["/Applications/Kimi Code.app", "~/Applications/Kimi Code.app"], "win32": ["~/AppData/Local/Programs/Kimi Code"], "linux": [] },
+    "dsh": { "darwin": ["/Applications/DeepSeek Harness.app", "~/Applications/DeepSeek Harness.app"], "win32": ["~/AppData/Local/Programs/DeepSeek Harness"], "linux": [] }
+  }
+}

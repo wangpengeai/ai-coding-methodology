@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-DDD-STRATEGIC-MISSING-001",
+  "input": "input/ddd_assets.json",
+  "level": "strategic"
+}

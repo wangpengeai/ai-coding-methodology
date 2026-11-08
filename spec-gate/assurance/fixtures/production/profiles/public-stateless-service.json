@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "deliveryKind": "service",
+  "distribution": "container",
+  "scm": {"provider": "github", "prRequired": true, "requiredChecks": ["ci", "security-scan"]},
+  "environments": ["development", "staging", "production"],
+  "exposure": "public",
+  "dataClasses": ["none"],
+  "secretUse": "runtime",
+  "persistentState": "none",
+  "availabilityTier": "standard",
+  "recoveryTier": "backup-restore",
+  "acceptanceAuthority": "stakeholder",
+  "evidenceMaxAgeHours": {"pr-ci": 24, "observation": 72},
+  "vulnerabilityPolicy": {"critical": "block", "high": "block", "medium": "deadline"},
+  "requiredApprovals": ["owner", "security"]
+}

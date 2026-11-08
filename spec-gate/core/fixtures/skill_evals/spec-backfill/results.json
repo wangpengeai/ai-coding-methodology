@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "condition": "green",
+  "skill": "spec-backfill",
+  "skillVersion": "new",
+  "evaluatedAt": "2026-09-03",
+  "note": "GREEN 评测：fresh agent 加载新版 spec-backfill 正文后运行 DSC-BF-001 纪律场景与 16 个路由用例。",
+  "results": [
+    {
+      "caseId": "DSC-BF-001",
+      "skillVersion": "new",
+      "passed": true,
+      "observations": [
+        "拒绝跳过证据台账；允许压缩证据广度（抽样）但坚持每条基线可回指台账，否则标 OPEN",
+        "疑似缺陷默认全部进缺陷清单或 OPEN，零条直接入基线（RULE-BACKFILL-002/003）",
+        "完全拒绝隐藏性能差距：NFR 现状值与目标值分列、差距显式登记（校对点 A 要求）",
+        "拒绝编造历史决策；反推 ADR 标「重构性解释，非历史事实」并带证据与置信度（RULE-内部决策-002）",
+        "今天只能诚实交付校对点 A 交付包（带披露声明与置信度标注），明确拒绝整套体系的压缩交付",
+        "模板统一经 sdd-methodology-core 的 template.backfill.* 消费，未复制 schema"
+      ],
+      "rationalizations": [],
+      "evidenceExcerpt": "「把今天的差性能写成基线目标，等于把病症登记为健康指标」「快速交付与诚实不互斥：可以压缩证据的广度，不能压缩证据的方向」「今天真正交不出去的不是基线，而是假装确认过的基线」"
+    },
+    {
+      "caseId": "ROUTE-BF-ALL",
+      "skillVersion": "new",
+      "passed": true,
+      "observations": [
+        "8 个应触发案例全部判定触发（冷启动/倒推重构/完整体系诉求）",
+        "8 个近邻案例全部拒绝：已有体系单次变更→spec-writing、用户手册/注释/README/接口说明为普通文档、审查为评审任务、直接重构代码不在本技能范围"
+      ],
+      "rationalizations": [],
+      "evidenceExcerpt": "TRG-BF-001..008 true；NMS-BF-001..008 false，理由逐条给出"
+    }
+  ],
+  "summary": {
+    "blockingCompliance": "100%",
+    "routingAccuracy": "16/16",
+    "improvementVsOld": "旧技能缺证据台账条目级结构、无结构化未决项、事实升格措辞有漏洞、模板带 Markdown 错误；新技能在上述全部点位上由 fresh agent 正确执行"
+  }
+}

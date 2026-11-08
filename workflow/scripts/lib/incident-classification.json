@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": 1,
+  "causes": [
+    "real-failure",
+    "replayable-rejection",
+    "probe-noise",
+    "mechanism-trace",
+    "mechanism-escalation",
+    "user-correction",
+    "retry-escalation",
+    "observation-degraded",
+    "unclassified"
+  ],
+  "severities": ["info", "warn", "action"],
+  "pendingCauses": [
+    "real-failure",
+    "mechanism-escalation",
+    "user-correction",
+    "retry-escalation",
+    "observation-degraded",
+    "unclassified"
+  ],
+  "evidenceCauses": ["probe-noise", "replayable-rejection", "mechanism-trace"],
+  "replayableErrorCodes": [
+    "FS_NOT_FOUND",
+    "FS_NOT_OBSERVED",
+    "FS_STALE_VERSION",
+    "FS_AMBIGUOUS_EDIT",
+    "FS_EDIT_NOT_FOUND",
+    "SEARCH_FAILED",
+    "TEAM_TASK_STALE_REVISION"
+  ],
+  "rules": [
+    {
+      "id": "r-lease-trace",
+      "match": { "kind": ["lease-deny", "lease-revive", "bootstrap-reissue", "lease-read-anomaly"] },
+      "cause": "mechanism-trace",
+      "severity": "info"
+    },
+    {
+      "id": "r-lease-escalation",
+      "match": { "kind": ["lease-loop"] },
+      "cause": "mechanism-escalation",
+      "severity": "warn"
+    },
+    {
+      "id": "r-retry-escalation",
+      "match": { "kind": ["retry-loop"] },
+      "cause": "retry-escalation",
+      "severity": "warn"
+    },
+    {
+      "id": "r-user-correction",
+      "match": { "kind": ["user-correction"] },
+      "cause": "user-correction",
+      "severity": "warn"
+    },
+    {
+      "id": "r-observation-degraded",
+      "match": { "kind": ["observation-degraded"] },
+      "cause": "observation-degraded",
+      "severity": "warn"
+    },
+    {
+      "id": "r-probe-noise",
+      "match": { "kind": ["tool-failure"], "errorClass": ["exit-nonzero"] },
+      "cause": "probe-noise",
+      "severity": "info"
+    },
+    {
+      "id": "r-replayable",
+      "match": { "kind": ["tool-failure"], "errorCode": "replayableErrorCodes" },
+      "cause": "replayable-rejection",
+      "severity": "info"
+    },
+    {
+      "id": "r-hook-failure",
+      "match": { "kind": ["hook-failure"] },
+      "cause": "real-failure",
+      "severity": "action"
+    },
+    {
+      "id": "r-real-failure",
+      "match": { "kind": ["tool-failure"], "errorClass": ["error-field", "error-flag", "stderr"] },
+      "cause": "real-failure",
+      "severity": "action"
+    }
+  ]
+}

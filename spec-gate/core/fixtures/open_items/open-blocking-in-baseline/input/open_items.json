@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "id": "内部未决-1",
+      "status": "open",
+      "owner": "dev",
+      "impact": "错误语义未定",
+      "blocking": true,
+      "resolutionTrigger": "评审",
+      "evidence": "纪要"
+    }
+  ]
+}

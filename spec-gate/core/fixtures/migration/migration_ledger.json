@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "note": "status 扩展说明：migrated=内容已迁移且引用已切换；pending-delete=已迁移待物理删除（阶段 E 执行）；删除后本条目更新为 deleted。本轮不保留无限期 deprecated 文件。",
+  "entries": [
+    {
+      "asset": "spec-writing/references/writing-patterns.md",
+      "status": "deleted",
+      "target": "template.atomic.* + schema.specification + schema.adr（sdd-methodology-core）",
+      "reason": "九类写作模式已由原子模板与 schema 承载；ADR 完整字段、G-T 裁决、验收纪律进入规则注册表",
+      "referenceCleanupEvidence": "spec-writing/SKILL.md 已无对该文件的引用（2026-09-03 重写）；物理删除完成（2026-09-03）"
+    },
+    {
+      "asset": "spec-backfill/references/module-spec-template.md",
+      "status": "deleted",
+      "target": "template.backfill.module-volume + template.atomic.*（sdd-methodology-core）",
+      "reason": "双层模块分册已由装配模板承载；Markdown 结构错误（缺分隔行/标题粘连/硬编码 v2.0）在新模板中修复",
+      "referenceCleanupEvidence": "spec-backfill/SKILL.md 已无对该文件的引用（2026-09-03 重写）；物理删除完成（2026-09-03）"
+    },
+    {
+      "asset": "spec-backfill/references/target-structure.md",
+      "status": "deleted",
+      "target": "template.backfill.requirements-baseline + high-level-design + program-design-governance（sdd-methodology-core）",
+      "reason": "三层体系与编号模型已由装配模板与 schema.specification 承载；「既有事实升格」措辞漏洞由事实分类表与 RULE-BACKFILL-002/003 取代",
+      "referenceCleanupEvidence": "spec-backfill/SKILL.md 已无对该文件的引用（2026-09-03 重写）；物理删除完成（2026-09-03）"
+    },
+    {
+      "asset": "spec-backfill/references/review-checklists.md",
+      "status": "deleted",
+      "target": "template.backfill.backfill-completion-report + traceability-matrix + 校验器 suite 模式（sdd-methodology-core）",
+      "reason": "三级检查单的可机械部分进入校验器；人工重建评审降格为启发式并写入完成报告模板",
+      "referenceCleanupEvidence": "spec-backfill/SKILL.md 已无对该文件的引用（2026-09-03 重写）；物理删除完成（2026-09-03）"
+    },
+    {
+      "asset": "sdd-ddd-tdd/references/checklists.md",
+      "status": "deleted",
+      "target": "registry.rules（RULE-FLOW/TDD/OPT 域）+ schema.opt-out + template.atomic.minimal-change-draft（sdd-methodology-core）",
+      "reason": "适用性/前置检查与 TDD 红绿重构细则已由规则注册表与证据契约承载；失效章节引用 §2.2 随文件删除消除",
+      "referenceCleanupEvidence": "sdd-ddd-tdd/SKILL.md 已无对该文件的引用（2026-09-03 重写）；物理删除完成（2026-09-03）"
+    },
+    {
+      "asset": "sdd-ddd-tdd/references/ddd-guide.md",
+      "status": "deleted",
+      "target": "schema.ddd-assets + template.ddd.*（sdd-methodology-core）",
+      "reason": "战略/战术方法已由 DDD schema 与 19 个模板承载；「九种关系只列四种」「统一语言三处/四处」等漂移随文件删除消除",
+      "referenceCleanupEvidence": "sdd-ddd-tdd/SKILL.md 已无对该文件的引用（2026-09-03 重写）；物理删除完成（2026-09-03）"
+    },
+    {
+      "asset": "templates/atomic/external_contract.template.md",
+      "status": "pending-delete",
+      "target": "template.atomic.interface + specification.interfaces（kind=external）（sdd-methodology-core）",
+      "reason": "对外契约并入统一接口族 IF-域-n；字段级弃用警告 RULE-IF-006 于 1.1.0 生效，2.0.0 物理删除",
+      "referenceCleanupEvidence": "spec-writing/SKILL.md 模板清单改指 template.atomic.interface（2026-09-04）；manifest deprecationMappings 已登记"
+    }
+  ]
+}

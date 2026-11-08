@@ -1,0 +1,713 @@
+{
+  "schemaVersion": "1.0.0",
+  "compatibilityRange": ">=1.0.0 <2.0.0",
+  "publicAssets": [
+    {
+      "assetId": "schema.manifest",
+      "kind": "schema",
+      "path": "schemas/manifest.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:f83baee515971271c85490bf67ba39c0bae7e0133d8ae2207acb7d09b4236afd",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.rule-registry",
+      "kind": "schema",
+      "path": "schemas/rule_registry.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:a0e4dc030f344890f569a9ea700e18e9f1b66713dc21c4173fba7afd79400a08",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "registry.rules",
+      "kind": "reference",
+      "path": "schemas/rule_registry.json",
+      "version": "1.2.0",
+      "sha256": "sha256:4abe2cee2a278ab7858385a24ce72093a83180f9b252530e31a395627e0d8f7f",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.gate-report",
+      "kind": "schema",
+      "path": "schemas/gate_report.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:348021cff9898f888de2654b089e3bb278f7ed2f2d83c841ab3c347202ebb7e1",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.command-evidence",
+      "kind": "schema",
+      "path": "schemas/command_evidence.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:5c722bacf1bca48d1423c6e3d7b47ae04d4f648ecad84c5a072ed0f7f93cdaf2",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.acceptance-report",
+      "kind": "schema",
+      "path": "schemas/acceptance_report.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:5c7d749df0c3202089d1c492aa499389aa72582a49995449aa97f02ed6550835",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.migration-ledger",
+      "kind": "schema",
+      "path": "schemas/migration_ledger.schema.json",
+      "version": "1.0.1",
+      "sha256": "sha256:c4cced8415b0b96d482cfb49520962155b66cc62cb3b4db250f7cec6883b2bca",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.suite-config",
+      "kind": "schema",
+      "path": "schemas/suite_config.schema.json",
+      "version": "1.1.1",
+      "sha256": "sha256:6fe60c5068314aa8da675eeea2d008fbdb5ac24fa3aad5a06f3f55042473d25a",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.route-case",
+      "kind": "schema",
+      "path": "schemas/route_case.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:f39b811f25d5a6bbe737dcfcd87797e5192e47585405abe7aab14e302362d047",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.opt-out",
+      "kind": "schema",
+      "path": "schemas/opt_out.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:6ae09db867603793f2347181509cdaa32ff016e80133c00235ba9eece83581df",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.specification",
+      "kind": "schema",
+      "path": "schemas/specification.schema.json",
+      "version": "1.1.0",
+      "sha256": "sha256:b00a6632c0704d8eb99058600f9b202e13a09adff0209912638329eabecfdec5",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.interface-registry",
+      "kind": "schema",
+      "path": "schemas/interface_registry.schema.json",
+      "version": "1.1.0",
+      "sha256": "sha256:8d80349aed49218c6100ecbe9b687570a215dfed836a69cb7f3e87c270425b83",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.adr",
+      "kind": "schema",
+      "path": "schemas/adr.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:030340918aac96dc5fd0c871ac6eb64e71ebca21dee7ccbdd1f9c7d4bb489079",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.adr-registry",
+      "kind": "schema",
+      "path": "schemas/adr_registry.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:47ae7ee33b55b8da249af9f5e6048cbd925c915f396e22b7277bdc68ccad9ba8",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.open-item",
+      "kind": "schema",
+      "path": "schemas/open_item.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:8499dbccc67a606004f94592843da34c0cc88a3e986a41581810565cfb9cc32c",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.acceptance-trace",
+      "kind": "template",
+      "path": "templates/atomic/acceptance_trace.template.md",
+      "version": "1.1.0",
+      "sha256": "sha256:cdde303ddca7aa5fc4ebfe895e5aba3a84d274bcb34058f4f16bafb1c012d9cb",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.adr",
+      "kind": "template",
+      "path": "templates/atomic/adr.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:8dfb6a11dd37b32a3cbd9366f01813a90d83411b5c155ee6c60b092d2f4aa449",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.adr-registry",
+      "kind": "template",
+      "path": "templates/atomic/adr_registry.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:d319d82dd58eea9df2a4cc5e52a44931433d9ff1d515907b996cd117ff2dcdc9",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.assumptions",
+      "kind": "template",
+      "path": "templates/atomic/assumptions.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:f71bd2501652f886f95713ebdfdb91de83b419ab9c7326979e20a7f8ed66e357",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.boundaries",
+      "kind": "template",
+      "path": "templates/atomic/boundaries.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:7795be09b80ad8a6eeb4ac6079720055fbc976f8eb06268ce033ba8f19521f6b",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.change-impact",
+      "kind": "template",
+      "path": "templates/atomic/change_impact.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:86d8d448920c83d9677c94cbbde56c5496eb1b2630ae167a554e24e6558f4385",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.report.delivery-report",
+      "kind": "template",
+      "path": "templates/reports/delivery_report.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:9057b020c9f54b8b3e021abde43fd4bc9191f784a0741c7fa430499f00161947",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.design-decision",
+      "kind": "template",
+      "path": "templates/atomic/design_decision.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:ca756fd0596e8ea5dd8786b9dad486bbc0a3ffe59fa716936e7187465c3c0464",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.external-contract",
+      "kind": "template",
+      "path": "templates/atomic/external_contract.template.md",
+      "version": "1.1.0",
+      "sha256": "sha256:060d8bfc43bb63a7bfa1f98330f1339f5ad6bf88f7765c3d854ae0bc56ef758d",
+      "deprecated": true,
+      "supersededBy": "template.atomic.interface"
+    },
+    {
+      "assetId": "template.atomic.interface",
+      "kind": "template",
+      "path": "templates/atomic/interface.template.md",
+      "version": "1.2.0",
+      "sha256": "sha256:824b5798e24a41b6dfc0b663bf640e4adb84d7a6cff42f1ccbf9f7905f6b6a95",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.interface-registry",
+      "kind": "template",
+      "path": "templates/atomic/interface_registry.template.md",
+      "version": "1.1.0",
+      "sha256": "sha256:1a5f53b1fcd680f653ec912b4f15999075f754e10d6893fc42a02995cf13366d",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.report.gate-report",
+      "kind": "template",
+      "path": "templates/reports/gate_report.template.json",
+      "version": "1.0.0",
+      "sha256": "sha256:6765ac0222337a4fbb81f7e5dfd280a18e8709d155a0e902523457b6c9c5ce22",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.global-sequence",
+      "kind": "template",
+      "path": "templates/atomic/global_sequence.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:0e3552ba407602130462592302d9cb024f92b4e9719a844a1e4aff8f6ffc965c",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.glossary",
+      "kind": "template",
+      "path": "templates/atomic/glossary.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:4ddc705974f5680546931bf278e8962636fe06c90d3dab6430dd54ab8de83d21",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.minimal-change-draft",
+      "kind": "template",
+      "path": "templates/atomic/minimal_change_draft.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:5af3e76de2099130d24e6dc4781453d929ce222f4e166e90b0e80696111eb0bf",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.module-requirement",
+      "kind": "template",
+      "path": "templates/atomic/module_requirement.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:12f81a74c81edcadadc42d558a57a43befa0f76ef9becba5bc00a438e465bbb1",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.module-sequence",
+      "kind": "template",
+      "path": "templates/atomic/module_sequence.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:a4f20aa2e4e060a7345d4416d028f5a4801523f460637717e41da19f87dc23c0",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.open-items",
+      "kind": "template",
+      "path": "templates/atomic/open_items.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:ae164b3c8b2d4c7d7faab266f9e8fe659450bae86a9cf6c49fccd1b289f641a3",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.requirements",
+      "kind": "template",
+      "path": "templates/atomic/requirements.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:9d91eb50e3c4f8190dae9eff394fcaa4dfff1b3a816341914ee2c45352627a0f",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.review-disposition",
+      "kind": "template",
+      "path": "templates/atomic/review_disposition.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:df9bbf293ac504bcd3c24c3986202d3c974c627944605500ed990641ec52370f",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.ddd-assets",
+      "kind": "schema",
+      "path": "schemas/ddd_assets.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:b1296b2163f6194d20270f4d475362c12de5ea40e3c53b829f3f35ce87064007",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.aggregate-invariants",
+      "kind": "template",
+      "path": "templates/ddd/aggregate_invariants.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:4da7723592c0a77ffdf48d9ac20f87c0537f123fa4ddc832648acd89c81950f5",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.applicability-matrix",
+      "kind": "template",
+      "path": "templates/ddd/applicability_matrix.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:c0f0fddc517e661cf78f92b2b563c9bf375d95e8a9d0c0f48b718b9878c0b390",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.bounded-context-catalog",
+      "kind": "template",
+      "path": "templates/ddd/bounded_context_catalog.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:7a9f52a2b369b94b1b0d5b3b9e9dc46e6177c40e9d2991676c106247c73d8a67",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.context-map",
+      "kind": "template",
+      "path": "templates/ddd/context_map.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:e9f578c5ee15876968eae80c0cd15b971d4cb818dbb4cfd5a071e9998068e9d6",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.context-relationships",
+      "kind": "template",
+      "path": "templates/ddd/context_relationships.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:57b8c97df994623270303e77441d19bc86faa969611fcc2ba5ec33bc635693cb",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.ddd-completion-report",
+      "kind": "template",
+      "path": "templates/ddd/ddd_completion_report.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:2607ae2d7e2cca8fd8242f26c260aa0a88fde657cc238030ec82405764fc5099",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.decision-table",
+      "kind": "template",
+      "path": "templates/ddd/decision_table.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:3d5fb8054432b1cfa9063605c7848c3a910f829bb0495b955b3bd09aa1acb5f2",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.domain-event-catalog",
+      "kind": "template",
+      "path": "templates/ddd/domain_event_catalog.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:eced82be75331f131ed69aeac9e5ad911081dab1a1e29e0904c9b8bb945752bb",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.domain-service-decisions",
+      "kind": "template",
+      "path": "templates/ddd/domain_service_decisions.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:81bbe0c71f66530629fcc2e51c3d331290f33eeaf2b81fbb12054388e376151e",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.domain-traceability",
+      "kind": "template",
+      "path": "templates/ddd/domain_traceability.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:768886a69069faea4358694a0e163414bb8f5efb3e29e06ece96db2431a63dfa",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.entity-value-object-catalog",
+      "kind": "template",
+      "path": "templates/ddd/entity_value_object_catalog.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:5eebb6f95176497ff13d72082be91c8612f3a539071ea1033eca21063c2f2194",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.event-storming",
+      "kind": "template",
+      "path": "templates/ddd/event_storming.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:62e51c4162f781ab4c2f7e7b7f6fe3dfff205289d6b3efc263cdb7ccad2b2955",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.event-timeline",
+      "kind": "template",
+      "path": "templates/ddd/event_timeline.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:6682b6151b3b93e7d57272530c43ccb24b3e83c89e25812e5f4da42aa7ff7067",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.example-mapping",
+      "kind": "template",
+      "path": "templates/ddd/example_mapping.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:a0a5b5e936e543bc034d500acd810d956fbb96e77415dd155ec28d97d5efb70d",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.failure-semantics",
+      "kind": "template",
+      "path": "templates/ddd/failure_semantics.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:28476fd051d1f82f601b51c70aa2aad758b614b108c3c8abded95803c4cd63e9",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.hotspots-and-conflicts",
+      "kind": "template",
+      "path": "templates/ddd/hotspots_and_conflicts.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:a185c3aa92ddb7410dec470d53917fdb7fed76d0c1fac3960597e98d58d51a01",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.repository-port-boundaries",
+      "kind": "template",
+      "path": "templates/ddd/repository_port_boundaries.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:d616428426a81fc3faea450f7b633590875f91d25094ba2427038c36992fbd2f",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.subdomain-classification",
+      "kind": "template",
+      "path": "templates/ddd/subdomain_classification.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:b6b7d39ad8629582bbac12dc4bfaaf7e7173e31a5baccda0333c5a37ad8f2010",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.ddd.ubiquitous-language",
+      "kind": "template",
+      "path": "templates/ddd/ubiquitous_language.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:dba084c92901917a3a468969778632d88a385ee9d04fb753a92d202d78ac92bd",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.backfill-completion-report",
+      "kind": "template",
+      "path": "templates/backfill/backfill_completion_report.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:ddae9d8bd040ab78958f0842d2fc7d58b40e63ea337301cc9e0515dd514437fa",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.checkpoint-a-package",
+      "kind": "template",
+      "path": "templates/backfill/checkpoint_a_package.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:0b74644c9cbbe23bc17feb55deb29e8d78d4b3a5223de7796bafc66a91a6a0f8",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.checkpoint-b-package",
+      "kind": "template",
+      "path": "templates/backfill/checkpoint_b_package.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:3f8e7ff4edb7ac64681f3f9534136622bfd8cc3fc5d58bcc8a448157db55df53",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.checkpoint-c-package",
+      "kind": "template",
+      "path": "templates/backfill/checkpoint_c_package.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:53b0b82a5c943b97a21484e1edf2deb5f0366996e2627cdb5542d012eab40004",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.domain-design-package",
+      "kind": "template",
+      "path": "templates/backfill/domain_design_package.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:d3c2d6d0f9158e530e472e0d0a7b710099e1538f6784e761507007caec8de9c6",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.error-code-catalog",
+      "kind": "template",
+      "path": "templates/backfill/error_code_catalog.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:eb1b136667e294dbad105158e290893e5891f546a819f5f31f1d91fa55f03965",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.event-catalog",
+      "kind": "template",
+      "path": "templates/backfill/event_catalog.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:01c48ff4d220a5635a4f38962a41a5647fed79a82008b3652b4131abc291a944",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.evidence-ledger",
+      "kind": "template",
+      "path": "templates/backfill/evidence_ledger.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:4d9b968633b5377dc98291bfd46800cd6cf378bd6d868bd771e48db8bb9d6500",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.high-level-design",
+      "kind": "template",
+      "path": "templates/backfill/high_level_design.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:20f26c955f820b7b84e2050d33e62bb93ffd3a43cd4388c8316ca0a8546e5b91",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.module-index",
+      "kind": "template",
+      "path": "templates/backfill/module_index.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:397200e12cb370110c5f9b5033e074589430b8f03a5b83a58bf9ab261abb6507",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.module-volume",
+      "kind": "template",
+      "path": "templates/backfill/module_volume.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:c46e66e239c0365a3e93b0f5c37288187c042afb1c18040c083c6dfc338b7bbc",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.program-design-governance",
+      "kind": "template",
+      "path": "templates/backfill/program_design_governance.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:694efc024932b8408f80176ff54d8471d978d478b8fa9448e746002cf0f2bc3f",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.requirements-baseline",
+      "kind": "template",
+      "path": "templates/backfill/requirements_baseline.template.md",
+      "version": "1.0.0",
+      "sha256": "sha256:7a2c640d2827e09a54204580ca323472874dcd36b1eefaf89dbd1da2e9d7a5a1",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.backfill.traceability-matrix",
+      "kind": "template",
+      "path": "templates/backfill/traceability_matrix.template.md",
+      "version": "1.1.0",
+      "sha256": "sha256:b85e149b2b45121446782847bca9685dc908a04674a6affb76e95e723b5cb4b2",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "validator.validate-specs",
+      "kind": "validator",
+      "path": "validator/validate_specs.mjs",
+      "version": "1.5.5",
+      "sha256": "sha256:8434e2e87512788cf1339b8e5e97ac4aad77dbcfa506c22b9d3e164cf9d43d27",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "validator.run-acceptance",
+      "kind": "validator",
+      "path": "validator/run_acceptance.mjs",
+      "version": "1.2.4",
+      "sha256": "sha256:eced7c75f74417525bdd723addfc80626d40e78322a679fe4da6f35874f99abd",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.task-ledger",
+      "kind": "schema",
+      "path": "schemas/task_ledger.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:bb884610989728e39f79ab32ced106d80f876cf5dbfd63daf5b111a7ce18c728",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "schema.project-config",
+      "kind": "schema",
+      "path": "schemas/project_config.schema.json",
+      "version": "1.0.0",
+      "sha256": "sha256:b70229bf1f6014e31c7e89e0353c2cbb6c0787625892e6fd4a3cf09b1fbec4aa",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "template.atomic.task-ledger",
+      "kind": "template",
+      "path": "templates/atomic/task_ledger.template.md",
+      "version": "1.1.1",
+      "sha256": "sha256:9a56b23aa263a0a353ea570eab10db437d68a184e40a4a72ebedb09aed00c963",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "validator.sdd-init",
+      "kind": "validator",
+      "path": "validator/tools/sdd_init.mjs",
+      "version": "1.2.5",
+      "sha256": "sha256:0ffc7a9586a79ff73424e9faaf1a32e7ecd9084c772f8ddf4c66b211f3a7682a",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "validator.sdd-check",
+      "kind": "validator",
+      "path": "validator/tools/sdd_check.mjs",
+      "version": "1.2.5",
+      "sha256": "sha256:50120775ef46d8d0dee6d73ec74d9f5cad7b238511564ddc23740233e722db02",
+      "deprecated": false,
+      "supersededBy": null
+    },
+    {
+      "assetId": "validator.capture-evidence",
+      "kind": "validator",
+      "path": "validator/tools/capture_evidence.mjs",
+      "version": "1.1.7",
+      "sha256": "sha256:6cfdac4aa52d482d835468b251a4b1de54540f46f19973daa709496501dfc5bd",
+      "deprecated": false,
+      "supersededBy": null
+    }
+  ],
+  "ruleRegistry": {
+    "assetId": "registry.rules",
+    "path": "schemas/rule_registry.json"
+  },
+  "deprecationMappings": [
+    {
+      "assetId": "template.atomic.external-contract",
+      "deprecatedSince": "1.1.0",
+      "removeIn": "2.0.0",
+      "supersededBy": "template.atomic.interface",
+      "reason": "统一接口族：externalContracts 并入 interfaces(kind=external)"
+    }
+  ],
+  "retiredRuleIds": []
+}

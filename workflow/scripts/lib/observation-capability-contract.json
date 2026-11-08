@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": 1,
+  "sourceRef": "specs/interfaces/IF-HOST-1.md「运行观测能力登记」（2026-10-24，DEV-192/ADR-063）",
+  "mirrorNote": "镜像自 IF-HOST-1『运行观测能力登记』表；唯一人工事实源仍是该表（维护义务同 R-ha-7，一致性由 skills-text 文本锚＋镜像对拍单测把守）。新增宿主只改本文件＋IF-HOST-1＋对拍测试，核心代码零改动。",
+  "capabilityDomains": ["failureFacts", "hookFailure", "injection", "selfCheck"],
+  "capabilityValues": ["native", "adapter", "degraded", "unavailable", "unverified"],
+  "declarationGrammar": "^[A-Za-z][A-Za-z0-9+_.-]{0,39}$",
+  "conservativeValue": "degraded",
+  "hosts": {
+    "zcode": {
+      "whenUndeclared": "native",
+      "domains": { "failureFacts": "native", "hookFailure": "native", "injection": "native", "selfCheck": "native" }
+    },
+    "dsh": {
+      "whenUndeclared": "degraded",
+      "domains": { "failureFacts": "adapter", "hookFailure": "adapter", "injection": "native", "selfCheck": "degraded" }
+    },
+    "mcode": {
+      "whenUndeclared": "degraded",
+      "domains": { "failureFacts": "unavailable", "hookFailure": "degraded", "injection": "degraded", "selfCheck": "degraded" }
+    },
+    "kimi": {
+      "whenUndeclared": "degraded",
+      "domains": { "failureFacts": "native", "hookFailure": "degraded", "injection": "degraded", "selfCheck": "degraded" }
+    }
+  }
+}

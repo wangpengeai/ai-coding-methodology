@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-内部接口-001",
+  "input": "input/registry.json",
+  "mode": "baseline"
+}

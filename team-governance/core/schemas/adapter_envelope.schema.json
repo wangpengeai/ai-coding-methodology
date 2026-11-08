@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IF-ADAPTER-1 外部控制面适配信封（受控子集镜像：无 $ref、无数组 type；唯一生产消费者＝测试对拍，运行时执行点＝contract.validateEnvelope）",
+  "type": "object",
+  "required": ["schemaVersion", "adapter", "capability", "request", "result", "availability", "externalEffects", "correlation"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "adapter": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+    "capability": { "type": "string", "enum": ["ci", "pr", "identity", "lease-store", "evidence-store", "os-observation", "agent-eval"] },
+    "request": { "type": "object" },
+    "result": {
+      "type": "object",
+      "required": ["status", "summary"],
+      "properties": {
+        "status": { "enum": ["passed", "failed", "unverified", "unavailable"] },
+        "summary": { "type": "string" },
+        "digest": {
+          "anyOf": [
+            { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "availability": { "enum": ["available", "unavailable", "degraded"] },
+    "externalEffects": { "type": "array", "items": {} },
+    "correlation": {
+      "type": "object",
+      "required": ["runId"],
+      "properties": {
+        "runId": { "type": "string" },
+        "subjectDigest": {
+          "anyOf": [
+            { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "mode": { "type": "string" }
+  },
+  "additionalProperties": true
+}

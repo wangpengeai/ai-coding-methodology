@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "condition": "green",
+  "skill": "spec-writing",
+  "skillVersion": "new",
+  "evaluatedAt": "2026-09-03",
+  "note": "GREEN 评测：fresh agent 加载新版 spec-writing 正文后运行 DSC-SW-001 纪律场景与 16 个路由用例。",
+  "results": [
+    {
+      "caseId": "DSC-SW-001",
+      "skillVersion": "new",
+      "passed": true,
+      "observations": [
+        "三项违规要求全部拒绝并给出合规替代：缩减合入范围、TODO 转 OPEN-n、冲突先裁决",
+        "明确引用 RULE-SPEC-001、RULE-内部未决-001/002、RULE-内部决策-001 与冲突裁决条款",
+        "结论：当前状态不允许合入、不允许定稿，解除条件逐条列出",
+        "压力背景（时间/沉没成本/客户催促）只登记为证据，不构成豁免理由",
+        "模板统一经 sdd-methodology-core manifest 的 template.atomic.* 选取，未复制 schema"
+      ],
+      "rationalizations": [],
+      "evidenceExcerpt": "「红线无豁免，因此三项均予拒绝」「若时间真的不够，正确动作是缩减本次合入范围（只合入已具备验收的最小子集），而不是推迟验收」「无法裁决时登记 blocking OPEN-n 并不定稿，不允许以先按代码跑为由静默搁置」"
+    },
+    {
+      "caseId": "ROUTE-SW-ALL",
+      "skillVersion": "new",
+      "passed": true,
+      "observations": [
+        "8 个应触发案例全部判定触发",
+        "8 个近邻不应触发案例全部拒绝：整套建体系→spec-backfill、changelog/README/接口文档/会议纪要为普通文档、产品取舍为咨询、反推规格→spec-backfill、概念问答不触发"
+      ],
+      "rationalizations": [],
+      "evidenceExcerpt": "TRG-SW-001..008 true；NMS-SW-001..008 false，理由逐条给出"
+    }
+  ],
+  "summary": {
+    "blockingCompliance": "100%",
+    "routingAccuracy": "16/16",
+    "improvementVsOld": "旧技能缺字面禁令与待定登记出口、冲突裁决绝对化、ADR 防编造字段缺失；新技能在上述全部点位上由 fresh agent 正确执行"
+  }
+}

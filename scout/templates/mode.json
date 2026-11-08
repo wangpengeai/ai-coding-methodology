@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 3,
+  "mode": "explore",
+  "expiry": "YYYY-MM-DD",
+  "taskId": "<任务号>",
+  "transactionId": "<由 <scout 安装根>/scripts/mode-lifecycle.mjs 事务生成，禁止手工填写>"
+}

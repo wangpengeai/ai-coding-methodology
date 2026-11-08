@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-ADR-VALID-001",
+  "input": "input/adr.json",
+  "mode": "baseline"
+}

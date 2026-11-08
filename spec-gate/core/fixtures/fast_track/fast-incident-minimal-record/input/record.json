@@ -1,0 +1,16 @@
+{
+  "triggerReason": "支付回调丢消息",
+  "scope": "回调处理链路",
+  "currentBehavior": "回调丢失不可见",
+  "behaviorAssumptions": [
+    "补单幂等"
+  ],
+  "acceptanceAssumptions": [
+    "重复回调只入账一次"
+  ],
+  "risks": [
+    "误补单"
+  ],
+  "plannedVerification": "最小复现测试 + 预发回放",
+  "finalizationTrigger": "follow-up deadline 前"
+}

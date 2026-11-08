@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.adr",
+  "title": "Architecture Decision Record",
+  "description": "反推 ADR 必须设 isRetrofitReconstruction=true 并标记「重构性解释，非历史事实」；confidence=low 且未经确认不得成为硬约束基线；证据冲突必须登记未决项或取得确认。编号不可复用。",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "pattern": "^ADR-\\d+$" },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "accepted", "deprecated", "superseded", "rejected"]
+    },
+    "date": { "type": "string", "minLength": 1 },
+    "context": { "type": "string", "minLength": 1 },
+    "decision": { "type": "string", "minLength": 1 },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "rejectionReason": { "type": "string", "minLength": 1 }
+        },
+        "required": ["name", "rejectionReason"]
+      }
+    },
+    "selectionRationale": { "type": "string", "minLength": 1 },
+    "consequences": { "type": "string", "minLength": 1 },
+    "evidenceSources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "code",
+              "tests",
+              "configuration",
+              "historical-documentation",
+              "change-history",
+              "runtime-observation",
+              "user-confirmation"
+            ]
+          },
+          "reference": { "type": "string", "minLength": 1 }
+        },
+        "required": ["type", "reference"]
+      }
+    },
+    "confidence": { "type": "string", "enum": ["confirmed", "high", "medium", "low"] },
+    "supersession": {
+      "type": "object",
+      "properties": {
+        "supersedes": { "type": ["string", "null"], "pattern": "^(ADR-\\d+)?$" },
+        "supersededBy": { "type": ["string", "null"], "pattern": "^(ADR-\\d+)?$" }
+      },
+      "required": ["supersedes", "supersededBy"]
+    },
+    "traceability": { "type": "array", "items": { "type": "string" } },
+    "confirmationStatus": {
+      "type": "string",
+      "enum": ["pending", "confirmed", "rejected", "not-required"]
+    },
+    "isRetrofitReconstruction": { "type": "boolean" }
+  },
+  "required": [
+    "id",
+    "status",
+    "date",
+    "context",
+    "decision",
+    "alternatives",
+    "selectionRationale",
+    "consequences",
+    "evidenceSources",
+    "confidence",
+    "supersession",
+    "traceability",
+    "confirmationStatus"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0.0",
+  "applicability": [
+    {
+      "asset": "aggregate_invariants",
+      "label": "conditional",
+      "condition": "聚合边界变化时"
+    }
+  ],
+  "aggregates": [
+    {
+      "name": "Order",
+      "root": "Order",
+      "invariants": [
+        "总额=明细之和"
+      ],
+      "consistencyBoundary": "单实例强一致"
+    }
+  ],
+  "failureSemantics": [
+    {
+      "scenario": "库存不足",
+      "failureMode": "下单拒绝",
+      "observableEffect": "订单不创建，返回库存不足",
+      "recoveryExpectation": "无需重试"
+    }
+  ]
+}

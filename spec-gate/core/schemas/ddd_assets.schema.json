@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.ddd-assets",
+  "title": "DDD asset envelope",
+  "description": "战略级与战术级领域资产的唯一权威结构。不适用条目允许 N/A，但必须附理由；事件风暴不适用必须提供事件时间线、示例映射或决策表至少一种替代；既有资产未变化必须记录「已检查、无变化」。不得将 DDD 等同于任何固定目录分层。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "applicability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "asset": { "type": "string", "minLength": 1 },
+          "label": {
+            "type": "string",
+            "enum": ["always-required", "conditional", "na-allowed", "alternative-model-allowed"]
+          },
+          "condition": { "type": "string" }
+        },
+        "required": ["asset", "label"]
+      }
+    },
+    "subdomains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "classification": { "type": "string", "enum": ["core", "supporting", "generic"] },
+          "investmentDecision": { "type": "string" }
+        },
+        "required": ["name", "classification"]
+      }
+    },
+    "boundedContexts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "purpose": { "type": "string", "minLength": 1 },
+          "codeBoundaries": { "type": "array", "items": { "type": "string" } },
+          "languageRef": { "type": "string" }
+        },
+        "required": ["name", "purpose"]
+      }
+    },
+    "contextMap": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "contextA": { "type": "string", "minLength": 1 },
+          "contextB": { "type": "string", "minLength": 1 },
+          "relationship": { "type": "string", "minLength": 1 }
+        },
+        "required": ["contextA", "contextB", "relationship"]
+      }
+    },
+    "contextRelationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "upstream": { "type": "string", "minLength": 1 },
+          "downstream": { "type": "string", "minLength": 1 },
+          "integrationPattern": {
+            "type": "string",
+            "enum": [
+              "shared-kernel",
+              "customer-supplier",
+              "conformist",
+              "anticorruption-layer",
+              "open-host-service",
+              "published-language",
+              "separate-ways",
+              "partnership",
+              "big-ball-of-mud-boundary"
+            ]
+          },
+          "contractOwner": { "type": "string", "minLength": 1 },
+          "evolutionPolicy": { "type": "string" }
+        },
+        "required": ["upstream", "downstream", "integrationPattern", "contractOwner"]
+      }
+    },
+    "ubiquitousLanguage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "term": { "type": "string", "minLength": 1 },
+          "definition": { "type": "string", "minLength": 1 },
+          "context": { "type": "string" }
+        },
+        "required": ["term", "definition"]
+      }
+    },
+    "eventStorming": {
+      "type": "object",
+      "properties": {
+        "applicable": { "type": "boolean" },
+        "notApplicableReason": { "type": "string" },
+        "domainEvents": { "type": "array", "items": { "type": "string" } },
+        "commands": { "type": "array", "items": { "type": "string" } },
+        "actors": { "type": "array", "items": { "type": "string" } },
+        "policies": { "type": "array", "items": { "type": "string" } },
+        "readModels": { "type": "array", "items": { "type": "string" } },
+        "externalSystems": { "type": "array", "items": { "type": "string" } },
+        "aggregateCandidates": { "type": "array", "items": { "type": "string" } },
+        "hotspots": { "type": "array", "items": { "type": "string" } },
+        "unresolvedQuestions": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["applicable"]
+    },
+    "eventStormingAlternatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["event-timeline", "example-mapping", "decision-table"] },
+          "reference": { "type": "string", "minLength": 1 }
+        },
+        "required": ["type", "reference"]
+      }
+    },
+    "hotspots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "enum": ["conflict", "risk", "unresolved-question"] },
+          "description": { "type": "string", "minLength": 1 },
+          "resolutionOwner": { "type": "string" }
+        },
+        "required": ["id", "kind", "description"]
+      }
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "identityRule": { "type": "string", "minLength": 1 },
+          "lifecycle": { "type": "string" }
+        },
+        "required": ["name", "identityRule"]
+      }
+    },
+    "valueObjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "invariant": { "type": "string" },
+          "equalityRule": { "type": "string" }
+        },
+        "required": ["name"]
+      }
+    },
+    "aggregates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "root": { "type": "string", "minLength": 1 },
+          "invariants": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "consistencyBoundary": { "type": "string" }
+        },
+        "required": ["name", "root", "invariants"]
+      }
+    },
+    "domainEvents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "publisher": { "type": "string" },
+          "subscribers": { "type": "array", "items": { "type": "string" } },
+          "semantics": { "type": "string", "enum": ["at-most-once", "at-least-once", "exactly-once", "best-effort"] }
+        },
+        "required": ["name", "semantics"]
+      }
+    },
+    "domainServices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "stateless": { "type": "boolean" }
+        },
+        "required": ["name", "reason"]
+      }
+    },
+    "repositoryBoundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "aggregate": { "type": "string", "minLength": 1 },
+          "boundaryKind": { "type": "string", "enum": ["repository", "port", "external-system-facade"] },
+          "interfaceLocation": { "type": "string" },
+          "transactionScope": { "type": "string" }
+        },
+        "required": ["aggregate", "boundaryKind", "interfaceLocation"]
+      }
+    },
+    "failureSemantics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scenario": { "type": "string", "minLength": 1 },
+          "failureMode": { "type": "string", "minLength": 1 },
+          "observableEffect": { "type": "string", "minLength": 1 },
+          "recoveryExpectation": { "type": "string" }
+        },
+        "required": ["scenario", "failureMode", "observableEffect"]
+      }
+    },
+    "traceability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domainAsset": { "type": "string", "minLength": 1 },
+          "specEntry": { "type": "string", "minLength": 1 },
+          "codeBoundary": { "type": "string" },
+          "testEvidence": { "type": "string" }
+        },
+        "required": ["domainAsset", "specEntry"]
+      }
+    },
+    "impactConclusions": {
+      "type": "object",
+      "properties": {
+        "aggregateBoundaryImpact": { "type": "string", "minLength": 1 },
+        "failureSemanticsImpact": { "type": "string", "minLength": 1 },
+        "unchangedAssetsChecked": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["aggregateBoundaryImpact", "failureSemanticsImpact"]
+    }
+  },
+  "required": ["schemaVersion"]
+}

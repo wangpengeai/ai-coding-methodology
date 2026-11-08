@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "spec-gate/assurance/tests/gen_golden.py",
+  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（内部决策-051 D4，内部任务-60 计划评审 F7）；patch 锚＝production_model.uuid.uuid4＋production_model.now_iso（模块属性，计划修订 6）",
+  "cases": [
+    {
+      "name": "single-basic",
+      "events": [
+        {
+          "args": {
+            "changeId": "内部变更-1",
+            "taskId": "内部任务-86",
+            "profileId": "default@1",
+            "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "sourceRevision": {
+              "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "worktreeHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            },
+            "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "artifactDigest": null,
+            "environment": "local",
+            "evidenceRefs": [
+              "内部证据"
+            ],
+            "notApplicable": null,
+            "waiverRefs": null,
+            "incidentRef": null,
+            "actorRef": "agent:parity",
+            "sequence": 1,
+            "fromState": "",
+            "toState": "draft",
+            "previousEventHash": null
+          },
+          "opts": {
+            "uuidHex": "00000001",
+            "now": "2026-10-18T00:00:01+08:00"
+          },
+          "eventHash": "sha256:d8be51e8640b74094d5f68dd185a16756e18628d93327a5bf6733699f5432e3e"
+        }
+      ]
+    },
+    {
+      "name": "single-with-extra",
+      "events": [
+        {
+          "args": {
+            "changeId": "内部变更-1",
+            "taskId": "内部任务-86",
+            "profileId": "default@1",
+            "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "sourceRevision": {
+              "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "worktreeHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            },
+            "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "artifactDigest": null,
+            "environment": "local",
+            "evidenceRefs": [
+              "内部证据"
+            ],
+            "notApplicable": null,
+            "waiverRefs": null,
+            "incidentRef": null,
+            "actorRef": "agent:parity",
+            "sequence": 1,
+            "fromState": "",
+            "toState": "draft",
+            "previousEventHash": null,
+            "extra": {
+              "customNote": "中文",
+              "customList": [
+                1,
+                "x",
+                null
+              ]
+            }
+          },
+          "opts": {
+            "uuidHex": "00000002",
+            "now": "2026-10-18T00:00:02+08:00"
+          },
+          "eventHash": "sha256:17f77316e24e8c3504a0bd40c3f7c260f94003b2054dc141a7c7ba62a2846308"
+        }
+      ]
+    },
+    {
+      "name": "chain-3",
+      "events": [
+        {
+          "args": {
+            "changeId": "内部变更-1",
+            "taskId": "内部任务-86",
+            "profileId": "default@1",
+            "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "sourceRevision": {
+              "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "worktreeHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            },
+            "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "artifactDigest": null,
+            "environment": "local",
+            "evidenceRefs": [
+              "内部证据"
+            ],
+            "notApplicable": null,
+            "waiverRefs": null,
+            "incidentRef": null,
+            "actorRef": "agent:parity",
+            "sequence": 1,
+            "fromState": "",
+            "toState": "draft",
+            "previousEventHash": null
+          },
+          "opts": {
+            "uuidHex": "00000001",
+            "now": "2026-10-18T00:00:01+08:00"
+          },
+          "eventHash": "sha256:d8be51e8640b74094d5f68dd185a16756e18628d93327a5bf6733699f5432e3e"
+        },
+        {
+          "args": {
+            "changeId": "内部变更-1",
+            "taskId": "内部任务-86",
+            "profileId": "default@1",
+            "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "sourceRevision": {
+              "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "worktreeHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            },
+            "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "artifactDigest": null,
+            "environment": "local",
+            "evidenceRefs": [
+              "内部证据"
+            ],
+            "notApplicable": null,
+            "waiverRefs": null,
+            "incidentRef": null,
+            "actorRef": "agent:parity",
+            "sequence": 2,
+            "fromState": "draft",
+            "toState": "pr-open",
+            "previousEventHash": "sha256:d8be51e8640b74094d5f68dd185a16756e18628d93327a5bf6733699f5432e3e"
+          },
+          "opts": {
+            "uuidHex": "00000002",
+            "now": "2026-10-18T00:00:02+08:00"
+          },
+          "eventHash": "sha256:3a897f2dee1a4e2821fa4e61e96e583a25e61800f57dde89c044c1473896aded"
+        },
+        {
+          "args": {
+            "changeId": "内部变更-1",
+            "taskId": "内部任务-86",
+            "profileId": "default@1",
+            "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "sourceRevision": {
+              "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "worktreeHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            },
+            "commitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "artifactDigest": null,
+            "environment": "local",
+            "evidenceRefs": [
+              "内部证据"
+            ],
+            "notApplicable": null,
+            "waiverRefs": null,
+            "incidentRef": null,
+            "actorRef": "agent:parity",
+            "sequence": 3,
+            "fromState": "pr-open",
+            "toState": "merge-ready",
+            "previousEventHash": "sha256:3a897f2dee1a4e2821fa4e61e96e583a25e61800f57dde89c044c1473896aded"
+          },
+          "opts": {
+            "uuidHex": "00000003",
+            "now": "2026-10-18T00:00:03+08:00"
+          },
+          "eventHash": "sha256:92383c2e6a261184600efd2724969df5c5730507916911408a2f9da27be4d454"
+        }
+      ]
+    }
+  ]
+}

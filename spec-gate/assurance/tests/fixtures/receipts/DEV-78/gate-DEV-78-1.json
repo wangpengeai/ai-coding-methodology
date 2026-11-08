@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "gate-内部任务-78-1",
+  "kind": "gate",
+  "taskId": "内部任务-78",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "4958613b7414a789add4141a9f596bd057004fb8",
+      "worktreeHash": "sha256:d5faa192fa1a59d032c788bed3a8dffbb65f0b54285a96d47647f94b259823be"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:7e250bec071cd1e57897b97324c3a2177973b3842eabb3507d10bcb4480e34ae",
+      "documents": "116"
+    },
+    "planSha256": null,
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-17T20:01:32+08:00",
+  "status": "passed",
+  "verificationReceipt": "verification-内部任务-78-1",
+  "codeReviewReceipt": null,
+  "operationReceipt": "operation-内部任务-78-1",
+  "chainProfile": "operation",
+  "blockingCount": 0,
+  "warningCount": 0,
+  "diagnostics": [],
+  "riskLevel": "L1",
+  "integritySha256": "sha256:83db5609c21b67f1cc4f6cecf7a6df17a008ed51ce903a5ff224926499a2bc44"
+}

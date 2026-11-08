@@ -1,0 +1,6 @@
+{
+  "caseId": "FX-FAST-LEDGER-FAIL-001",
+  "category": "production-incident",
+  "input": "input/record.json",
+  "scenario": "台账写入失败：缓解已部署但收敛台账未成功持久化"
+}

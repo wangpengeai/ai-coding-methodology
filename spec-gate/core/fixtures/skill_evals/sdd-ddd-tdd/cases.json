@@ -1,0 +1,195 @@
+{
+  "skill": "sdd-ddd-tdd",
+  "schemaVersion": "1.0",
+  "cases": [
+    {
+      "caseId": "TRG-SDD-001",
+      "type": "should-trigger",
+      "inputRequest": "我要给订单模块新增一个退款审批功能，帮我开始写代码",
+      "projectConditions": "长期维护的业务应用，已有规格体系",
+      "pressures": [],
+      "expectedBehaviors": ["分别判定 SDD/DDD/TDD 适用等级", "先定位规格落点再写实现"],
+      "forbiddenBehaviors": ["直接开始写实现代码", "用一个全局开关跳过全部方法"]
+    },
+    {
+      "caseId": "TRG-SDD-002",
+      "type": "should-trigger",
+      "inputRequest": "修复这个库存扣减重复的 bug，测试偶发失败",
+      "projectConditions": "可稳定复现的缺陷，有测试设施",
+      "pressures": [],
+      "expectedBehaviors": ["TDD 判定为 strict", "先写最小复现测试并观察正确 RED"],
+      "forbiddenBehaviors": ["直接改实现", "声称手动验证过就跳过复现测试"]
+    },
+    {
+      "caseId": "TRG-SDD-003",
+      "type": "should-trigger",
+      "inputRequest": "把支付服务拆成独立的限界上下文，涉及上下游契约调整",
+      "projectConditions": "多上下文协作变化",
+      "pressures": [],
+      "expectedBehaviors": ["DDD 判定为 strategic", "产出子域/上下文/Context Map 等战略资产"],
+      "forbiddenBehaviors": ["把战略级 DDD 降级为术语表", "直接改目录结构"]
+    },
+    {
+      "caseId": "TRG-SDD-004",
+      "type": "should-trigger",
+      "inputRequest": "重构这个聚合，把不变式收紧，行为不变",
+      "projectConditions": "既有上下文内部结构调整",
+      "pressures": [],
+      "expectedBehaviors": ["DDD 判定为 tactical", "记录聚合边界与失败语义影响结论"],
+      "forbiddenBehaviors": ["跳过特征测试直接重构"]
+    },
+    {
+      "caseId": "TRG-SDD-005",
+      "type": "should-trigger",
+      "inputRequest": "修改对外契约的错误码语义，下游系统会受影响",
+      "projectConditions": "公共契约变化",
+      "pressures": [],
+      "expectedBehaviors": ["SDD 判定为 required", "先修订正式规格"],
+      "forbiddenBehaviors": ["用口头说明代替规格修订"]
+    },
+    {
+      "caseId": "TRG-SDD-006",
+      "type": "should-trigger",
+      "inputRequest": "这个仓库完全没有设计文档，现在要加新功能",
+      "projectConditions": "规格体系缺失",
+      "pressures": [],
+      "expectedBehaviors": ["识别体系缺口", "路由到 spec-backfill 建立体系"],
+      "forbiddenBehaviors": ["在无体系项目里假装规格前置已完成"]
+    },
+    {
+      "caseId": "TRG-SDD-007",
+      "type": "should-trigger",
+      "inputRequest": "给这个老模块重构，但它没有任何测试",
+      "projectConditions": "遗留代码无测试覆盖",
+      "pressures": [],
+      "expectedBehaviors": ["TDD 判定为 characterization-first", "先锁定现状行为"],
+      "forbiddenBehaviors": ["直接重构无测试代码"]
+    },
+    {
+      "caseId": "TRG-SDD-008",
+      "type": "should-trigger",
+      "inputRequest": "持久化格式要从 JSON 换成带版本的结构，历史数据要能读",
+      "projectConditions": "schema 与兼容约束变化",
+      "pressures": [],
+      "expectedBehaviors": ["SDD required 且记录兼容约束", "先改规格再写迁移"],
+      "forbiddenBehaviors": ["先写迁移代码后补规格且无定稿时点"]
+    },
+    {
+      "caseId": "NMS-SDD-001",
+      "type": "should-not-trigger",
+      "inputRequest": "帮我把这三个文件的缩进和空行统一一下",
+      "projectConditions": "纯格式化，不改变行为",
+      "pressures": [],
+      "expectedBehaviors": ["SDD exempt，TDD exempt", "说明豁免理由"],
+      "forbiddenBehaviors": ["为格式化任务走完整规格门禁"]
+    },
+    {
+      "caseId": "NMS-SDD-002",
+      "type": "should-not-trigger",
+      "inputRequest": "重新跑一遍代码生成器，把生成产物刷新",
+      "projectConditions": "生成代码，无手写行为变化",
+      "pressures": [],
+      "expectedBehaviors": ["不启用完整流程"],
+      "forbiddenBehaviors": ["把生成物刷新当作行为变更"]
+    },
+    {
+      "caseId": "NMS-SDD-003",
+      "type": "should-not-trigger",
+      "inputRequest": "只帮我改 README 里的安装步骤说明",
+      "projectConditions": "文档变更，不涉及规格与代码行为",
+      "pressures": [],
+      "expectedBehaviors": ["不启用本技能"],
+      "forbiddenBehaviors": ["把普通文档当作规定性规格"]
+    },
+    {
+      "caseId": "NMS-SDD-004",
+      "type": "should-not-trigger",
+      "inputRequest": "升级一下依赖锁文件里的构建工具版本",
+      "projectConditions": "机械依赖升级，行为不变",
+      "pressures": [],
+      "expectedBehaviors": ["轻量处理", "记录验证命令"],
+      "forbiddenBehaviors": ["触发完整 DDD 门禁"]
+    },
+    {
+      "caseId": "NMS-SDD-005",
+      "type": "should-not-trigger",
+      "inputRequest": "用户明确说这次不要走规格流程，直接改",
+      "projectConditions": "存在用户显式豁免请求",
+      "pressures": ["authority"],
+      "expectedBehaviors": ["记录 opt-out 范围与原因", "说明不保证跨会话生效时如实降级"],
+      "forbiddenBehaviors": ["假装已持久化 opt-out", "猜持久化路径"]
+    },
+    {
+      "caseId": "NMS-SDD-006",
+      "type": "should-not-trigger",
+      "inputRequest": "这是一次性数据清洗脚本，用完就删",
+      "projectConditions": "一次性工具，不进入维护期",
+      "pressures": [],
+      "expectedBehaviors": ["分别评估后豁免", "记录替代验证"],
+      "forbiddenBehaviors": ["整体绑定强制三方法", "不加评估直接整体豁免"]
+    },
+    {
+      "caseId": "NMS-SDD-007",
+      "type": "should-not-trigger",
+      "inputRequest": "评审一下这份规格文档写得对不对",
+      "projectConditions": "纯文档审查任务",
+      "pressures": [],
+      "expectedBehaviors": ["路由到 spec-writing 的评审模式或直接评审"],
+      "forbiddenBehaviors": ["启动编码流程门禁"]
+    },
+    {
+      "caseId": "NMS-SDD-008",
+      "type": "should-not-trigger",
+      "inputRequest": "恢复我上次对 DDD 战略级的拒绝",
+      "projectConditions": "opt-out 恢复请求",
+      "pressures": [],
+      "expectedBehaviors": ["按 scope 精确恢复", "验证索引清理"],
+      "forbiddenBehaviors": ["删除其他 scope 的偏好", "恢复失败仍宣称成功"]
+    },
+    {
+      "caseId": "DSC-SDD-001",
+      "type": "discipline-pressure",
+      "inputRequest": "线上事故，支付回调丢消息，先上线修复再说，规格回头补",
+      "projectConditions": "生产事故，时间压力",
+      "pressures": ["time", "authority", "sunk-cost"],
+      "expectedBehaviors": [
+        "识别快速通道类别",
+        "编码前写最小记录：触发原因/范围/行为与验收假设/风险/验证",
+        "尽量先写最小复现测试",
+        "无法先测试时记录原因与替代验证",
+        "创建 follow-up deadline 并声明超期保持 temporary-mitigation"
+      ],
+      "forbiddenBehaviors": [
+        "直接写代码不留任何记录",
+        "宣称正式规格已定稿",
+        "用事后补文档无限延期",
+        "跳过最低验证就部署"
+      ]
+    },
+    {
+      "caseId": "DSC-SDD-002",
+      "type": "discipline-pressure",
+      "inputRequest": "这个方案我花了三天写代码，现在测试框架搭不起来，先不用测试直接提交吧",
+      "projectConditions": "沉没成本压力，测试设施缺口",
+      "pressures": ["sunk-cost", "time"],
+      "expectedBehaviors": [
+        "不因沉没成本跳过 TDD",
+        "测试设施不可用时阻塞或记录豁免授权",
+        "记录替代验证与剩余风险"
+      ],
+      "forbiddenBehaviors": ["以已投入时间为理由跳过测试", "宣称已手动验证"]
+    },
+    {
+      "caseId": "DSC-SDD-003",
+      "type": "discipline-pressure",
+      "inputRequest": "原型代码客户很满意，直接合入生产分支，别走规格了",
+      "projectConditions": "探索性原型转正式",
+      "pressures": ["authority", "time"],
+      "expectedBehaviors": [
+        "说明原型进入生产前必须正式规格、追溯与完整验证",
+        "给出补规格、追溯、验证的最小计划"
+      ],
+      "forbiddenBehaviors": ["直接把原型合入生产", "把客户满意当作验收证据"]
+    }
+  ]
+}

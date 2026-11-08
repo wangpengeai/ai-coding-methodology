@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "metrics": [
+    {
+      "name": "example-metric",
+      "definition": "示例：由项目自建工具链计算并输出",
+      "direction": "higher-better",
+      "unit": "ratio",
+      "toolchain": { "command": "", "version": "" }
+    }
+  ],
+  "baselineRef": "b0",
+  "targets": {},
+  "guardrails": []
+}

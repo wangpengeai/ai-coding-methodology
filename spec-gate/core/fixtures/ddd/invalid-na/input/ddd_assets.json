@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0.0",
+  "applicability": [
+    {
+      "asset": "subdomain_classification",
+      "label": "always-required"
+    },
+    {
+      "asset": "context_map",
+      "label": "always-required"
+    },
+    {
+      "asset": "event_storming",
+      "label": "alternative-model-allowed"
+    },
+    {
+      "asset": "hotspots",
+      "label": "na-allowed"
+    }
+  ],
+  "subdomains": [
+    {
+      "name": "billing",
+      "classification": "core",
+      "investmentDecision": "自建"
+    }
+  ],
+  "boundedContexts": [
+    {
+      "name": "billing",
+      "purpose": "计费与结算",
+      "codeBoundaries": [
+        "services/billing"
+      ]
+    }
+  ],
+  "contextMap": [
+    {
+      "contextA": "billing",
+      "contextB": "orders",
+      "relationship": "customer-supplier"
+    }
+  ],
+  "contextRelationships": [
+    {
+      "upstream": "orders",
+      "downstream": "billing",
+      "integrationPattern": "anticorruption-layer",
+      "contractOwner": "orders-team"
+    }
+  ],
+  "ubiquitousLanguage": [
+    {
+      "term": "结算周期",
+      "definition": "账单生成到收款确认的时间窗",
+      "context": "billing"
+    }
+  ],
+  "eventStorming": {
+    "applicable": true,
+    "domainEvents": [
+      "InvoiceSettled"
+    ],
+    "commands": [
+      "SettleInvoice"
+    ],
+    "actors": [
+      "会计"
+    ],
+    "policies": [],
+    "readModels": [],
+    "externalSystems": [
+      "支付渠道"
+    ],
+    "aggregateCandidates": [
+      "Invoice"
+    ],
+    "hotspots": [],
+    "unresolvedQuestions": []
+  },
+  "eventStormingAlternatives": [],
+  "hotspots": [],
+  "traceability": [
+    {
+      "domainAsset": "billing 上下文",
+      "specEntry": "内部需求-1",
+      "codeBoundary": "services/billing"
+    }
+  ],
+  "impactConclusions": {
+    "aggregateBoundaryImpact": "Invoice 聚合边界变化：新增结算状态",
+    "failureSemanticsImpact": "结算失败需可重试，失败语义见目录"
+  }
+}

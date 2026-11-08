@@ -1,0 +1,10 @@
+{
+  "expectedSuppressedScopes": [
+    "all",
+    "sdd",
+    "ddd",
+    "ddd-strategic",
+    "tdd"
+  ],
+  "expectedRuleIds": []
+}

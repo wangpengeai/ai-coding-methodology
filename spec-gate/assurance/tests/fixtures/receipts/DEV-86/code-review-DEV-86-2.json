@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "code-review-内部任务-86-2",
+  "kind": "code-review",
+  "taskId": "内部任务-86",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "7f561ac17a870a103d58c0b44e5c990ecf24b02c",
+      "worktreeHash": "sha256:34aa5c220e0f69d7ca6f630bd279cff9205f86f8474e7c950d6d16c1ed29459b"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:2ca928daffc8474385e8fa11273d493d2493a75bf9d615dbc04e1cc180cfddec",
+      "documents": "117"
+    },
+    "planSha256": {
+      "path": "内部计划",
+      "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
+    },
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-18T11:58:45+08:00",
+  "status": "passed",
+  "verificationReceipt": "verification-内部任务-86-7",
+  "evidenceProfile": "full",
+  "summary": "三维终审重签（提交后）：3 blocking+非阻塞全处置；全量回归绿",
+  "reviewInstances": 3,
+  "reviewMode": "three-dim",
+  "integritySha256": "sha256:8851cd64fda257bb8c6432b109254b8a5c5898ae8da5647efd33f0bb3181b865"
+}

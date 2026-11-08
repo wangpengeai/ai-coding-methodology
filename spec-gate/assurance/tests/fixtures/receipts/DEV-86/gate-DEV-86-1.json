@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "gate-内部任务-86-1",
+  "kind": "gate",
+  "taskId": "内部任务-86",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "0b3b2a9ddb3907675090ac0bceb42701b08ad512",
+      "worktreeHash": "sha256:34aa5c220e0f69d7ca6f630bd279cff9205f86f8474e7c950d6d16c1ed29459b"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:1fd39154a55b8d69e61eccf10e761fa14d7d69996cb1c91fde22c8fa5aa5f4fe",
+      "documents": "117"
+    },
+    "planSha256": {
+      "path": "内部计划",
+      "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
+    },
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-18T11:57:47+08:00",
+  "status": "passed",
+  "verificationReceipt": "verification-内部任务-86-6",
+  "codeReviewReceipt": "code-review-内部任务-86-1",
+  "operationReceipt": null,
+  "chainProfile": "dev",
+  "blockingCount": 0,
+  "warningCount": 0,
+  "diagnostics": [],
+  "draftSha256": "sha256:178d9b84161b0bc7296c5b095c8e102a12ad492808e293d965aaf9356cd788c3",
+  "integritySha256": "sha256:297dfa9f5e4bcc5b35dad7d52202d8922a6032026b74e80590bf03bda1fd8405"
+}

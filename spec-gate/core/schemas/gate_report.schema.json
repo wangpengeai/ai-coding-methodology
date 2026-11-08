@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.gate-report",
+  "title": "Gate report evidence contract",
+  "description": "统一过程证据报告。任何门禁结论都必须引用稳定 ruleId 并附证据；不得写入敏感信息。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "taskId": { "type": "string" },
+    "generatedAt": { "type": "string" },
+    "finalStatus": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked", "temporary-mitigation"]
+    },
+    "applicability": {
+      "type": "object",
+      "properties": {
+        "sdd": { "type": "string", "enum": ["required", "lightweight", "exempt"] },
+        "ddd": { "type": "string", "enum": ["strategic", "tactical", "not-applicable"] },
+        "tdd": { "type": "string", "enum": ["strict", "characterization-first", "exempt"] },
+        "reasons": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["sdd", "ddd", "tdd", "reasons"]
+    },
+    "preferences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["opt-out", "ddd-level", "explicit-enable"] },
+          "scope": { "type": "string" },
+          "sourceMechanism": { "type": "string" },
+          "verifiedByReadBack": { "type": "boolean" }
+        },
+        "required": ["kind", "scope", "sourceMechanism", "verifiedByReadBack"]
+      }
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string", "enum": ["satisfied", "partial", "missing", "not-applicable"] },
+          "gapAction": { "type": "string" }
+        },
+        "required": ["name", "status"]
+      }
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ruleId": { "type": "string", "pattern": "^RULE-[A-Z]+-\\d{3}$" },
+          "status": {
+            "type": "string",
+            "enum": ["passed", "failed", "not-applicable", "waived", "unverified"]
+          },
+          "checkMethod": { "type": "string", "minLength": 1 },
+          "evidenceReferences": { "type": "array", "items": { "type": "string" } },
+          "failureAction": { "type": "string", "minLength": 1 }
+        },
+        "required": ["ruleId", "status", "checkMethod", "evidenceReferences", "failureAction"]
+      }
+    },
+    "artifactsChanged": { "type": "array", "items": { "type": "string" } },
+    "domainChanges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "context": { "type": "string" },
+          "asset": { "type": "string" },
+          "change": { "type": "string" }
+        },
+        "required": ["context", "asset", "change"]
+      }
+    },
+    "tddCycles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "redClassification": {
+            "type": "string",
+            "enum": ["behavior-assertion", "expected-compile-gap", "test-defect", "environment-failure"]
+          },
+          "selectionHash": { "type": "string" },
+          "redEvidence": { "$ref": "command_evidence.schema.json" },
+          "greenEvidence": { "$ref": "command_evidence.schema.json" },
+          "refactorEvidence": { "$ref": "command_evidence.schema.json" },
+          "testsChangedAfterRed": { "type": "boolean" },
+          "redReestablished": { "type": "boolean" }
+        },
+        "required": ["redClassification", "selectionHash", "redEvidence", "greenEvidence"]
+      }
+    },
+    "validationRuns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "validator": { "type": "string" },
+          "mode": { "type": "string", "enum": ["template", "draft", "baseline", "suite"] },
+          "exitCode": { "type": "integer" },
+          "blockingDiagnostics": { "type": "integer" }
+        },
+        "required": ["validator", "mode", "exitCode"]
+      }
+    },
+    "confirmations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "checkpoint": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "confirmed", "rejected", "not-required"]
+          },
+          "authoritySource": { "type": "string" }
+        },
+        "required": ["checkpoint", "status"]
+      }
+    },
+    "waivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ruleId": { "type": "string" },
+          "status": { "type": "string", "enum": ["active", "expired", "revoked"] },
+          "authoritySource": { "type": "string" },
+          "scope": { "type": "string" },
+          "substituteVerification": { "type": "string" },
+          "residualRisk": { "type": "string" }
+        },
+        "required": ["ruleId", "status", "authoritySource"]
+      }
+    },
+    "unverifiedItems": { "type": "array", "items": { "type": "string" } },
+    "openItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^OPEN-\\d+$" },
+          "status": { "type": "string", "enum": ["open", "resolved", "accepted-risk"] },
+          "blocking": { "type": "boolean" }
+        },
+        "required": ["id", "status", "blocking"]
+      }
+    },
+    "residualRisks": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": [
+    "schemaVersion",
+    "taskId",
+    "generatedAt",
+    "finalStatus",
+    "applicability",
+    "preferences",
+    "prerequisites",
+    "gates",
+    "artifactsChanged",
+    "domainChanges",
+    "tddCycles",
+    "validationRuns",
+    "confirmations",
+    "waivers",
+    "unverifiedItems",
+    "openItems",
+    "residualRisks"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.1.0",
+  "interfaces": [
+    {
+      "id": "IF-Order-1",
+      "kind": "external",
+      "ownerModule": "order-api",
+      "consumerModules": [],
+      "operations": [
+        "POST /orders -> OrderReceipt"
+      ],
+      "errorSemantics": [
+        "ORD-409 状态冲突；幂等键重放返回原结果"
+      ],
+      "lifecycle": "active",
+      "version": "2",
+      "compatPolicy": "strict-backward",
+      "contractArtifacts": [
+        {
+          "artifactType": "openapi",
+          "path": "contracts/order-api.yaml",
+          "contentHash": "sha256:aa11",
+          "driftCheckCommand": "py tools/check_contract.py contracts/order-api.yaml"
+        }
+      ],
+      "tracesTo": [
+        "FR-Order-3",
+        "R-12"
+      ]
+    },
+    {
+      "id": "IF-Order-2",
+      "kind": "inter-module",
+      "ownerModule": "order-core",
+      "consumerModules": [
+        "billing",
+        "shipping"
+      ],
+      "operations": [
+        "reserveStock(orderId, sku[], deadline) -> Reservation"
+      ],
+      "errorSemantics": [
+        "RES-404 无可用库存；调用方必须补偿回滚"
+      ],
+      "lifecycle": "proposed",
+      "version": "1-draft",
+      "compatPolicy": "rolling",
+      "tracesTo": [
+        "R-13"
+      ]
+    }
+  ],
+  "interfaceRegistry": {
+    "entries": [
+      {
+        "interfaceId": "IF-Order-1",
+        "specLocation": "modules/order/spec.md#if-order-1",
+        "ownerModule": "order-api",
+        "lifecycle": "active",
+        "version": "2",
+        "lastChangeRef": "内部任务-77"
+      },
+      {
+        "interfaceId": "IF-Order-2",
+        "specLocation": "modules/order/spec.md#if-order-2",
+        "ownerModule": "order-core",
+        "lifecycle": "proposed",
+        "version": "1-draft",
+        "lastChangeRef": "内部任务-77"
+      }
+    ],
+    "retiredIds": []
+  }
+}

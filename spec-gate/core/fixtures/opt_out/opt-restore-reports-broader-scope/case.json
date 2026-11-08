@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-OPT-RESTORE-001",
+  "input": "input/records.json",
+  "restoreScope": "sdd"
+}

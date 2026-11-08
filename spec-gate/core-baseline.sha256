@@ -1,0 +1,383 @@
+# core-baseline 变更记录（内部规则-9 例外条款，内部模块-7 分册 2026-09-12 回写）
+# 内部变更-1: validator/run_acceptance.py AC-PLUG-003 身份断言由硬编码 "sdd-methodology" 参数化为
+#        「清单 name 与插件根目录名一致」（与 内部未决-1 命名裁决 spec-gate 对齐）；其余 249 文件未改。
+#
+# 内部变更-2: manifest.json 同步刷新 run_acceptance.py 条目的 sha256（内部变更-1 的登记式跟进）。
+# 内部变更-4: 移除开发期生成器 validator/tools/gen_backfill_templates.py（内部规则-9 例外条款②），manifest.json 同步删除该条目；取代 内部变更-3 的加固方案。
+# 内部变更-5: validate_specs.py 追加 plan 模式参数与分发（--mode plan --plan，内部模块-7 Task 4 / 内部决策-1 / 内部规则-5），
+#        仅参数/分发追加，既有 template/draft/baseline/suite 行为未改；manifest.json 同步刷新该条目 sha256（版本 1.0.0→1.1.0）。
+#        新增文件（非基线改动）：validator/core/plan_check.py、validator/tests/test_plan_check.py、validator/tests/fixtures/plans/*.md。
+# 内部变更-6: validate_specs.py suite 模式追加 /gate plan 节聚合（build_plan_section，内部模块-7 Task 5 / 内部规则-11 / T-M7-2 / 内部接口-1），
+#        plan 诊断只进 plan 节、不计入顶层计数，既有 template/draft/baseline 行为未改；manifest.json 同步刷新该条目 sha256（版本保持 1.1.0）。
+#        新增文件（非基线改动）：validator/tests/test_gate_plan_section.py。
+# 内部变更-7: 基线过滤器排除运行态目录（.mimosa/、__pycache__/）；.mimosa 为宿主扫描器会话残留，已从 core 移除。
+# 内部变更-8: tests/test_cli.py 与 tests/test_capture_evidence.py 平台适配（Python 3.9 兼容：
+#        write_text(newline=)→Path.open(newline=)；被包装命令 py -3→sys.executable），
+#        仅测试代码，校验器行为未改；manifest.json 无此二文件条目。
+# 内部变更-9: 基线哈希语义由「Windows CRLF 工作树」改为「仓库 LF 内容」统一重算（255 条 +
+#        manifest.json 36 条 publicAssets 同步刷新），并配套 .gitattributes 强制 eol=lf；
+#        同时将误跟踪的 validator/{core,tests}/__pycache__ 移出版本控制（基线过滤器本就排除）。
+# 内部变更-10: 开发测试套件解除安装布局依赖——run_acceptance.py AC-PLUG-003 身份断言
+#        接受宿主缓存布局 <插件名>/<版本>/（父目录名=清单名）；tests/test_plan_check.py
+#        改自包含临时项目（对齐 test_gate_plan_section 模式），不再读开发仓库 .sdd/。
+#        测试可在仓库、市场源、宿主缓存三种布局下全绿；manifest.json 同步刷新 run_acceptance.py 条目。
+# 内部变更-11: RULE-SPEC-003 执行语义修正（2026-09-20 使用反馈三批 内部任务-USAGEFB3-1，坑1）——
+#        validate_specs.py check_gt：「细化 G-Tn」短语与 [G-Tn] 方括号引用不计主编号（引用非声明），
+#        仅裸文本出现计主编号；documentType∈{global-sequence,traceability-matrix}（config 主源/frontmatter 兜底）
+#        豁免唯一性（聚合罗列多编号是总表本职）；core/traceability.py 移除「G-T 细化一致性」节
+#        （文档内频率推断主编号无锚，多目标细化合法化后该推断必误报），RULE-SPEC-003 执法单点收敛 check_gt；
+#        实现向规则注册表条文对齐（条文只禁「各模块另起主编号」，waiverPolicy 不变，无新 ruleId/无条目改写）；
+#        tests/test_traceability.py 守卫组翻转（多细化/方括号引用通过、双裸主编号阻断、注册表豁免、变体仍阻断）。
+# 内部变更-12: suite 配置登记面（同批，坑4）——schemas/suite_config.schema.json 增 documents[].note（可选 string）
+#        与顶层 exemptions[]（{path,reason,ref}，收窄/排除受检文档的裁决记录，纯登记面无执行行为）；
+#        validate_specs.py 增 validate_suite_config_shape（坏形态 ConfigError 退 2，含与 documents 重复矛盾诊断）；
+#        tools/sdd_init.py SUITE_CONFIG_TEMPLATE 增 exemptions 缺省键 + hint 扩展；新增 tests/test_suite_config.py。
+# 内部变更-13: boundaries 配置契约接线（同批，坑2）——core/boundaries.py 增 validate_boundary_rules
+#        （契约=schemas/project_config.schema.json，报错自带合法形态样例）；tools/sdd_check.py 坏形态退 2
+#        （含 problems 清单）；tools/sdd_init.py validate_config 接线（exit 1 + problems）；
+#        tests/test_boundaries.py 与 tests/test_project_tools.py 扩展；manifest.json 同步刷新四条目
+#        （validate-specs 1.1.0→1.2.0、suite-config/sdd-init/sdd-check 1.0.0→1.1.0）。
+# 内部变更-14: plan 校验编号收集面增 architecture 型文档的 ADR 标题锚（2026-10-10 内部任务-29，
+#        内部任务-103 P6，内部规则-9 例外条款④）——core/plan_check.py 增 ARCHITECTURE_TYPES 与
+#        ARCH_ADR_HEADING_RE（^#{2,6}+空白+ADR-NNN 标题行、跳围栏代码块——三维评审收紧处置；
+#        正文行文提及/无空格形态/围栏示例不收集，防宽正则误收），_known_ids 单遍分流
+#        （architecture 型只按标题锚收集：不加 stem、不调全文收集）；
+#        五型权威文档收集面不变（ADR 权威登记仍以 adr/adr-registry 型优先）；
+#        tests/test_plan_check.py 增 ArchitectureAdrAnchorTest 四用例（标题锚解析/行文不解析/
+#        stem 与他编号不入集/无空格与围栏不解析）。触发实录：内部任务-103 后端仓 ADR 权威全在
+#        architecture.md §8，计划 specRefs 引 ADR-NNN 恒产悬空 blocking。
+# 内部变更-15: interface.template.md §7 工件行由退化占位行改写为可照抄示例行 + 格式说明下沉表下注释
+#        （2026-10-14 内部任务-69 P3，内部规则-9 例外条款⑤，消费项目 INF-11 移交 P3）——原行四格填列说明
+#        （类型枚举/相对路径/冻结基线哈希），建档者无法据模板推导路径须仓库相对、哈希须 sha256: 前缀
+#        与位数；新示例行含前缀与 16-64 位指引（与 内部任务-69 P2 放宽同批一致），说明句下沉表格下方；
+#        manifest.json 同步刷新该条目 sha256（版本 1.1.0→1.2.0）。
+# s1 阶段评审处置（内部任务-USAGEFB3-1，2026-09-20，随本批哈希刷新）：恢复 traceability.py typing Set
+#        导入（删除不彻底的悬空注解）；boundaries deny/allow 假值（""/False/0）由 or [] 改 get(key, [])
+#        （假值标量不再静默归一为合法空数组，堵 deny 规则静默失效）；validate_suite_config_shape
+#        documents 非对象条目记 problem 指认 + exemptions 非数组并入单一错误流 + suite_root 解析
+#        单点化（main 先算传入）；check_gt 引用遮蔽收敛单 alternation 模式；sdd_check 形态校验前置
+#        于 suite/ledger 重计算；test_traceability 守卫组表驱动收敛、test_boundaries 增假值用例、
+#        test_suite_config 删死参数。三维 9 发现全处置（≥80 协议）。
+# 内部变更-16.1（2026-10-19 内部任务-151 阶段4 W2.0）：rule_registry.json 新增 RULE-PLAN-001/002 与 PLAN 域
+#        （F-6；既有规则文本未改），manifest registry.rules 版本 1.1.0→1.2.0 并刷新哈希；
+#        本批刷新 ./schemas/rule_registry.json、./manifest.json 与两个 Python 测试期望面文件
+#        （./validator/tests/helpers.py、./validator/tests/test_rule_registry_contract.py：域表增 PLAN）。
+#        内部变更-16a 的 .mjs 加性登记与 内部变更-16b 的 .py 减性删除分别在 W7.3/W8.4。
+# 内部变更-16a（2026-10-19 内部任务-151 阶段4 W7.3）：加性登记 44 个 .mjs（core 11＋validator 2＋tools 3＋tests 28），
+#        保留 43 个 .py 与全部资产行；刷新 manifest/host-example/rule_registry 行；条目 256→300。
+#        新增条目以独立块附在文件末尾（块内路径序），与既有条目段并存；内部变更-16b 减性删除后未重排。
+# 内部变更-16b（2026-10-19 内部任务-151 阶段4 W8.4）：删除 43 个 .py 条目（11 core＋2 validator＋3 tools＋27 tests），
+#        300→257 条；44 个 .mjs 与全部资产行保留。.py 生产面已由 W8.3 删除。
+# 内部变更-16c（2026-10-19 内部任务-151 阶段4 W8.7）：阶段复审 2 处置后刷新 23 行（5 core＋2 validator＋3 tools
+#        ＋12 tests＋manifest，共 23 行），条目仍 257 条。变更面：F-2 脱敏补强（Authorization/Basic/短旗标/
+#        sk- 反例）、datetime 3.9 文法对齐、plan 缺 config 退 2、path 形态工具错误、DDD 四类资产、
+#        core-runner/post-tool-use 失败文案、CLI symlink 主模块判定、死代码清理与回归锚补齐。
+# 内部变更-16d（2026-10-19 内部任务-151 终审）：刷新 14 行（3 core＋1 validator＋3 tools＋5 tests＋helpers
+#        ＋manifest），条目仍 257 条。变更面：sdd_check 空 --now 拒绝、脱敏短旗标粘连与 sk-ant、
+#        null 配置值不再静默归一、datetime 偏移秒小数、opt-out naive/aware 按 UTC、helpers 死导出删除。
+# 内部变更-17（2026-10-20 内部任务-162）：win32 平台适配两测试文件（仅测试代码，校验器行为未改；manifest.json
+#        无此二文件条目）——test_capture_evidence 的 workingDirectory 断言对齐实现契约（POSIX 分隔符
+#        归一形态，capture_evidence.mjs 写入处）；test_fixture_execution 的族过滤改用 familyOf
+#        （原 '/opt_out/' 字面量在 win32 反斜杠路径下零命中）。条目仍 257 条。
+# 内部变更-18（2026-10-20 内部任务-164）：root POSIX 平台适配 test_boundaries 一测试文件（仅测试代码，校验器行为
+#        未改）——「不可读文件 warning」子断言从 symlink 大用例拆出为独立用例并加 win32/root 跳过守卫
+#        （POSIX root 持 CAP_DAC_OVERRIDE，chmod 000 不构成读障碍；守卫形态与同文件 F-1 用例及
+#        workflow incident-store 只读账本用例同款）。条目仍 257 条。
+# 内部变更-19（2026-10-20 内部任务-176）：RULE-SPEC-002 代码语境排除＋缩进围栏识别（消费仓 FIX-13 缺陷报告修复，
+#        内部模块-7 分册 内部规则-9 例外条款⑦）——validate_specs.mjs checkPlaceholders 非模板模式跳过围栏行并逐
+#        match 排除行内反引号 span（引用/示例的 {{...}} 生成器记法不再误报；模板模式保持全文扫描，
+#        F-13 小写扫描意图保留）；markdown.mjs OPEN_FENCE_RE 行首约束 {0,3} 放宽为 [ \t]*（对齐 0.9.1
+#        strip() 语义，列表项内缩进围栏恢复识别；F-12 的 ~~~ 与关闭长度≥开启长度规则保留）并新增
+#        inlineCodeSpans 导出（同长配对；前导未配对 run 不阻断后续配对）。manifest.json validate-specs
+#        条目刷新（1.3.2→1.4.0）。刷新四行（validate_内部规格），条目仍 257 条。
+# 内部变更-20（2026-10-23 内部任务-218 / 内部未决-174 / 用户裁决「清理注释」）：pycompat.mjs 文件头注释
+#        「Python 本尊」→「Python 原实现（内部决策-051 历史口径）」（仅注释，代码零变更；内部模块-3 废止语义默认
+#        blocking 切换前清理 P0a 面外残余 1 条）。刷新 pycompat.mjs 一行，条目仍 257 条。
+#        旧值 ac1dc1ba675c5ececc403de5215dd6b1dd355782c43371a81437e317a0e26a85 → 新值见对应条目。
+# 内部变更-21（2026-10-26 内部任务-237 / 内部未决-120/138/152/178；授权＝用户批准方案一「C＝core CHG 批视为立项授权」，计划 sha256:092492528cce3f643ce27e80d3c7d93eb4f270c131665f00525d26a2f2c92e60）：
+#        core 解冻面五类：①markdown.mjs 表格列数守卫（内部未决-120）②traceability.mjs 行正则/A 行反向追溯/
+#        module-volume 存量 warning 分档（内部未决-138）③validate_specs.mjs 触发口径与 checkGt 行内 span 遮蔽、
+#        plan_check.mjs/fixtures.mjs 围栏跳过（内部未决-152①③④）④两模板锁定方式列对齐 内部决策-060（内部未决-178）＋
+#        task_ledger 模板列数缺陷修复；⑤manifest.json 四 publicAssets 版本/哈希刷新（validate-specs 1.5.0；
+#        三模板 1.1.0/1.1.0/1.1.1）。刷新 13 行（5 代码＋4 测试＋3 模板＋manifest），条目仍 257 条；基线重登后 core 内不得再改动。
+# 内部变更-22（2026-10-27 内部任务-242 / 内部未决-204/211；§四/§三/§二/§一 全量收口批；授权＝用户 2026-10-27 指令「继续处理遗留项」＋范围确认多选全部四项；
+#        计划 sha256:408f5cfc705513344cf10a4cacdbbdc64f3edca5c5671b683df3e356e5ce243c）：
+#        core 解冻面：①capture_evidence.mjs 分离态大小写敏感短旗标脱敏＋信号退出码负号映射（C01/C08）
+#        ②validate_specs.mjs 受检文件 fs/解码错误分层（fs→工具错误 2；UnicodeDecodeError→RULE-PACK-002 内容诊断）（C02）
+#        ③boundaries.mjs SOURCE_EXTENSIONS 收录 .mjs/.cjs（C03）④sdd_check.mjs 工具错误全覆盖
+#        （proc.error/信号/status=null/未知退出码→退 2）（C04/E03）⑤markdown.mjs 分隔行列数守卫＋fenceRanges 与
+#        pySplitLines 同源切行（C05/C06）⑥traceability.mjs acceptTableLines 跳过围栏 A 行（C07）
+#        ⑦run_acceptance.mjs AC-PLUG-003 非 ZCode 布局 plugin.manifest.json 回退（C09）⑧sdd_init --dry-run 零写盘＋
+#        未知旗标退 2（内部未决-204）⑨tests/branch-coverage.test.mjs 证伪力补强（C10/内部未决-211①-④）。
+#        manifest.json 五 publicAssets 刷新（validate-specs 1.5.0→1.5.1、run-acceptance 1.2.1→1.2.2、
+#        sdd-init 1.2.2→1.2.3、sdd-check 1.2.2→1.2.3、capture-evidence 1.1.2→1.1.3）。
+#        刷新 10 行（9 代码/测试＋manifest），条目仍 257 条；**步骤 16 安全复审处置后再登 3 行**
+#        （capture_evidence 脱敏别名/S-3＋criteria S-4、sdd_check S-7 工具错误、run_acceptance S-8 名称校验；S-2 锁释放/S-3 key 族/S-7/S-8 二次复核后再登 capture_evidence）＋manifest，
+#        累计 13 行，条目仍 257 条；基线重登后 core 内不得再改动。
+# 内部变更-23（2026-11-07 内部任务-347 批 B1 / 内部未决-152②⑤/141/142/143；授权＝内部计划（不随源码公开）
+#        sha256:385b261c…（plan-review 2 轮 independent 通过，r1 不通过 3 阻塞经修订闭合）＋用户「依次处理一、二、四节的条目」指令）：
+#        ①plan_check.mjs collectIdsFromText 围栏/行内代码排除（内部未决-152②，悬空引用漏报收口）②validate_specs.mjs checkTodo
+#        噪音词行内透明（内部未决-152⑤）③frontmatter.mjs 引号值剥离＋重复键 frontmatterError（内部未决-142）④migration_ledger
+#        schema 不可达 deprecated 分支删除＋phase_evidence 口径勘正（内部未决-143）⑤validationRoots 死字段声明面全清
+#        （内部未决-141：suite_config.schema/sdd_init/断言翻转）⑥markdown.mjs 增 maskInlineCodeSpans 单源（S1 门三维：
+#        İ/U+0130 小写变长 span 错位缺陷修复＋四消费点收敛）。manifest 四资产随批（validate-specs 1.5.2→1.5.5、
+#        sdd-init 1.2.4→1.2.5、suite-config 1.1.0→1.1.1、migration-ledger 1.0.0→1.0.1）。刷新 13 行，条目仍 257 条；
+#        基线重登后 core 内不得再改动（再变更须复跑重登）。
+f50e3d8c8e4003e963d2382699810e49bf9be05252790d27dd1830d357bc2361 *./fixtures/adr/adr-duplicate-id/case.json
+179737a752ae776984db80082748c9e8ea3a2abedde6d9a0139655a0588ab053 *./fixtures/adr/adr-duplicate-id/input/registry.json
+8616eaa8adb6930d21609873b5b963ee24f6fee1831624ca9e54eeab8a04be6c *./fixtures/adr/adr-duplicate-id/oracle.json
+22758870ce4a330f7fe09ffce92386eebd3c872df764a3ba15e64f4fc9b6c952 *./fixtures/adr/adr-low-unconfirmed-in-baseline/case.json
+c7a26d5ac276d57a01cb7cd6ce4f9f1068dfc75e20b2f0626381a73213652559 *./fixtures/adr/adr-low-unconfirmed-in-baseline/input/adr.json
+29c5761c6d3beba7772a0d4c3340935ac8df81d06f9010783997d2a2e4e7fc3a *./fixtures/adr/adr-low-unconfirmed-in-baseline/oracle.json
+4873e4d5a4fe4d88b564e385144aec8b1096769d9f2f1ec1723828165928f7ec *./fixtures/adr/adr-missing-selection-rationale/case.json
+7d9028353dc1aacd6922127c9b1d03e71c7ccc2ff4b7c3ec07ed1899d2226d9a *./fixtures/adr/adr-missing-selection-rationale/input/adr.json
+b4125e0f44322a482f9815e524f4bcd19a319debff2b6a021b737bc0c6982711 *./fixtures/adr/adr-missing-selection-rationale/oracle.json
+940a25cbe6a67cd428f5aff184f204efd87f315038566310c6aa43cebacfcc22 *./fixtures/adr/adr-retrofit-unmarked/case.json
+245c84ff8cde9a0f67fba04d8e7904e0ae931bb34e5e16bd80a6ad21867fceaa *./fixtures/adr/adr-retrofit-unmarked/input/adr.json
+29c5761c6d3beba7772a0d4c3340935ac8df81d06f9010783997d2a2e4e7fc3a *./fixtures/adr/adr-retrofit-unmarked/oracle.json
+75d99b6cd2084a7717f37c6bbb02fd7deffb6a7e72d37b644430dcae6b52adbc *./fixtures/adr/adr-valid-complete/case.json
+feb0d11d91003017f0144c95d33c84f7fdac3f9939fc760963da6a013dd3e492 *./fixtures/adr/adr-valid-complete/input/adr.json
+4d0d97a863f0a2699537253448271eba9983f273389888de4c7887e828a05c3e *./fixtures/adr/adr-valid-complete/oracle.json
+fd9082156493a7ce9d8de337b9e28e96998a7847dad641179cf372f720296b9b *./fixtures/ddd/event-storming-alternative/case.json
+c111e1d0b6b17055740dc956ce7298881712a082cfdd6c22e5563e23ebf56e6d *./fixtures/ddd/event-storming-alternative/input/ddd_assets.json
+4d0d97a863f0a2699537253448271eba9983f273389888de4c7887e828a05c3e *./fixtures/ddd/event-storming-alternative/oracle.json
+5a6e584aded1faa6ac29078fdb672aff603bacc177f42a16526e4994c1a68f5b *./fixtures/ddd/event-storming-alternative-missing/case.json
+1edb4ac9a2439523a4ded31c15262ab8755feb92908e770906def6cc8534e978 *./fixtures/ddd/event-storming-alternative-missing/input/ddd_assets.json
+12dd535530d39b924bd6cd7d3f5012c80bba5d6facbf982c914725d8a370e3e5 *./fixtures/ddd/event-storming-alternative-missing/oracle.json
+5439a69da55e561674fda20679da88488700f218125a8ed54d4677a852256a10 *./fixtures/ddd/invalid-na/case.json
+c3384b4a19a8b64424d31e64fc978525bcfc9e6ff9680f446967c3ec8eb7b3e1 *./fixtures/ddd/invalid-na/input/ddd_assets.json
+7ad97d36d8ad45e19f43a7b4eb4be3b71f25ce32de914ec4e2313c27acb3274b *./fixtures/ddd/invalid-na/oracle.json
+55f1f3c78fab5151985492cc11384bb901495a650cee191e5a01f722a9cb24a5 *./fixtures/ddd/strategic-missing-context-map/case.json
+f5d61c828b13a875e718c947d7c3d59f5cb539253e45e8a2bccd5bf4c2e7d682 *./fixtures/ddd/strategic-missing-context-map/input/ddd_assets.json
+c3789cfdda4c3e336537dee45d2a3feff1a9212b706c65d9f7ee5c2ce9865934 *./fixtures/ddd/strategic-missing-context-map/oracle.json
+1946adbf3f18b883b96bf151b9d4af96790b6c782e8f87285547ea0b1b6af1e8 *./fixtures/ddd/strategic-valid/case.json
+7b9bbf9e08cf6d45b7dda5d7d45a3d3e30d2e7c901a5b3c8c71d6d33a9599c2b *./fixtures/ddd/strategic-valid/input/ddd_assets.json
+4d0d97a863f0a2699537253448271eba9983f273389888de4c7887e828a05c3e *./fixtures/ddd/strategic-valid/oracle.json
+5af91d5bc15781f3de46ff24b4f87adfe62f6aee0cc56de73f3b1a22cfe52bb8 *./fixtures/ddd/tactical-missing-conclusions/case.json
+9bba877c693e17399321d88df9d0054c574b1561b6ccfa3d274787022f035736 *./fixtures/ddd/tactical-missing-conclusions/input/ddd_assets.json
+c89226dad39b911d3a73537381839dba774af55b94505869477f12b506d734c7 *./fixtures/ddd/tactical-missing-conclusions/oracle.json
+80a7eae4eb60e79cab4cdde291de38eaedec4d903716fe48816ab1e055fe0a65 *./fixtures/ddd/tactical-valid/case.json
+2ca88df7bf547558f5877fb49f074b31b4d0fd1b09bcc02af13121837cab4ddc *./fixtures/ddd/tactical-valid/input/ddd_assets.json
+4d0d97a863f0a2699537253448271eba9983f273389888de4c7887e828a05c3e *./fixtures/ddd/tactical-valid/oracle.json
+4db9394c5c8c7d2f684f6f3ec573bccd4b66328ac840e05e3d0aa2dfe3f73722 *./fixtures/fast_track/fast-deadline-expired/case.json
+1b6fc7475cd9f25d64ea9a1528149e024ba1a79cdeb278601f8d85dda0ccf005 *./fixtures/fast_track/fast-deadline-expired/input/ledger.json
+157bdf12f4ab763761f87f37e1de921a32440d5922033a157cdc93b86140af88 *./fixtures/fast_track/fast-deadline-expired/oracle.json
+21e6851f7336809dd3aa1bbea7ae91d450b06e12224624b5626da2cf15018fe3 *./fixtures/fast_track/fast-incident-minimal-record/case.json
+e2fb167b1afa9f956e44b38585a1c103ec8578c803a5c305934f734a896d38ab *./fixtures/fast_track/fast-incident-minimal-record/input/record.json
+86229bd61faa3beee4c3445882c490bdf13ec44f024d5a838844b33af64abbd9 *./fixtures/fast_track/fast-incident-minimal-record/oracle.json
+ff46aa389f90fc036b9458f963b3dcfc5c52b96891dc242ee24079f3a26e1100 *./fixtures/fast_track/fast-incident-no-repro-test/case.json
+bcb15ccb5ce4f05a3432ceef61bb1d34aba24a93f87a4e4d70a5221e29b16494 *./fixtures/fast_track/fast-incident-no-repro-test/input/record.json
+e72e01c2af035ac78ab2cd538d70f34da35310e0926bd0650c895924efd8e7c2 *./fixtures/fast_track/fast-incident-no-repro-test/oracle.json
+090a801104c2c62c35cf557b26b9c3f246d1b0702e214d0a92978425c75a47bb *./fixtures/fast_track/fast-ledger-write-failure/case.json
+ec851956bf6581c3d7763468b81b15a7afaeb3bc28545178b2d6adfa3104dfab *./fixtures/fast_track/fast-ledger-write-failure/input/record.json
+20d0baa4a8f7c19d1f669a22ff921337246e40deecdd012eb47202c407b13b15 *./fixtures/fast_track/fast-ledger-write-failure/oracle.json
+a88be380c6a3d686b8b6bdbd6e5cd8d7d5b3cef75103c47b1f7fd80ec278f729 *./fixtures/fast_track/fast-prototype-to-production/case.json
+0e3b48ab58e3c1db90de8354304edcd8fd0fb8662ba4e8e7f6fe24b259c30759 *./fixtures/fast_track/fast-prototype-to-production/input/promotion.json
+d8385af58fa94938647dcd1a2e50d693d40218e915c03e1b11288a7bd3a8d1a5 *./fixtures/fast_track/fast-prototype-to-production/oracle.json
+07d87e24b21e4aa32236b5502a3aae36e95b4d28a8a3d018ac559dc8d3a5f7e5 *./fixtures/interfaces/if-deprecated-missing-deadline/case.json
+aa2f9e9b6f709b52630e78a4fdcfd616bb6f39c46e741db548ec70d3f2035dad *./fixtures/interfaces/if-deprecated-missing-deadline/input/spec.json
+60d5653346354cb9338c561d627781c56e3d69a1795a7716f1776457bd638f3f *./fixtures/interfaces/if-deprecated-missing-deadline/oracle.json
+8f9459ae867489f04f320146fa0c1a01065e03db2dcfb77d879e6d5af3d9296e *./fixtures/interfaces/if-duplicate-id/case.json
+796c065155879bac0b11586b85de04f744b4328482343b934ac68683e44e9861 *./fixtures/interfaces/if-duplicate-id/input/spec.json
+10ea9b85303b41c8ac24fb74add88862594060b425a4232dd682ed188649455f *./fixtures/interfaces/if-duplicate-id/oracle.json
+16ab8d6e6d7c12d87ee3677a7aefec726a27d2bd69bb857777e2a6d2a683ddde *./fixtures/interfaces/if-external-contracts-warning/case.json
+fe4adc41f160fe4d82579d187e841a7c62a83dedf704ca04dbfc21911733c7aa *./fixtures/interfaces/if-external-contracts-warning/input/spec.json
+48d75b737f09b43340545352e137d8663f60ba8f4a00a85152fa8c5cc9294506 *./fixtures/interfaces/if-external-contracts-warning/oracle.json
+23fe33725376681dfcbec654e4cdcbad9c6bf6e1331613f569c9f33cfca0f18d *./fixtures/interfaces/if-intermodule-no-consumer/case.json
+931633a6ea6c74a49204dd042ec20b387e89a8f07101f8ebeb7c372fe8cdad1e *./fixtures/interfaces/if-intermodule-no-consumer/input/spec.json
+5d47ac9d07243eed9cde36fab707f33740d6b6959fe6aa37d721341c1cb33a97 *./fixtures/interfaces/if-intermodule-no-consumer/oracle.json
+6afd56627d911db9c00fcb2b95021d24c285ec5b69960529028706fdd738be30 *./fixtures/interfaces/if-invalid-lifecycle-value/case.json
+1c8ff8495f22a97d02a0e0a9168070c571cf29e3b40801af3f0b7cc87ffa3a48 *./fixtures/interfaces/if-invalid-lifecycle-value/input/spec.json
+60d5653346354cb9338c561d627781c56e3d69a1795a7716f1776457bd638f3f *./fixtures/interfaces/if-invalid-lifecycle-value/oracle.json
+f5e5898d826bb12094735b8b6e2d7ccab67d52081ed2fb7f652425bc32d5fbaf *./fixtures/interfaces/if-missing-required-fields/case.json
+1bd9b0a93338df8d5cfc37f3f4f010e30f3af67852dcfd63c18c34d82d7983a0 *./fixtures/interfaces/if-missing-required-fields/input/spec.json
+10ea9b85303b41c8ac24fb74add88862594060b425a4232dd682ed188649455f *./fixtures/interfaces/if-missing-required-fields/oracle.json
+3ab3c207c18fd6ac29b7905a9f4775e6bd4e7eedc6013960fe3d6894b7f8be22 *./fixtures/interfaces/if-registry-consistency-mismatch/case.json
+d42b681a04dc524d529fd8d5ab31be5c0bcab0aaf26e526d8ded202e2dfc2cf3 *./fixtures/interfaces/if-registry-consistency-mismatch/input/spec.json
+5d47ac9d07243eed9cde36fab707f33740d6b6959fe6aa37d721341c1cb33a97 *./fixtures/interfaces/if-registry-consistency-mismatch/oracle.json
+c50b835b2e2e524a639c420b15ee54794cd9801a58c8e9bfd227974277ede8f3 *./fixtures/interfaces/if-registry-duplicate-id/case.json
+73ca288be444d3c1e37aad3ba228b564e78fbb224f8aa754855fab5579918d35 *./fixtures/interfaces/if-registry-duplicate-id/input/registry.json
+60d5653346354cb9338c561d627781c56e3d69a1795a7716f1776457bd638f3f *./fixtures/interfaces/if-registry-duplicate-id/oracle.json
+0821747bfce8e041821a9078ece257956e3d03bc6bb475b49f1e0a1d6345d9fe *./fixtures/interfaces/if-registry-retired-reuse/case.json
+0cb5d6a8192cb8046c5ad971251fdcc158dc2476099c3fdd6ed3f9c7540e1425 *./fixtures/interfaces/if-registry-retired-reuse/input/registry.json
+60d5653346354cb9338c561d627781c56e3d69a1795a7716f1776457bd638f3f *./fixtures/interfaces/if-registry-retired-reuse/oracle.json
+d2f72b4d9bbde44f7cf20a119e6173efe7264b8c43687479902411887eb239f9 *./fixtures/interfaces/if-valid-complete/case.json
+05023b937a027b927d3e529448794f2f978ac3eb05c867fe59b3fea9fdf17bbd *./fixtures/interfaces/if-valid-complete/input/spec.json
+3738d044b106a2819d59232b9dd52c7fb4e5ed43df7fa35935cb0aeacb1b8b60 *./fixtures/interfaces/if-valid-complete/oracle.json
+08b065de3255260517a55ae8527615d76887032a17a5c5102e0e430845c714ce *./fixtures/migration/migration_ledger.json
+cabb587c6fa29f9afc3fe0e7d04af6beb0c231242e1c663e235198bc5001564c *./fixtures/open_items/open-accepted-risk-without-rationale/case.json
+f08a3d108762c64d4762dc9ba1be74f04865a8fa6e5018dcfd877f2e77f64bdc *./fixtures/open_items/open-accepted-risk-without-rationale/input/open_items.json
+297908c044240b1cc5dc1752ef9e0bcb2f98087321f93080b272dd829ae3de73 *./fixtures/open_items/open-accepted-risk-without-rationale/oracle.json
+40cf66dee51f8a4c4f9dc7250573c9f2a21769072d7731135239429f449d643c *./fixtures/open_items/open-blocking-in-baseline/case.json
+00c216288b3034f03af49de06aea194f2589f3e0317453c9f4d272f567fa8a4b *./fixtures/open_items/open-blocking-in-baseline/input/open_items.json
+01ecc59932ec9a3c36df3dca04b0874fd0b769d02f684055b9fbabe212239bbe *./fixtures/open_items/open-blocking-in-baseline/oracle.json
+256ee90c0eb713e8caa7eba005895f753feac004f492cab42c52ab17a60bb5ac *./fixtures/open_items/open-free-todo-rejected/case.json
+546994064b364c8068177ec73ba76952552f1c1fb5029d031a612d82d8fb30b0 *./fixtures/open_items/open-free-todo-rejected/input/document.md
+2b896e4db2ff23fafa9aa0df1cef40ce329bc6c982f8641f2c5d3d91c81fef47 *./fixtures/open_items/open-free-todo-rejected/oracle.json
+9c51264b51d0a94c109f7d3528c9ac3be12818882230a84f8275bf4dfd0cf73b *./fixtures/open_items/open-valid-draft/case.json
+858bd89fea6bb45c1c141069842e59d746155b44e2d5128a179435655e4092f2 *./fixtures/open_items/open-valid-draft/input/open_items.json
+4d0d97a863f0a2699537253448271eba9983f273389888de4c7887e828a05c3e *./fixtures/open_items/open-valid-draft/oracle.json
+ce145d58afd170b71a889abc425f7d7d803a28492989c93a85220596182fc0e1 *./fixtures/opt_out/opt-all-suppresses-ddd-strategic/case.json
+b20bcc92a1fce5bd472f0fc97e36eff3214abe798b5ea9dda3e0961802e42ef6 *./fixtures/opt_out/opt-all-suppresses-ddd-strategic/input/records.json
+0210d262591a44d727a73ab64b25d4eccf5e50b79346f79dfb61d09c68d37f11 *./fixtures/opt_out/opt-all-suppresses-ddd-strategic/oracle.json
+483f8b9362661fa38cafcba6e4fd612de97b9813235d76dbef1d824df226c95a *./fixtures/opt_out/opt-current-task-missing-taskid/case.json
+3d618e7e073dd626459d941027ce6f4efd9c2bfc54729f0cca7c21e3f0f4a3c0 *./fixtures/opt_out/opt-current-task-missing-taskid/input/records.json
+c83a4bc9ac4df84d4fc860d72ae3fb6c5d1816d1261d5844624c1405024b86ce *./fixtures/opt_out/opt-current-task-missing-taskid/oracle.json
+08e749433aeecfd760f143dd73e4501c160447df11991261b53f5446d33c0c16 *./fixtures/opt_out/opt-expired-ignored/case.json
+eb986c7b4071be0c1b2f1b25fa907f397ba86ca1e66ce5c7745a6e380312b918 *./fixtures/opt_out/opt-expired-ignored/input/records.json
+e7ba2095db10564ac642b6ec88ec276368fa8138f2207379f18c0f42ed066db8 *./fixtures/opt_out/opt-expired-ignored/oracle.json
+d1c024768c4edebf74d56f657c9fc8f5a43f512f2f9709954d2bbe80b1f52d7c *./fixtures/opt_out/opt-explicit-enable-overrides/case.json
+b20bcc92a1fce5bd472f0fc97e36eff3214abe798b5ea9dda3e0961802e42ef6 *./fixtures/opt_out/opt-explicit-enable-overrides/input/records.json
+baa908d360c8bb93ba55f575fee62e1190383acaf3c6cf1c2d6dcd807804f048 *./fixtures/opt_out/opt-explicit-enable-overrides/oracle.json
+c9e307ca1b332f379d5b9e044fe913edd5422fdf5d5971300fd21ab68318ce42 *./fixtures/opt_out/opt-restore-reports-broader-scope/case.json
+2402bbf55cd72adbd78dde3add9214c6f1e9ae2aa55f23af0c2fbeaa235f0660 *./fixtures/opt_out/opt-restore-reports-broader-scope/input/records.json
+fd0eb6ed6b798c53c84f58cf735bd3bf2ab4c6511dfeb227dbee721cfe704437 *./fixtures/opt_out/opt-restore-reports-broader-scope/oracle.json
+11931444894a505227fe35a1e1f02949b5f3f72c3225b0b3c6e0b9b2a5e853dc *./fixtures/phases/phase_evidence.json
+cb7e1dd0680f5645d8b70f7124b6193000ea09175502ca596b3d3ad0b87a1c20 *./fixtures/skill_evals/baseline_results.json
+c5eb0ae9e7aa8540631c206f2e0c65d62f8d453fe60fb44b1d748bc7eab8228b *./fixtures/skill_evals/old_skill_results.json
+6d5a72dd0cda0583af5db42ca9c9efa11a52a7c866495c83bd30ab6ee1d50bdb *./fixtures/skill_evals/routing_results.json
+a609ebbe6e59d0640e48f9a3c7f68a5b1637c6e2109401b16b8fac9b555ba28e *./fixtures/skill_evals/sdd-ddd-tdd/cases.json
+afa7d548bb20fbe5e3b0b9e78257cb440a0fdad04abb33aae95e5261e55cbc4e *./fixtures/skill_evals/sdd-ddd-tdd/results.json
+264348211e6762cf58bd22c925b97c7e297983ccbc17f34720ec82da7dec90c1 *./fixtures/skill_evals/spec-backfill/cases.json
+92724232c5e432e60accfeffbd2c5e3573e789271527d2f76447800a1b9f62a0 *./fixtures/skill_evals/spec-backfill/results.json
+7267ba3ba9774d872eedbbb7949c0b1f6e77ebc0ea08582370a32fe40939056d *./fixtures/skill_evals/spec-writing/cases.json
+552900dd0f547a236ad3bd3ec762acbb928c965ca804688b95261cfcb46faa7f *./fixtures/skill_evals/spec-writing/results.json
+581e873bfab7457e5f467c25fcb916e24ee971572aed992d08fb9e4cb2b1a792 *./fixtures/task_ledger/ledger-converged-incomplete/case.json
+000f566bd1c9ca33ef8e4d9e2f739cfe98bd365e0336b52fb03c2e3c9473223f *./fixtures/task_ledger/ledger-converged-incomplete/input/ledger.json
+df44220650e64a57645ab7c70a800712f771ca6d038734de08f2369f34b13360 *./fixtures/task_ledger/ledger-converged-incomplete/oracle.json
+209513b4d65c38d2f883dc252b49a72c34f3f12879839376a04c98185cf09503 *./fixtures/task_ledger/ledger-missing-fields/case.json
+ecc4c42d71634e406aacad9b8b5387601955823f931a23f78c18fa789c0481c9 *./fixtures/task_ledger/ledger-missing-fields/input/ledger.json
+658ecb54d192c8e28e355d3724e3bb989a82de767321c6ef3a4c27049a706bac *./fixtures/task_ledger/ledger-missing-fields/oracle.json
+a7cc3740f586c4caf1a0f8a038cfd012dbda127daefda9e90a29ff596151e347 *./fixtures/task_ledger/ledger-overdue/case.json
+b9a858827d2da8945893c12cd8a55df6b25598711a72031957478e02583f5864 *./fixtures/task_ledger/ledger-overdue/input/ledger.json
+b722965a276cb90dfda3306958cabf54ac830bee7e07254fa16656ba2a7183ee *./fixtures/task_ledger/ledger-overdue/oracle.json
+bd0a6e8f36a385f3e9cd6bb91aa3f4c469ed690157ab9654f090dd5dec231ee0 *./fixtures/task_ledger/ledger-valid/case.json
+95d82de8a24a8474975b0576c5b52c8f078444b96ef1035cd64b816925922bfd *./fixtures/task_ledger/ledger-valid/input/ledger.json
+4d0d97a863f0a2699537253448271eba9983f273389888de4c7887e828a05c3e *./fixtures/task_ledger/ledger-valid/oracle.json
+c09711334d1425ac5c44ac5f55ad975298a674104bb62fbb27cfb6bc923c7668 *./fixtures/task_ledger/ledger-with-optouts/case.json
+5a47fc81522a4c7704b16efce3998a80eadf968c41559b29970aff55542c97a4 *./fixtures/task_ledger/ledger-with-optouts/input/ledger.json
+658ecb54d192c8e28e355d3724e3bb989a82de767321c6ef3a4c27049a706bac *./fixtures/task_ledger/ledger-with-optouts/oracle.json
+22e9788f1bee6f08a42c26d95c51e2373b80f4331557af8485a201611c7b8b4c *./host-examples/README.md
+fa72717cb3ff29fdecea8539d44028b6109e500d69986a8952daeafd9bf052ec *./host-examples/zcode.md
+fe846cd6e50723c70d5df1e32f5667006a2e9eabf7b999bcda2ff329366c6305 *./manifest.json
+5c7d749df0c3202089d1c492aa499389aa72582a49995449aa97f02ed6550835 *./schemas/acceptance_report.schema.json
+030340918aac96dc5fd0c871ac6eb64e71ebca21dee7ccbdd1f9c7d4bb489079 *./schemas/adr.schema.json
+47ae7ee33b55b8da249af9f5e6048cbd925c915f396e22b7277bdc68ccad9ba8 *./schemas/adr_registry.schema.json
+5c722bacf1bca48d1423c6e3d7b47ae04d4f648ecad84c5a072ed0f7f93cdaf2 *./schemas/command_evidence.schema.json
+b1296b2163f6194d20270f4d475362c12de5ea40e3c53b829f3f35ce87064007 *./schemas/ddd_assets.schema.json
+348021cff9898f888de2654b089e3bb278f7ed2f2d83c841ab3c347202ebb7e1 *./schemas/gate_report.schema.json
+8d80349aed49218c6100ecbe9b687570a215dfed836a69cb7f3e87c270425b83 *./schemas/interface_registry.schema.json
+f83baee515971271c85490bf67ba39c0bae7e0133d8ae2207acb7d09b4236afd *./schemas/manifest.schema.json
+c4cced8415b0b96d482cfb49520962155b66cc62cb3b4db250f7cec6883b2bca *./schemas/migration_ledger.schema.json
+8499dbccc67a606004f94592843da34c0cc88a3e986a41581810565cfb9cc32c *./schemas/open_item.schema.json
+6ae09db867603793f2347181509cdaa32ff016e80133c00235ba9eece83581df *./schemas/opt_out.schema.json
+b70229bf1f6014e31c7e89e0353c2cbb6c0787625892e6fd4a3cf09b1fbec4aa *./schemas/project_config.schema.json
+f39b811f25d5a6bbe737dcfcd87797e5192e47585405abe7aab14e302362d047 *./schemas/route_case.schema.json
+4abe2cee2a278ab7858385a24ce72093a83180f9b252530e31a395627e0d8f7f *./schemas/rule_registry.json
+a0e4dc030f344890f569a9ea700e18e9f1b66713dc21c4173fba7afd79400a08 *./schemas/rule_registry.schema.json
+b00a6632c0704d8eb99058600f9b202e13a09adff0209912638329eabecfdec5 *./schemas/specification.schema.json
+6fe60c5068314aa8da675eeea2d008fbdb5ac24fa3aad5a06f3f55042473d25a *./schemas/suite_config.schema.json
+bb884610989728e39f79ab32ced106d80f876cf5dbfd63daf5b111a7ce18c728 *./schemas/task_ledger.schema.json
+cdde303ddca7aa5fc4ebfe895e5aba3a84d274bcb34058f4f16bafb1c012d9cb *./templates/atomic/acceptance_trace.template.md
+8dfb6a11dd37b32a3cbd9366f01813a90d83411b5c155ee6c60b092d2f4aa449 *./templates/atomic/adr.template.md
+d319d82dd58eea9df2a4cc5e52a44931433d9ff1d515907b996cd117ff2dcdc9 *./templates/atomic/adr_registry.template.md
+f71bd2501652f886f95713ebdfdb91de83b419ab9c7326979e20a7f8ed66e357 *./templates/atomic/assumptions.template.md
+7795be09b80ad8a6eeb4ac6079720055fbc976f8eb06268ce033ba8f19521f6b *./templates/atomic/boundaries.template.md
+86d8d448920c83d9677c94cbbde56c5496eb1b2630ae167a554e24e6558f4385 *./templates/atomic/change_impact.template.md
+ca756fd0596e8ea5dd8786b9dad486bbc0a3ffe59fa716936e7187465c3c0464 *./templates/atomic/design_decision.template.md
+060d8bfc43bb63a7bfa1f98330f1339f5ad6bf88f7765c3d854ae0bc56ef758d *./templates/atomic/external_contract.template.md
+0e3552ba407602130462592302d9cb024f92b4e9719a844a1e4aff8f6ffc965c *./templates/atomic/global_sequence.template.md
+4ddc705974f5680546931bf278e8962636fe06c90d3dab6430dd54ab8de83d21 *./templates/atomic/glossary.template.md
+824b5798e24a41b6dfc0b663bf640e4adb84d7a6cff42f1ccbf9f7905f6b6a95 *./templates/atomic/interface.template.md
+1a5f53b1fcd680f653ec912b4f15999075f754e10d6893fc42a02995cf13366d *./templates/atomic/interface_registry.template.md
+5af3e76de2099130d24e6dc4781453d929ce222f4e166e90b0e80696111eb0bf *./templates/atomic/minimal_change_draft.template.md
+12f81a74c81edcadadc42d558a57a43befa0f76ef9becba5bc00a438e465bbb1 *./templates/atomic/module_requirement.template.md
+a4f20aa2e4e060a7345d4416d028f5a4801523f460637717e41da19f87dc23c0 *./templates/atomic/module_sequence.template.md
+ae164b3c8b2d4c7d7faab266f9e8fe659450bae86a9cf6c49fccd1b289f641a3 *./templates/atomic/open_items.template.md
+9d91eb50e3c4f8190dae9eff394fcaa4dfff1b3a816341914ee2c45352627a0f *./templates/atomic/requirements.template.md
+df9bbf293ac504bcd3c24c3986202d3c974c627944605500ed990641ec52370f *./templates/atomic/review_disposition.template.md
+9a56b23aa263a0a353ea570eab10db437d68a184e40a4a72ebedb09aed00c963 *./templates/atomic/task_ledger.template.md
+ddae9d8bd040ab78958f0842d2fc7d58b40e63ea337301cc9e0515dd514437fa *./templates/backfill/backfill_completion_report.template.md
+0b74644c9cbbe23bc17feb55deb29e8d78d4b3a5223de7796bafc66a91a6a0f8 *./templates/backfill/checkpoint_a_package.template.md
+3f8e7ff4edb7ac64681f3f9534136622bfd8cc3fc5d58bcc8a448157db55df53 *./templates/backfill/checkpoint_b_package.template.md
+53b0b82a5c943b97a21484e1edf2deb5f0366996e2627cdb5542d012eab40004 *./templates/backfill/checkpoint_c_package.template.md
+d3c2d6d0f9158e530e472e0d0a7b710099e1538f6784e761507007caec8de9c6 *./templates/backfill/domain_design_package.template.md
+eb1b136667e294dbad105158e290893e5891f546a819f5f31f1d91fa55f03965 *./templates/backfill/error_code_catalog.template.md
+01c48ff4d220a5635a4f38962a41a5647fed79a82008b3652b4131abc291a944 *./templates/backfill/event_catalog.template.md
+4d9b968633b5377dc98291bfd46800cd6cf378bd6d868bd771e48db8bb9d6500 *./templates/backfill/evidence_ledger.template.md
+20f26c955f820b7b84e2050d33e62bb93ffd3a43cd4388c8316ca0a8546e5b91 *./templates/backfill/high_level_design.template.md
+397200e12cb370110c5f9b5033e074589430b8f03a5b83a58bf9ab261abb6507 *./templates/backfill/module_index.template.md
+c46e66e239c0365a3e93b0f5c37288187c042afb1c18040c083c6dfc338b7bbc *./templates/backfill/module_volume.template.md
+694efc024932b8408f80176ff54d8471d978d478b8fa9448e746002cf0f2bc3f *./templates/backfill/program_design_governance.template.md
+7a2c640d2827e09a54204580ca323472874dcd36b1eefaf89dbd1da2e9d7a5a1 *./templates/backfill/requirements_baseline.template.md
+b85e149b2b45121446782847bca9685dc908a04674a6affb76e95e723b5cb4b2 *./templates/backfill/traceability_matrix.template.md
+4da7723592c0a77ffdf48d9ac20f87c0537f123fa4ddc832648acd89c81950f5 *./templates/ddd/aggregate_invariants.template.md
+c0f0fddc517e661cf78f92b2b563c9bf375d95e8a9d0c0f48b718b9878c0b390 *./templates/ddd/applicability_matrix.template.md
+7a9f52a2b369b94b1b0d5b3b9e9dc46e6177c40e9d2991676c106247c73d8a67 *./templates/ddd/bounded_context_catalog.template.md
+e9f578c5ee15876968eae80c0cd15b971d4cb818dbb4cfd5a071e9998068e9d6 *./templates/ddd/context_map.template.md
+57b8c97df994623270303e77441d19bc86faa969611fcc2ba5ec33bc635693cb *./templates/ddd/context_relationships.template.md
+2607ae2d7e2cca8fd8242f26c260aa0a88fde657cc238030ec82405764fc5099 *./templates/ddd/ddd_completion_report.template.md
+3d5fb8054432b1cfa9063605c7848c3a910f829bb0495b955b3bd09aa1acb5f2 *./templates/ddd/decision_table.template.md
+eced82be75331f131ed69aeac9e5ad911081dab1a1e29e0904c9b8bb945752bb *./templates/ddd/domain_event_catalog.template.md
+81bbe0c71f66530629fcc2e51c3d331290f33eeaf2b81fbb12054388e376151e *./templates/ddd/domain_service_decisions.template.md
+768886a69069faea4358694a0e163414bb8f5efb3e29e06ece96db2431a63dfa *./templates/ddd/domain_traceability.template.md
+5eebb6f95176497ff13d72082be91c8612f3a539071ea1033eca21063c2f2194 *./templates/ddd/entity_value_object_catalog.template.md
+62e51c4162f781ab4c2f7e7b7f6fe3dfff205289d6b3efc263cdb7ccad2b2955 *./templates/ddd/event_storming.template.md
+6682b6151b3b93e7d57272530c43ccb24b3e83c89e25812e5f4da42aa7ff7067 *./templates/ddd/event_timeline.template.md
+a0a5b5e936e543bc034d500acd810d956fbb96e77415dd155ec28d97d5efb70d *./templates/ddd/example_mapping.template.md
+28476fd051d1f82f601b51c70aa2aad758b614b108c3c8abded95803c4cd63e9 *./templates/ddd/failure_semantics.template.md
+a185c3aa92ddb7410dec470d53917fdb7fed76d0c1fac3960597e98d58d51a01 *./templates/ddd/hotspots_and_conflicts.template.md
+d616428426a81fc3faea450f7b633590875f91d25094ba2427038c36992fbd2f *./templates/ddd/repository_port_boundaries.template.md
+b6b7d39ad8629582bbac12dc4bfaaf7e7173e31a5baccda0333c5a37ad8f2010 *./templates/ddd/subdomain_classification.template.md
+dba084c92901917a3a468969778632d88a385ee9d04fb753a92d202d78ac92bd *./templates/ddd/ubiquitous_language.template.md
+9057b020c9f54b8b3e021abde43fd4bc9191f784a0741c7fa430499f00161947 *./templates/reports/delivery_report.template.md
+6765ac0222337a4fbb81f7e5dfd280a18e8709d155a0e902523457b6c9c5ce22 *./templates/reports/gate_report.template.json
+de5882165fa8974bdfac985f781af5da371c7958336e55fc7ad5849d2fcc9c2e *./validator/tests/fixtures/plans/dangling-ref.md
+b53fd4d01f53db22b3d340f6b4da448e0484a5b8f06577cd0530046f510f6909 *./validator/tests/fixtures/plans/missing-acceptance.md
+0628d68df3149e46feb1f0f9401c76981c706c686ad0c4c514df1c89b2a06d76 *./validator/tests/fixtures/plans/no-refs.md
+4b79fdb8edf385426c46ecd180b828bc023c90e4cf2d775c6c0a049a0c17bff8 *./validator/tests/fixtures/plans/valid.md
+# 内部变更-16a 新增 .mjs（44 条，路径序）
+4c87448ab333bc9cb48a9ff1f316590f46b582688317e7471f9ae247dd1987cf *./validator/core/boundaries.mjs
+b3924867c76e892cf13e1bdd790fbfa38eadd13ef919d54e845bebbf3ebaa6a7 *./validator/core/diagnostics.mjs
+a9833d082fcda781f179dbf6c1237301410a33d338902b5f6faac15a1cd171c8 *./validator/core/fixtures.mjs
+25a3c6bba523257a96acdbaf16be5984ddbc6270b137b5ad286c756f0cb8bf7c *./validator/core/frontmatter.mjs
+d9757e585fb1b44a1c66ea6a97f546575ffe2effc3150640e2dbe906b3b927da *./validator/core/markdown.mjs
+6339827d6dcf3f97de1e035d1f9f04e51f631088b12e64963252a792ba0e4d8b *./validator/core/optout.mjs
+fd7472049fa62d1d9afd6f1ed5cb5fa899ea14c535108728e01604d0ce020af7 *./validator/core/paths.mjs
+aff3d890308b64a8a4a5aa0174ae2be013e83982eb5bf05e8ec958c994707a07 *./validator/core/plan_check.mjs
+fea90f1d8b425374e9ad6a138b69d312631b89ee1b33a4ca5d6667b25591e0e9 *./validator/core/pycompat.mjs
+b4c08d504e2a6d76b38c8a17866a46a3ee1ffb7d47fb3aa6bae26735c6f4e71e *./validator/core/structured.mjs
+c847a3075e77e6b4ccc916c672718b5528f778980283585de8ac6aa265258bdf *./validator/core/traceability.mjs
+eced7c75f74417525bdd723addfc80626d40e78322a679fe4da6f35874f99abd *./validator/run_acceptance.mjs
+6e4e4638507357433d7d5d295e62ca2733464c8d5a6248746e4c68c72d93449b *./validator/tests/helpers.mjs
+93a8b6d2a8461802c5211614b007f67e848bff33496d3592ce1ed47f585c550b *./validator/tests/test_acceptance_runner.test.mjs
+9415772252e3c0ed149c2a260629a7d1c1ff920b1e99f2e36df3047034f2de27 *./validator/tests/test_adr_contract.test.mjs
+b02efca7547cdd5bd758fa20dd70ac128d3c506da79e4655790d8aaa4480e033 *./validator/tests/test_backfill_templates.test.mjs
+952f3597ca06320d53f0ccf7e686b4e2b80bb04b101fa1327013831a5c03c5dd *./validator/tests/test_boundaries.test.mjs
+1b7b41290fb06427919b6e23a4cc09edf161339ebea436e0b0c1b75c16824b4e *./validator/tests/test_capture_evidence.test.mjs
+fa9c5e4b791eddb98a101b41d787b0b3a3234a830f14834e6bc54ce732d37de0 *./validator/tests/test_cli.test.mjs
+fed0d7d844385227a1e3f86d803b88592a067fe6beb8fc3ba007e67326560119 *./validator/tests/test_ddd_contract.test.mjs
+78df8c53c0993ff18e1422d5274d8360c2f1b4e3f0580ff63b5a39da3ae31adf *./validator/tests/test_fixture_execution.test.mjs
+0c729dded5db0dfd510a5e6d0a5fa9cc692388fb1065ce3d2a2215a445c39868 *./validator/tests/test_gate_plan_section.test.mjs
+3e43bbec07cdfd6eb7a5fe42accc3f45cc4ed82331cd556a492ad4ff5a55046f *./validator/tests/test_gate_report_contract.test.mjs
+19c960123730cc630c7f4b2a87a427adae4d9fd915a75f11dec4c2dcf8419134 *./validator/tests/test_interface_contract.test.mjs
+607c147b0b1b05276b4f9b062dbeabdd899601a62c795a2b09268a1e699c5096 *./validator/tests/test_manifest_contract.test.mjs
+8c8c1ddba25e83e2e7a5a3c7f16e737170ceab3295a53bef96564525e45a094a *./validator/tests/test_open_item_contract.test.mjs
+3542db80cee61f5ca3bdd7b78495f300e31227e959642f9b09acdaff0b71b26f *./validator/tests/test_opt_out_contract.test.mjs
+9584fe1ad89719958642894087f30519e196836012eac210d09048523e6aab57 *./validator/tests/test_paths.test.mjs
+e9105e633fd933eecfe346507732dcad130857776952bc150060909a4798a9a2 *./validator/tests/test_plan_check.test.mjs
+f630a10916a8578a3a65be57c28e2b13d92e1e6e14d49ee6ccfd081bc237ffa7 *./validator/tests/test_plugin_commands.test.mjs
+6808c2f5d4eb8ffba3138f8fd34e886a42a8fe3c27acc6c473baffd7d0be77bd *./validator/tests/test_plugin_hooks.test.mjs
+493e81949dfb0689a696603c6009a6e95e341eac81ff3bd715f4e38cf6ccd6cc *./validator/tests/test_project_config_contract.test.mjs
+bf8c39e64b87b525b8b139e905e696a451b6cc07b004ba7627701d90289b5238 *./validator/tests/test_project_tools.test.mjs
+468a350449e8cb57720f6437b2db779ad305ec4df1bc8101d4e4c9e175f0c69e *./validator/tests/test_pycompat.test.mjs
+a5b102b28618832db244944b8809d779128f7dae93bfc1637eb0ed994a293d12 *./validator/tests/test_read_only.test.mjs
+d91a0ef3eed91fc97510a4fbb8aec7936519a2b20f126e372ba8c82482e84291 *./validator/tests/test_rule_registry_contract.test.mjs
+e483d5181e832c9fb3da14b0b9f4607b33a0ed35d01fbc12af07e849f5e9724f *./validator/tests/test_specification_contract.test.mjs
+52bb9f380650bbf3da0041ea8bc1fe57accd9aa3504d744742314721636ed1bb *./validator/tests/test_suite_config.test.mjs
+f6d707514254af3e1c8353bcf919997656ee9267bd0f2bd32db35945d2a3d2a6 *./validator/tests/test_task_ledger_contract.test.mjs
+ebfd12701790882fa5812910b414506e04b7b22301546113ed0429fd6e4eea88 *./validator/tests/test_traceability.test.mjs
+6cfdac4aa52d482d835468b251a4b1de54540f46f19973daa709496501dfc5bd *./validator/tools/capture_evidence.mjs
+50120775ef46d8d0dee6d73ec74d9f5cad7b238511564ddc23740233e722db02 *./validator/tools/sdd_check.mjs
+0ffc7a9586a79ff73424e9faaf1a32e7ecd9084c772f8ddf4c66b211f3a7682a *./validator/tools/sdd_init.mjs
+8434e2e87512788cf1339b8e5e97ac4aad77dbcfa506c22b9d3e164cf9d43d27 *./validator/validate_specs.mjs

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "tasks": [
+    {
+      "id": "内部任务-1",
+      "title": "支付回调修复",
+      "status": "temporary-mitigation",
+      "createdAt": "2026-09-01T00:00:00+00:00",
+      "fastTrack": true,
+      "deadline": "2026-09-10T00:00:00+00:00",
+      "owner": "dev-a",
+      "pendingSpec": "回调契约修订",
+      "pendingTests": "补单幂等测试",
+      "pendingTrace": "G-T 登记",
+      "finalStatus": "temporary-mitigation",
+      "gateReportRef": "内部治理状态"
+    }
+  ],
+  "optOuts": [],
+  "openItems": []
+}

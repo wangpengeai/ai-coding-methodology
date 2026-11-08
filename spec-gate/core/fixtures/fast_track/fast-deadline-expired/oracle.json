@@ -1,0 +1,7 @@
+{
+  "expectedRuleIds": [
+    "RULE-FAST-002"
+  ],
+  "expectedStatus": "temporary-mitigation",
+  "blocksNonUrgentChanges": true
+}

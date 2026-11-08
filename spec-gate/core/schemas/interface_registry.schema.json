@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.interface-registry",
+  "title": "Interface registry",
+  "description": "全局接口索引：编号唯一且不可复用；条目与分册 IF 资产双向一致（RULE-IF-002）；deprecated 条目必须带 deprecationDeadline。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "interfaceId": { "type": "string", "pattern": "^IF-[A-Za-z0-9]+-\\d+$" },
+          "specLocation": { "type": "string", "minLength": 1 },
+          "ownerModule": { "type": "string", "minLength": 1 },
+          "consumerModules": { "type": "array", "items": { "type": "string" } },
+          "lifecycle": { "type": "string", "enum": ["proposed", "active", "deprecated", "retired"] },
+          "version": { "type": "string", "minLength": 1 },
+          "lastChangeRef": { "type": "string" },
+          "deprecationDeadline": { "type": ["string", "null"] }
+        },
+        "required": ["interfaceId", "specLocation", "ownerModule", "lifecycle", "version"]
+      }
+    },
+    "retiredIds": { "type": "array", "items": { "type": "string", "pattern": "^IF-[A-Za-z0-9]+-\\d+$" } }
+  },
+  "required": ["schemaVersion", "entries", "retiredIds"]
+}

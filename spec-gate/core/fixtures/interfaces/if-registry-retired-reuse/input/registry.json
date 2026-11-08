@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.1.0",
+  "entries": [
+    {
+      "interfaceId": "IF-Order-1",
+      "specLocation": "modules/order/spec.md#if-order-1",
+      "ownerModule": "order-api",
+      "lifecycle": "active",
+      "version": "2",
+      "lastChangeRef": "内部任务-77"
+    }
+  ],
+  "retiredIds": [
+    "IF-Order-1"
+  ]
+}

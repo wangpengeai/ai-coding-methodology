@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "deliveryKind": "plugin",
+  "distribution": "artifact",
+  "scm": {"provider": "github", "prRequired": true, "requiredChecks": ["ci"]},
+  "environments": ["development", "staging", "production"],
+  "exposure": "internal",
+  "dataClasses": ["none"],
+  "secretUse": "build-time",
+  "persistentState": "files",
+  "availabilityTier": "best-effort",
+  "recoveryTier": "backup-restore",
+  "acceptanceAuthority": "owner",
+  "evidenceMaxAgeHours": {"pr-ci": 48, "observation": 24},
+  "vulnerabilityPolicy": {"critical": "block", "high": "block"},
+  "requiredApprovals": ["owner"]
+}

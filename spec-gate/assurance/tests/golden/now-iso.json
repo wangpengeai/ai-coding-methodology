@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "spec-gate/assurance/tests/gen_golden.py",
+  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（内部决策-051 D4，内部任务-60 计划评审 F7）",
+  "formatRegex": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$",
+  "cases": [
+    {
+      "name": "fixed-plus8",
+      "value": "2026-01-02T03:04:05+08:00"
+    },
+    {
+      "name": "fixed-utc",
+      "value": "2026-12-31T23:59:59+00:00"
+    },
+    {
+      "name": "fixed-minus5",
+      "value": "2000-06-15T12:00:00-05:00"
+    },
+    {
+      "name": "fixed-plus530",
+      "value": "2026-02-28T23:59:59+05:30"
+    }
+  ]
+}

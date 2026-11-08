@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.opt-out",
+  "title": "Flow preference opt-out record",
+  "description": "宿主无关。current-task 记录必须带 taskId 且不得写入跨任务事实源；写入后必须读回验证。all 包含 sdd/ddd/tdd；ddd 包含 ddd-strategic；当前任务显式启用高于持久 opt-out。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "enum": ["all", "sdd", "ddd", "ddd-strategic", "tdd"] },
+    "mode": { "type": "string", "enum": ["persistent", "current-task"] },
+    "reason": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "minLength": 1 },
+    "createdBy": { "type": "string", "minLength": 1 },
+    "taskId": { "type": ["string", "null"] },
+    "expiresAt": { "type": ["string", "null"] },
+    "sourceMechanism": { "type": "string", "minLength": 1 }
+  },
+  "required": ["schemaVersion", "scope", "mode", "reason", "createdAt", "createdBy", "sourceMechanism"],
+  "if": { "properties": { "mode": { "const": "current-task" } } },
+  "then": { "required": ["taskId"], "properties": { "taskId": { "type": "string", "minLength": 1 } } }
+}

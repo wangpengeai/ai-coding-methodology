@@ -1,0 +1,6 @@
+{
+  "expectedRuleIds": [
+    "RULE-FAST-003"
+  ],
+  "allowMerge": false
+}

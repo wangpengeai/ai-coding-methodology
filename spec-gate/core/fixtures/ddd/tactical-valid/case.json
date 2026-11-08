@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-DDD-TACTICAL-VALID-001",
+  "input": "input/ddd_assets.json",
+  "level": "tactical"
+}

@@ -1,0 +1,13 @@
+team-governance
+Copyright (c) 2026 wangp (MIT)
+
+本插件为原创实现（内部决策-012..015），未复制第三方插件文本。
+
+设计启发致谢（自愿性质，非派生关系）：
+- superpowers（MIT, Jesse Vincent）——skill 作为"给模型读的代码"的组织思想
+- gstack（MIT, Garry Tan）——hook 护栏与 fail-open 姿态
+- sdd-methodology（自有资产）——canonical 哈希与 schema 契约模式
+
+跨语言镜像声明：
+- scripts/lib/canonical-json.mjs 与 spec-gate/assurance/common.mjs 语义同源（canonical-json-v1；内部任务-256 镜像改指现行实现）
+- scripts/lib/redaction.mjs 与 spec-gate/assurance/production_model.mjs **五类**秘密模式同族（redaction-v1；内部任务-256：镜像改指现行实现，且与 assurance 有意分叉——assurance 侧保留七类）

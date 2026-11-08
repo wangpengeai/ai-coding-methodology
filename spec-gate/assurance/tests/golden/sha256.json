@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "spec-gate/assurance/tests/gen_golden.py",
+  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（内部决策-051 D4，内部任务-60 计划评审 F7）",
+  "cases": [
+    {
+      "name": "empty",
+      "kind": "text",
+      "text": "",
+      "expectedHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedPrefix": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "abc",
+      "kind": "text",
+      "text": "abc",
+      "expectedHex": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+      "expectedPrefix": "sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    },
+    {
+      "name": "chinese",
+      "kind": "text",
+      "text": "中文值",
+      "expectedHex": "be197616ecc0081ad9403f0e224b2d764da74f2c178dd3b83ca8b97ad523fca5",
+      "expectedPrefix": "sha256:be197616ecc0081ad9403f0e224b2d764da74f2c178dd3b83ca8b97ad523fca5"
+    },
+    {
+      "name": "utf8-mixed",
+      "kind": "text",
+      "text": "a\t中😀b",
+      "expectedHex": "9e5ccc409d5dce348a86bdfb1d35377f20d3242b65daba9413e7efe5b8d6d585",
+      "expectedPrefix": "sha256:9e5ccc409d5dce348a86bdfb1d35377f20d3242b65daba9413e7efe5b8d6d585"
+    },
+    {
+      "name": "repeat-1mib",
+      "kind": "repeat",
+      "unit": "ab",
+      "count": 524288,
+      "expectedHex": "bd5752c813c18b2d94697f3689e108951cdaed1c9849ce8a58059ec67abddd2a",
+      "expectedPrefix": "sha256:bd5752c813c18b2d94697f3689e108951cdaed1c9849ce8a58059ec67abddd2a"
+    },
+    {
+      "name": "repeat-1mib-plus2",
+      "kind": "repeat",
+      "unit": "ab",
+      "count": 524289,
+      "expectedHex": "7eeae41718f7d1e6697b182f6c6c439d1ba48348a19972e3450c514c48179acc",
+      "expectedPrefix": "sha256:7eeae41718f7d1e6697b182f6c6c439d1ba48348a19972e3450c514c48179acc"
+    }
+  ]
+}

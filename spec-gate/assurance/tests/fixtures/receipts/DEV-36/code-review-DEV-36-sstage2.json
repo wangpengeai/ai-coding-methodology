@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "code-review-内部任务-36-sstage2",
+  "kind": "code-review",
+  "taskId": "内部任务-36",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "a606252ebc664e08d441460b78d17446202e9324",
+      "worktreeHash": "sha256:0eb678440ae8552626d99251ca699c20e1e242284db390d197b557f0a9265d00"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:0bee034e16d0bdae3781eb4558f6d1af7b4b0c3b23b4b3c27842705068a0964a",
+      "documents": "115"
+    },
+    "planSha256": {
+      "path": "内部计划",
+      "sha256": "sha256:a8dc1d8f2788838d75bc608c2d98d9536a45a5f2d977af1329cc13a0c9acaa28"
+    },
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-17T16:45:58+08:00",
+  "status": "passed",
+  "stage": "stage2",
+  "stageReceipt": true,
+  "evidenceProfile": "full",
+  "summary": "检查点②阶段2首次分诊：守恒自数成立/逐字保真/孤儿防护全过；发现1（指针枚举收窄）已处置",
+  "reviewInstances": 1,
+  "reviewMode": "single-instance",
+  "integritySha256": "sha256:7dd830a41b1154914f71dd7612022868f2e0e409b94a2bb0fafde22339771d14"
+}

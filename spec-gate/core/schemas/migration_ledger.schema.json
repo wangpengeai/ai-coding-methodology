@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.migration-ledger",
+  "title": "Legacy asset migration ledger",
+  "description": "每个旧资产必须登记 migrated|deleted|pending-delete、目标、理由与引用清理证据。（历史注记：曾含 deprecated 状态的条件分支——枚举从未含该值属不可达分支，已于 DEV-347/OPEN-143 删除。）",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "asset": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["migrated", "deleted", "pending-delete"] },
+          "target": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "referenceCleanupEvidence": { "type": "string", "minLength": 1 },
+          "removalCondition": { "type": "string" },
+          "removalDeadline": { "type": "string" }
+        },
+        "required": ["asset", "status", "target", "reason", "referenceCleanupEvidence"]
+      }
+    }
+  },
+  "required": ["schemaVersion", "entries"]
+}

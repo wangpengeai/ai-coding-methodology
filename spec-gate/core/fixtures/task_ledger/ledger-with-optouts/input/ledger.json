@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "tasks": [],
+  "optOuts": [
+    {
+      "schemaVersion": "1.0",
+      "scope": "ddd-strategic",
+      "mode": "current-task",
+      "reason": "本次从简",
+      "createdAt": "2026-09-01T00:00:00+00:00",
+      "createdBy": "user",
+      "taskId": null,
+      "expiresAt": null,
+      "sourceMechanism": "project-ledger"
+    }
+  ]
+}

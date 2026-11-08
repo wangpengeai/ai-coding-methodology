@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.1.0",
+  "interfaces": [
+    {
+      "id": "IF-Order-2",
+      "kind": "inter-module",
+      "ownerModule": "order-core",
+      "consumerModules": [],
+      "operations": [
+        "reserveStock(orderId, sku[], deadline) -> Reservation"
+      ],
+      "errorSemantics": [
+        "RES-404 无可用库存；调用方必须补偿回滚"
+      ],
+      "lifecycle": "proposed",
+      "version": "1-draft",
+      "compatPolicy": "rolling",
+      "tracesTo": [
+        "R-13"
+      ]
+    }
+  ]
+}

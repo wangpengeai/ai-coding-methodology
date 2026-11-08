@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.command-evidence",
+  "title": "Command execution evidence",
+  "description": "每次命令证据记录：命令、工作目录、测试选择条件、退出码、执行时间、关键输出摘要。不得要求写入密钥或敏感输出。",
+  "type": "object",
+  "properties": {
+    "command": { "type": "string", "minLength": 1 },
+    "workingDirectory": { "type": "string", "minLength": 1 },
+    "selectionCriteria": { "type": "string", "minLength": 1 },
+    "exitCode": { "type": "integer" },
+    "executedAt": { "type": "string", "minLength": 1 },
+    "keyOutputSummary": { "type": "string" }
+  },
+  "required": ["command", "workingDirectory", "selectionCriteria", "exitCode", "executedAt", "keyOutputSummary"]
+}

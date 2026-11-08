@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "spec-gate/assurance/tests/gen_golden.py",
+  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（内部决策-051 D4，内部任务-60 计划评审 F7）",
+  "equalityCases": [
+    {
+      "name": "empty-object",
+      "input": {},
+      "expectedB64": "e30="
+    },
+    {
+      "name": "empty-array",
+      "input": [],
+      "expectedB64": "W10="
+    },
+    {
+      "name": "nested-b-first",
+      "input": {
+        "b": 1,
+        "a": {
+          "d": [
+            1,
+            "x",
+            null,
+            true
+          ]
+        }
+      },
+      "expectedB64": "eyJhIjp7ImQiOlsxLCJ4IixudWxsLHRydWVdfSwiYiI6MX0="
+    },
+    {
+      "name": "chinese-keys",
+      "input": {
+        "中文键": "中文值",
+        "z": 1
+      },
+      "expectedB64": "eyJ6IjoxLCLkuK3mlofplK4iOiLkuK3mloflgLwifQ=="
+    },
+    {
+      "name": "control-chars",
+      "input": {
+        "k": "a\nb\tc\u0000d\u001fe"
+      },
+      "expectedB64": "eyJrIjoiYVxuYlx0Y1x1MDAwMGRcdTAwMWZlIn0="
+    },
+    {
+      "name": "non-bmp-adversarial",
+      "input": {
+        "｡": 1,
+        "😀": 2,
+        "a": 3
+      },
+      "expectedB64": "eyJhIjozLCLvvaEiOjEsIvCfmIAiOjJ9"
+    },
+    {
+      "name": "nan-value",
+      "input": {
+        "$special": "nan"
+      },
+      "expectedB64": "TmFO"
+    },
+    {
+      "name": "inf-values",
+      "input": [
+        {
+          "$special": "inf"
+        },
+        {
+          "$special": "-inf"
+        }
+      ],
+      "expectedB64": "W0luZmluaXR5LC1JbmZpbml0eV0="
+    },
+    {
+      "name": "array-of-objects",
+      "input": [
+        {
+          "z": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "expectedB64": "W3sieiI6MX0seyJhIjoyfV0="
+    },
+    {
+      "name": "deep-nesting",
+      "input": {
+        "a": {
+          "b": {
+            "c": {
+              "d": [
+                1,
+                [
+                  2,
+                  [
+                    3
+                  ]
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "expectedB64": "eyJhIjp7ImIiOnsiYyI6eyJkIjpbMSxbMixbM11dXX19fX0="
+    },
+    {
+      "name": "empty-string-key",
+      "input": {
+        "": 1,
+        "a": ""
+      },
+      "expectedB64": "eyIiOjEsImEiOiIifQ=="
+    },
+    {
+      "name": "bool-null",
+      "input": {
+        "t": true,
+        "f": false,
+        "n": null
+      },
+      "expectedB64": "eyJmIjpmYWxzZSwibiI6bnVsbCwidCI6dHJ1ZX0="
+    },
+    {
+      "name": "float-exp-align-1e-7",
+      "input": 1e-07,
+      "expectedB64": "MWUtMDc="
+    },
+    {
+      "name": "float-exp-align-1e20",
+      "input": 1e+20,
+      "expectedB64": "MWUrMjA="
+    }
+  ],
+  "boundaryCases": [
+    {
+      "name": "float-1.0",
+      "input": 1.0,
+      "pythonOut": "1.0",
+      "jsExpected": "1",
+      "note": "JS Number 无 int/float 之分：JSON.parse 后 1.0 即 1（边界①）"
+    },
+    {
+      "name": "float-neg-zero",
+      "input": -0.0,
+      "pythonOut": "-0.0",
+      "jsExpected": "0",
+      "note": "负零经 JSON.parse 归 0（边界①）"
+    },
+    {
+      "name": "big-int-2p53plus1",
+      "input": 9007199254740993,
+      "pythonOut": "9007199254740993",
+      "jsExpected": "9007199254740992.0",
+      "note": "超 2^53 经 JSON.parse 失精且落入 float 形态（边界②；BigInt 直入则精确）"
+    },
+    {
+      "name": "float-0.1",
+      "input": 0.1,
+      "pythonOut": "0.1",
+      "jsExpected": "0.1",
+      "note": "最短往返两侧一致例证（分叉组对照件）"
+    }
+  ]
+}

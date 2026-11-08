@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "AI Coding Methodology",
+    "description": "DSH adapter for six AI coding methodology plugins (workflow engine, spec gating, exploration mode, team governance, algorithm iteration, research loop): hooks and guards, 32 skills covering routing, planning, debugging and review, slash commands, and three delegation agents (explore and architect are read-only; the review agent is constrained by guards and review discipline but can run shell commands; the agent face is off by default and unavailable on the current host version)."
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0.0",
+  "phases": [
+    {
+      "id": "A",
+      "name": "契约冻结",
+      "status": "completed",
+      "evidence": [
+        "validator/tests/test_manifest_contract.py",
+        "validator/tests/test_rule_registry_contract.py",
+        "validator/tests/test_gate_report_contract.py"
+      ],
+      "acceptanceIds": [
+        "AC-CORE-001",
+        "AC-RULE-001",
+        "AC-GATE-001",
+        "AC-SCHEMA-001",
+        "AC-PACK-001",
+        "AC-MIG-001",
+        "AC-SCOPE-001"
+      ]
+    },
+    {
+      "id": "B",
+      "name": "schema 与模板",
+      "status": "completed",
+      "evidence": [
+        "validator/tests/test_specification_contract.py",
+        "validator/tests/test_adr_contract.py",
+        "validator/tests/test_open_item_contract.py",
+        "validator/tests/test_opt_out_contract.py",
+        "validator/tests/test_ddd_contract.py",
+        "validator/tests/test_backfill_templates.py"
+      ],
+      "acceptanceIds": [
+        "AC-SCHEMA-001",
+        "AC-DDD-001",
+        "AC-TDD-001",
+        "AC-FAST-001",
+        "AC-OPT-001",
+        "AC-内部决策-001",
+        "AC-内部未决-001",
+        "AC-HOST-001",
+        "AC-ROUTE-001"
+      ]
+    },
+    {
+      "id": "C",
+      "name": "校验器 TDD",
+      "status": "completed",
+      "evidence": [
+        "validator/tests/test_cli.py",
+        "validator/tests/test_traceability.py",
+        "validator/tests/test_paths.py",
+        "validator/tests/test_read_only.py"
+      ],
+      "acceptanceIds": [
+        "AC-VAL-001",
+        "AC-RO-001",
+        "AC-PATH-001",
+        "AC-MD-001"
+      ]
+    },
+    {
+      "id": "D",
+      "name": "三个技能迁移",
+      "status": "completed",
+      "evidence": [
+        "spec-writing/SKILL.md 重写 + fixtures/skill_evals/spec-writing/results.json（GREEN 100%，路由 16/16）",
+        "spec-backfill/SKILL.md 重写 + fixtures/skill_evals/spec-backfill/results.json（GREEN 100%，路由 16/16）",
+        "sdd-ddd-tdd/SKILL.md 重写 + fixtures/skill_evals/sdd-ddd-tdd/results.json（GREEN 100%，路由 16/16）",
+        "六份旧 reference 内容迁移入共享内核后物理删除，引用扫描清零"
+      ],
+      "acceptanceIds": [
+        "AC-PACK-001",
+        "AC-ROUTE-001",
+        "AC-SCHEMA-001"
+      ]
+    },
+    {
+      "id": "E",
+      "name": "兼容清理与最终评测",
+      "status": "completed",
+      "evidence": [
+        "host-examples/ 建立并通过非规范性声明检查（AC-HOST-001）",
+        "fixtures/migration/migration_ledger.json 除 1 条 pending-delete（external_contract 模板物理在位且被 ATOMIC_TEMPLATES/manifest/selftest 三面锁存在——按 run_acceptance checkMig「待物理删除 N 条」如实口径保留）外全部 deleted 闭合（AC-MIG-001；内部任务-347/内部未决-143 口径勘正）",
+        "fixtures/skill_evals/routing_results.json 聚合三技能行为评测（AC-ROUTE-001）",
+        "run_acceptance.py 19 项统一复跑（AC-SCOPE-001）",
+        "插件化扩展：commands/hooks/任务台账/证据捕获/边界检查（2026-09-03）"
+      ],
+      "acceptanceIds": [
+        "AC-HOST-001",
+        "AC-ROUTE-001",
+        "AC-MIG-001",
+        "AC-MD-001",
+        "AC-SCOPE-001",
+        "AC-PLUG-001",
+        "AC-PLUG-002",
+        "AC-PLUG-003"
+      ]
+    }
+  ]
+}

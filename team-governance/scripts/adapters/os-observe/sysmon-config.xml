@@ -1,0 +1,17 @@
+<!-- os-observe minimal Sysmon config (TASK-SYSMON-1): DNS query events only.
+     Default-on event types are switched off via empty include (an empty
+     include set matches nothing); DnsQuery is default-off, so it needs an
+     empty EXCLUDE set (exclude nothing = log every query). Schema version
+     pinned low for forward compat. HashAlgorithms element omitted so the
+     default (no hashing) applies: the literal value "None" is invalid
+     (exit 87) and double hyphens are illegal inside XML comments, both
+     found in real-machine enable runs 2026-09-20. -->
+<Sysmon schemaversion="4.82">
+  <EventFiltering>
+    <ProcessCreate onmatch="include" />
+    <FileCreateTime onmatch="include" />
+    <ProcessTerminate onmatch="include" />
+    <DriverLoad onmatch="include" />
+    <DnsQuery onmatch="exclude" />
+  </EventFiltering>
+</Sysmon>

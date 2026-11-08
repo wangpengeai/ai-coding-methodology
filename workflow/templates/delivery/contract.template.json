@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "contract": {
+    "id": "CONTRACT-EXAMPLE-001",
+    "party": "甲方示例（接收方全称）",
+    "deliveryDate": "2026-10-23"
+  },
+  "items": [
+    {
+      "id": "D-1",
+      "kind": "file",
+      "source": "src/index.mjs",
+      "target": "src/index.mjs",
+      "required": true,
+      "audience": "external",
+      "description": "说明：交付源码文件（示例；按合同删除/替换为真实条目）"
+    }
+  ],
+  "generated": [
+    { "id": "D-2", "generator": "delivery-report", "required": true },
+    { "id": "D-3", "generator": "manifest", "required": true },
+    { "id": "D-4", "generator": "audit-packet", "required": false }
+  ],
+  "acceptance": [
+    {
+      "contractRequirement": "CR-1",
+      "criterion": "构建/运行命令退出 0（甲方视角判据）",
+      "result": "passed",
+      "summary": "构建通过；产物哈希见 MANIFEST.sha256.json"
+    }
+  ],
+  "thirdParty": [
+    { "name": "示例第三方组件", "license": "MIT", "url": "https://example.invalid/", "attribution": "NOTICE" }
+  ],
+  "audit": {
+    "enabled": false,
+    "rights": "按合同审计条款执行",
+    "scope": "交付物与其哈希清单",
+    "excluded": ["内部开发流程记录"],
+    "contact": "乙方项目联系人（合同约定）"
+  },
+  "git": {
+    "freshHistory": true,
+    "author": "Delivery Bot <delivery@example.invalid>",
+    "commitMessage": "Initial delivery"
+  }
+}

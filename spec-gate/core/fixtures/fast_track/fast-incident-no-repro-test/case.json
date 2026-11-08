@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-FAST-NOREPRO-001",
+  "category": "production-incident",
+  "input": "input/record.json"
+}

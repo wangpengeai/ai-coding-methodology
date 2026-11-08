@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.acceptance-report",
+  "title": "Unified acceptance run report",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "suiteRoot": { "type": "string" },
+    "generatedAt": { "type": "string" },
+    "selectedCases": { "type": "array", "items": { "type": "string" } },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "acceptanceId": { "type": "string", "pattern": "^AC-[A-Z]+-\\d{3}$" },
+          "status": {
+            "type": "string",
+            "enum": ["passed", "failed", "unverified", "error", "not-applicable"]
+          },
+          "blocking": { "type": "boolean" },
+          "oracle": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "diagnostics": { "type": "array", "items": { "type": "string" } },
+          "duration": { "type": "number" }
+        },
+        "required": ["acceptanceId", "status", "blocking", "evidence"]
+      }
+    },
+    "blockingPassed": { "type": "integer" },
+    "blockingFailed": { "type": "integer" },
+    "unverified": { "type": "integer" },
+    "finalStatus": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked", "temporary-mitigation"]
+    },
+    "exitCode": { "type": "integer", "enum": [0, 1, 2] }
+  },
+  "required": [
+    "schemaVersion",
+    "suiteRoot",
+    "generatedAt",
+    "selectedCases",
+    "results",
+    "blockingPassed",
+    "blockingFailed",
+    "unverified",
+    "finalStatus",
+    "exitCode"
+  ]
+}

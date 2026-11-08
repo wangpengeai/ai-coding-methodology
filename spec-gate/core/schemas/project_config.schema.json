@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.project-config",
+  "title": "Project onboarding config (.sdd/project.json)",
+  "description": "项目接入层配置：规格体系状态、套件配置位置、台账位置、验证命令登记与架构边界规则（RULE-PROJ-001）。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "projectRoot": { "type": "string", "minLength": 1 },
+    "specSystem": { "type": "string", "enum": ["present", "partial", "absent"] },
+    "suiteConfig": { "type": "string", "minLength": 1 },
+    "ledgerPath": { "type": "string", "minLength": 1 },
+    "validationCommands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "command": { "type": "string", "minLength": 1 },
+          "workingDirectory": { "type": "string" },
+          "selectionCriteria": { "type": "string" }
+        },
+        "required": ["name", "command"]
+      }
+    },
+    "boundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^BOUND-\\d+$" },
+          "scope": { "type": "string", "minLength": 1 },
+          "allow": { "type": "array", "items": { "type": "string" } },
+          "deny": { "type": "array", "items": { "type": "string" } },
+          "severity": { "type": "string", "enum": ["blocking", "warning"] },
+          "rationale": { "type": "string" }
+        },
+        "required": ["id", "scope"]
+      }
+    },
+    "implementationNoiseTerms": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["schemaVersion", "projectRoot", "specSystem", "suiteConfig", "ledgerPath"]
+}

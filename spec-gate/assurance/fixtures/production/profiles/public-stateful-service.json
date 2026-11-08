@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "deliveryKind": "service",
+  "distribution": "container",
+  "scm": {"provider": "github", "prRequired": true, "requiredChecks": ["ci", "security-scan", "migration-check"]},
+  "environments": ["development", "staging", "production"],
+  "exposure": "public",
+  "dataClasses": ["personal"],
+  "secretUse": "both",
+  "persistentState": "database",
+  "availabilityTier": "critical",
+  "recoveryTier": "warm-standby",
+  "acceptanceAuthority": "customer",
+  "evidenceMaxAgeHours": {"pr-ci": 24, "observation": 168, "migration": 24},
+  "vulnerabilityPolicy": {"critical": "block", "high": "block", "medium": "deadline"},
+  "requiredApprovals": ["owner", "security", "data-owner"]
+}

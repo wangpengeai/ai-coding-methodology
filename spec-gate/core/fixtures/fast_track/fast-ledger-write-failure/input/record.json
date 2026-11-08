@@ -1,0 +1,11 @@
+{
+  "triggerReason": "缓存击穿导致下单失败",
+  "scope": "下单链路",
+  "currentBehavior": "高峰期缓存击穿",
+  "behaviorAssumptions": ["限流后错误率下降"],
+  "acceptanceAssumptions": ["限流阈值内无击穿"],
+  "risks": ["限流误伤正常流量"],
+  "plannedVerification": "灰度观察 + 压测",
+  "finalizationTrigger": "follow-up deadline 前",
+  "ledgerPersistence": { "writeSucceeded": false, "reason": "台账存储不可用" }
+}

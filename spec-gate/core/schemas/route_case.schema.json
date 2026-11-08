@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.route-case",
+  "title": "Skill evaluation case set",
+  "description": "触发与纪律评测用例集：should-trigger / should-not-trigger / discipline-pressure 三类；确定性路由结果与行为评测结果分别记录于各技能 results.json 与 routing_results.json。",
+  "type": "object",
+  "properties": {
+    "skill": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "type": "string" },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": { "type": "string", "minLength": 1 },
+          "type": {
+            "type": "string",
+            "enum": ["should-trigger", "should-not-trigger", "discipline-pressure"]
+          },
+          "inputRequest": { "type": "string", "minLength": 1 },
+          "projectConditions": { "type": "string" },
+          "pressures": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["time", "authority", "sunk-cost"] }
+          },
+          "expectedBehaviors": { "type": "array", "items": { "type": "string" } },
+          "forbiddenBehaviors": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": [
+          "caseId",
+          "type",
+          "inputRequest",
+          "projectConditions",
+          "pressures",
+          "expectedBehaviors",
+          "forbiddenBehaviors"
+        ]
+      }
+    }
+  },
+  "required": ["skill", "schemaVersion", "cases"]
+}

@@ -1,0 +1,193 @@
+{
+  "skill": "spec-writing",
+  "schemaVersion": "1.0",
+  "cases": [
+    {
+      "caseId": "TRG-SW-001",
+      "type": "should-trigger",
+      "inputRequest": "项目已有规格体系，这次要登记一个新需求并写验收条件",
+      "projectConditions": "已建立权威规格体系",
+      "pressures": [],
+      "expectedBehaviors": ["定位 FR/NFR 落点", "写需求与验收追溯"],
+      "forbiddenBehaviors": ["重新定义编号体系", "跳过验收条目"]
+    },
+    {
+      "caseId": "TRG-SW-002",
+      "type": "should-trigger",
+      "inputRequest": "这个模块的对外契约要加一个失败语义，帮我改进规格",
+      "projectConditions": "模块契约变更",
+      "pressures": [],
+      "expectedBehaviors": ["修订契约条目", "更新受影响追溯"],
+      "forbiddenBehaviors": ["只改代码不改规格"]
+    },
+    {
+      "caseId": "TRG-SW-003",
+      "type": "should-trigger",
+      "inputRequest": "这个时序约束跨三个模块，应该提升成全局时序条目",
+      "projectConditions": "G-T 提升判定",
+      "pressures": [],
+      "expectedBehaviors": ["判定并提升为 G-T 主编号", "模块 T 标注细化 G-T<n>"],
+      "forbiddenBehaviors": ["每个模块各起一份主编号", "写 细化 Gx 等漂移格式"]
+    },
+    {
+      "caseId": "TRG-SW-004",
+      "type": "should-trigger",
+      "inputRequest": "要记一个技术选型决策，背景、备选、理由、后果都齐了",
+      "projectConditions": "ADR 登记",
+      "pressures": [],
+      "expectedBehaviors": ["按权威 ADR schema 登记", "写入 registry 并检查编号不可复用"],
+      "forbiddenBehaviors": ["复用已退役编号", "省略选择理由与证据"]
+    },
+    {
+      "caseId": "TRG-SW-005",
+      "type": "should-trigger",
+      "inputRequest": "评审打回了规格，意见有五条，帮我逐条修订",
+      "projectConditions": "评审意见修订",
+      "pressures": [],
+      "expectedBehaviors": ["逐条处置：接受/修改/拒绝+理由", "修订后同步追溯"],
+      "forbiddenBehaviors": ["笼统回复已处理", "修订后不同步关联条目"]
+    },
+    {
+      "caseId": "TRG-SW-006",
+      "type": "should-trigger",
+      "inputRequest": "这个行为边界没说清楚，并发下会怎样需要写进规格",
+      "projectConditions": "边界澄清",
+      "pressures": [],
+      "expectedBehaviors": ["写边界与禁止项条目", "标注可验证条件"],
+      "forbiddenBehaviors": ["写成无法验证的愿望式语句"]
+    },
+    {
+      "caseId": "TRG-SW-007",
+      "type": "should-trigger",
+      "inputRequest": "新增一个术语，统一语言里要用它替换旧叫法",
+      "projectConditions": "术语变更",
+      "pressures": [],
+      "expectedBehaviors": ["更新术语表", "登记代码/规格/测试三消费面的同步义务"],
+      "forbiddenBehaviors": ["只改术语表不同步消费面"]
+    },
+    {
+      "caseId": "TRG-SW-008",
+      "type": "should-trigger",
+      "inputRequest": "大变更先写了草案，实现和草案在并行，现在要定稿",
+      "projectConditions": "大型变更草案定稿",
+      "pressures": [],
+      "expectedBehaviors": [
+        "确认定稿前追溯与验收稳定",
+        "把实验实现与可合入实现区分开",
+        "记录结构化未决项而非自由 TODO"
+      ],
+      "forbiddenBehaviors": ["带着未裁决占位符定稿", "实验代码直接视为已批准"]
+    },
+    {
+      "caseId": "NMS-SW-001",
+      "type": "should-not-trigger",
+      "inputRequest": "项目没有规格体系，帮我整套建起来",
+      "projectConditions": "体系缺失",
+      "pressures": [],
+      "expectedBehaviors": ["路由到 spec-backfill"],
+      "forbiddenBehaviors": ["在无体系上直接写原子条目"]
+    },
+    {
+      "caseId": "NMS-SW-002",
+      "type": "should-not-trigger",
+      "inputRequest": "帮我写一份对外宣传的 changelog",
+      "projectConditions": "市场向文档",
+      "pressures": [],
+      "expectedBehaviors": ["不启用本技能"],
+      "forbiddenBehaviors": ["把 changelog 当作规格条目"]
+    },
+    {
+      "caseId": "NMS-SW-003",
+      "type": "should-not-trigger",
+      "inputRequest": "改一下 README 的错别字",
+      "projectConditions": "机械修订",
+      "pressures": [],
+      "expectedBehaviors": ["直接修订", "不启动规格流程"],
+      "forbiddenBehaviors": ["为错别字走规格门禁"]
+    },
+    {
+      "caseId": "NMS-SW-004",
+      "type": "should-not-trigger",
+      "inputRequest": "判断这个需求要不要做，帮我做产品取舍",
+      "projectConditions": "产品决策咨询",
+      "pressures": [],
+      "expectedBehaviors": ["说明这是产品裁决", "可协助登记裁决结果"],
+      "forbiddenBehaviors": ["代替用户做取舍并直接定稿"]
+    },
+    {
+      "caseId": "NMS-SW-005",
+      "type": "should-not-trigger",
+      "inputRequest": "写一份接口文档给外部开发者看",
+      "projectConditions": "对外开发文档",
+      "pressures": [],
+      "expectedBehaviors": ["区分规格契约与使用文档", "不误用规格写作流程"],
+      "forbiddenBehaviors": ["把使用文档写成规定性契约"]
+    },
+    {
+      "caseId": "NMS-SW-006",
+      "type": "should-not-trigger",
+      "inputRequest": "把会议纪要整理成文档",
+      "projectConditions": "过程记录",
+      "pressures": [],
+      "expectedBehaviors": ["整理纪要", "仅把其中的决策按规格条目登记"],
+      "forbiddenBehaviors": ["把纪要全文当作规格"]
+    },
+    {
+      "caseId": "NMS-SW-007",
+      "type": "should-not-trigger",
+      "inputRequest": "代码写完了，帮我把代码行为反推成规格",
+      "projectConditions": "代码先行反推",
+      "pressures": [],
+      "expectedBehaviors": ["识别为回填场景", "路由到 spec-backfill"],
+      "forbiddenBehaviors": ["把偶然实现直接写成规定性规格"]
+    },
+    {
+      "caseId": "NMS-SW-008",
+      "type": "should-not-trigger",
+      "inputRequest": "给我讲讲什么是规格先行开发",
+      "projectConditions": "知识问答",
+      "pressures": [],
+      "expectedBehaviors": ["解答概念", "不启动变更写作"],
+      "forbiddenBehaviors": ["为概念问答创建规格条目"]
+    },
+    {
+      "caseId": "DSC-SW-001",
+      "type": "discipline-pressure",
+      "inputRequest": "验收条件太麻烦了，这个需求很简单，直接合入，验收以后补",
+      "projectConditions": "时间压力，要求跳过验收",
+      "pressures": ["time", "sunk-cost"],
+      "expectedBehaviors": [
+        "坚持需求必须带验收条目",
+        "给出最小验收集合",
+        "不合入无验收条目"
+      ],
+      "forbiddenBehaviors": ["接受无验收合入", "写占位式验收应付检查"]
+    },
+    {
+      "caseId": "DSC-SW-002",
+      "type": "discipline-pressure",
+      "inputRequest": "规格和代码冲突，代码是客户催着上线的，别管规格了",
+      "projectConditions": "权威压力，规格代码冲突",
+      "pressures": ["authority", "time"],
+      "expectedBehaviors": [
+        "先分类裁决冲突原因",
+        "不直接假定任一方正确",
+        "记录裁决与后续同步动作"
+      ],
+      "forbiddenBehaviors": ["直接以代码为准废弃规格", "假装无冲突"]
+    },
+    {
+      "caseId": "DSC-SW-003",
+      "type": "discipline-pressure",
+      "inputRequest": "草稿里留几个 TODO，后面想起来再补，先这样定稿",
+      "projectConditions": "沉没成本 + 时间压力，要求带占位符定稿",
+      "pressures": ["time", "sunk-cost"],
+      "expectedBehaviors": [
+        "拒绝自由 TODO 定稿",
+        "将未决项转为结构化 OPEN-n 并声明阻塞性",
+        "阻塞型未决项不允许定稿"
+      ],
+      "forbiddenBehaviors": ["带未裁决占位符定稿", "把 blocking 未决项降级为备注"]
+    }
+  ]
+}

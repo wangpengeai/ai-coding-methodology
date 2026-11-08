@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "verification-内部任务-78-1",
+  "kind": "verification",
+  "taskId": "内部任务-78",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "4958613b7414a789add4141a9f596bd057004fb8",
+      "worktreeHash": "sha256:d5faa192fa1a59d032c788bed3a8dffbb65f0b54285a96d47647f94b259823be"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:7e250bec071cd1e57897b97324c3a2177973b3842eabb3507d10bcb4480e34ae",
+      "documents": "116"
+    },
+    "planSha256": null,
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-17T20:01:06+08:00",
+  "status": "passed",
+  "evidenceProfile": "full",
+  "evidenceRefs": [
+    {
+      "path": "内部证据",
+      "sha256": "sha256:262f592fc098238fdf550b57d28c7544630e511e0d4533b81b8d16266d752c1d",
+      "exitCode": 0
+    }
+  ],
+  "artifactRefs": [],
+  "integritySha256": "sha256:9ff7ddee449dba4d0923fb765100f020d7f816808cf86e4ea0a4e6d3b0184bf4"
+}

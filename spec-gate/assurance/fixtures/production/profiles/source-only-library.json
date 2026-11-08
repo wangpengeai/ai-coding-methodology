@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "deliveryKind": "library",
+  "distribution": "registry",
+  "scm": {"provider": "github", "prRequired": true, "requiredChecks": ["ci"]},
+  "environments": ["development"],
+  "exposure": "internal",
+  "dataClasses": ["none"],
+  "secretUse": "none",
+  "persistentState": "none",
+  "availabilityTier": "none",
+  "recoveryTier": "none",
+  "acceptanceAuthority": "owner",
+  "evidenceMaxAgeHours": {"pr-ci": 48, "supply-chain": 168},
+  "vulnerabilityPolicy": {"critical": "block", "high": "block"},
+  "requiredApprovals": ["owner"]
+}

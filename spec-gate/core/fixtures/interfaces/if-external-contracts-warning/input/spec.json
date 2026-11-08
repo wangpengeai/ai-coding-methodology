@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.1.0",
+  "externalContracts": [
+    {
+      "id": "legacy",
+      "operations": [
+        "x"
+      ],
+      "errorSemantics": [
+        "y"
+      ]
+    }
+  ],
+  "interfaces": []
+}

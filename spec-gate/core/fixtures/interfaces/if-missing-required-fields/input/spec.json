@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.1.0",
+  "interfaces": [
+    {
+      "id": "IF-Pay-1",
+      "kind": "external",
+      "ownerModule": "pay",
+      "operations": [
+        "charge()"
+      ]
+    }
+  ]
+}

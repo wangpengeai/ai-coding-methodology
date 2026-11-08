@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-ADR-MISSING-001",
+  "input": "input/adr.json",
+  "mode": "baseline"
+}

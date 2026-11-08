@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "code-review-内部任务-86-s1",
+  "kind": "code-review",
+  "taskId": "内部任务-86",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "0b3b2a9ddb3907675090ac0bceb42701b08ad512",
+      "worktreeHash": "sha256:d732b8dadfe27311bffbcbbe10b04b69894dedd4d6de19a9a63bb037a69f29e2"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:c949c5dbc727cee20c74a4db09c04dffbaa1e2631dcb0e904be0d6e8e57e84b7",
+      "documents": "117"
+    },
+    "planSha256": {
+      "path": "内部计划",
+      "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
+    },
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-18T11:21:44+08:00",
+  "status": "passed",
+  "stage": "1",
+  "stageReceipt": true,
+  "evidenceProfile": "full",
+  "summary": "门①正确性维单实例评审：4 blocking+8 非阻塞全采纳并修；修复后 20/20 与 py/js 交叉复核一致",
+  "reviewInstances": 1,
+  "reviewMode": "single-instance",
+  "integritySha256": "sha256:e373e2d5145b31ae237a466e48eaf631ebfcd828f2eb8ce97ac20d2602b518c6"
+}

@@ -1,0 +1,6 @@
+{
+  "expectedRuleIds": [
+    "RULE-IF-003"
+  ],
+  "expectedExitCode": 1
+}

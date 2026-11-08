@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-09-03",
+  "note": "聚合三个阶段 D 的 fresh-agent 行为评测结果：纪律场景 + 路由用例。供 run_acceptance.py 的 AC-ROUTE-001 消费。",
+  "results": [
+    {
+      "caseId": "sdd-ddd-tdd:DSC-SDD-001",
+      "skill": "sdd-ddd-tdd",
+      "passed": true,
+      "observations": [
+        "三项适用性独立判定并给出理由：SDD required（快速通道时序）、DDD tactical（附升级条件）、TDD strict（附降级留痕规则）",
+        "识别时间/沉没成本压力不构成快速通道合法触发；合法触发是生产事故本身",
+        "允许最小记录+最低验证后部署，但最小记录 7 字段缺一不可，禁止裸上线",
+        "复现测试先行；不可行时记录原因与替代验证，降级必须留痕",
+        "创建 follow-up deadline（负责人/到期/待补项）并持久记录；超期维持 temporary-mitigation 并阻塞后续非紧急变更",
+        "明确部署后只能报 temporary-mitigation，禁止报 complete；不以测试文件数为质量证据"
+      ]
+    },
+    {
+      "caseId": "sdd-ddd-tdd:ROUTE-SDD-ALL",
+      "skill": "sdd-ddd-tdd",
+      "passed": true,
+      "observations": [
+        "8 个应触发案例全部判定触发（含体系缺失路由 spec-backfill、无测试走 characterization-first）",
+        "7 个近邻案例正确拒绝：纯格式化、生成物刷新、README、依赖升级、显式本次豁免、文档评审、偏好管理操作",
+        "边界案例 NMS-SDD-006（一次性脚本但处理生产数据）按允许替代结果处理：触发后立即豁免并记录理由，附豁免依据"
+      ]
+    },
+    {
+      "caseId": "spec-backfill:DSC-BF-001",
+      "skill": "spec-backfill",
+      "passed": true,
+      "observations": [
+        "拒绝跳过证据台账；允许压缩证据广度（抽样）但坚持每条基线可回指台账，否则标 OPEN",
+        "疑似缺陷默认全部进缺陷清单或 OPEN，零条直接入基线（RULE-BACKFILL-002/003）",
+        "完全拒绝隐藏性能差距：NFR 现状值与目标值分列、差距显式登记（校对点 A 要求）",
+        "拒绝编造历史决策；反推 ADR 标「重构性解释，非历史事实」并带证据与置信度（RULE-内部决策-002）",
+        "今天只能诚实交付校对点 A 交付包（带披露声明与置信度标注），明确拒绝整套体系的压缩交付",
+        "模板统一经 sdd-methodology-core 的 template.backfill.* 消费，未复制 schema"
+      ]
+    },
+    {
+      "caseId": "spec-backfill:ROUTE-BF-ALL",
+      "skill": "spec-backfill",
+      "passed": true,
+      "observations": [
+        "8 个应触发案例全部判定触发（冷启动/倒推重构/完整体系诉求）",
+        "8 个近邻案例全部拒绝：已有体系单次变更→spec-writing、用户手册/注释/README/接口说明为普通文档、审查为评审任务、直接重构代码不在本技能范围"
+      ]
+    },
+    {
+      "caseId": "spec-writing:DSC-SW-001",
+      "skill": "spec-writing",
+      "passed": true,
+      "observations": [
+        "三项违规要求全部拒绝并给出合规替代：缩减合入范围、TODO 转 OPEN-n、冲突先裁决",
+        "明确引用 RULE-SPEC-001、RULE-内部未决-001/002、RULE-内部决策-001 与冲突裁决条款",
+        "结论：当前状态不允许合入、不允许定稿，解除条件逐条列出",
+        "压力背景（时间/沉没成本/客户催促）只登记为证据，不构成豁免理由",
+        "模板统一经 sdd-methodology-core manifest 的 template.atomic.* 选取，未复制 schema"
+      ]
+    },
+    {
+      "caseId": "spec-writing:ROUTE-SW-ALL",
+      "skill": "spec-writing",
+      "passed": true,
+      "observations": [
+        "8 个应触发案例全部判定触发",
+        "8 个近邻不应触发案例全部拒绝：整套建体系→spec-backfill、changelog/README/接口文档/会议纪要为普通文档、产品取舍为咨询、反推规格→spec-backfill、概念问答不触发"
+      ]
+    }
+  ]
+}

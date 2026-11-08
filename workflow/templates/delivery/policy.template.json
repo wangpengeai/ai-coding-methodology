@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "internal": {
+    "pathPatterns": ["docs/plans/**", "specs/**", ".sdd/**", ".workflow/**", ".deliver/**"],
+    "idPatterns": ["\\bDEV-\\d+\\b", "\\bADR-\\d{3}\\b", "\\bOPEN-\\d+\\b", "\\bFR-[a-z]+-\\d+\\b"],
+    "termPatterns": []
+  },
+  "dangling": {
+    "allowExternal": true,
+    "allowPatterns": []
+  },
+  "scan": {
+    "extensions": [".md", ".txt", ".html", ".htm", ".json", ".yml", ".yaml", ".js", ".mjs", ".cjs"],
+    "include": [],
+    "exclude": []
+  },
+  "license": {
+    "requireLicenseFile": true,
+    "requiredFields": ["name", "license"]
+  },
+  "rewrite": {
+    "rules": []
+  },
+  "visibility": {
+    "overrides": {}
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "expectedSuppressedScopes": [],
+  "expectedNotesContain": [
+    "missing-task-id"
+  ],
+  "expectedRuleIds": [
+    "RULE-OPT-003"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "verification-内部任务-86-5",
+  "kind": "verification",
+  "taskId": "内部任务-86",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "0b3b2a9ddb3907675090ac0bceb42701b08ad512",
+      "worktreeHash": "sha256:35473ca8e0caf96dcec2e4ba05813bd037a1c7cb0ae98ec75cc5abf378a3a6ee"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:30664b8391788964199ff7775874c5575f89049d37554659ebec1042a944a001",
+      "documents": "117"
+    },
+    "planSha256": {
+      "path": "内部计划",
+      "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
+    },
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-18T11:40:37+08:00",
+  "status": "passed",
+  "evidenceProfile": "full",
+  "evidenceRefs": [
+    {
+      "path": "内部证据",
+      "sha256": "sha256:7df2dd1ea63033b370d7c287da3c6061b7c4c3086b196c955a5084d3d89c6cc2",
+      "exitCode": 0
+    },
+    {
+      "path": "内部证据",
+      "sha256": "sha256:f90856851dc274e5777c9f2d4b9156cc8ff531b5ba28159acd9d8ecf08ba8b12",
+      "exitCode": 0
+    },
+    {
+      "path": "内部证据",
+      "sha256": "sha256:0612772578ae06a0a7d77cd47d455de1c7f24b0c7c8242da9275c40b7f4116a3",
+      "exitCode": 0
+    }
+  ],
+  "artifactRefs": [],
+  "integritySha256": "sha256:850ef36d1fcf3ba8eea6db1e86bc527456d98ab1372fcd6dadd13ca5e8536147"
+}

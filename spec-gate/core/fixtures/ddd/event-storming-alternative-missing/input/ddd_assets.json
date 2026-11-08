@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "applicability": [
+    {
+      "asset": "subdomain_classification",
+      "label": "always-required"
+    },
+    {
+      "asset": "context_map",
+      "label": "always-required"
+    },
+    {
+      "asset": "event_storming",
+      "label": "alternative-model-allowed"
+    }
+  ],
+  "subdomains": [
+    {
+      "name": "billing",
+      "classification": "core",
+      "investmentDecision": "自建"
+    }
+  ],
+  "boundedContexts": [
+    {
+      "name": "billing",
+      "purpose": "计费与结算",
+      "codeBoundaries": [
+        "services/billing"
+      ]
+    }
+  ],
+  "contextMap": [
+    {
+      "contextA": "billing",
+      "contextB": "orders",
+      "relationship": "customer-supplier"
+    }
+  ],
+  "contextRelationships": [
+    {
+      "upstream": "orders",
+      "downstream": "billing",
+      "integrationPattern": "anticorruption-layer",
+      "contractOwner": "orders-team"
+    }
+  ],
+  "ubiquitousLanguage": [
+    {
+      "term": "结算周期",
+      "definition": "账单生成到收款确认的时间窗",
+      "context": "billing"
+    }
+  ],
+  "hotspots": [],
+  "traceability": [
+    {
+      "domainAsset": "billing 上下文",
+      "specEntry": "内部需求-1",
+      "codeBoundary": "services/billing"
+    }
+  ],
+  "impactConclusions": {
+    "aggregateBoundaryImpact": "Invoice 聚合边界变化：新增结算状态",
+    "failureSemanticsImpact": "结算失败需可重试，失败语义见目录"
+  },
+  "eventStorming": {
+    "applicable": false,
+    "notApplicableReason": "变更为单上下文内部调整，无跨上下文事件协作"
+  },
+  "eventStormingAlternatives": []
+}

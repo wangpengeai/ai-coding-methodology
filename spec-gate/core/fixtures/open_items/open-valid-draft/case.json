@@ -1,0 +1,5 @@
+{
+  "caseId": "FX-OPEN-VALID-001",
+  "input": "input/open_items.json",
+  "mode": "draft"
+}

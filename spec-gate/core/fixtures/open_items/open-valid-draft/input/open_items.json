@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "id": "内部未决-1",
+      "status": "open",
+      "owner": "dev",
+      "impact": "契约错误语义待定",
+      "blocking": true,
+      "resolutionTrigger": "下次契约评审",
+      "evidence": "评审纪要 2026-09-01"
+    }
+  ]
+}

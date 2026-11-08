@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "code-review-内部任务-36-1",
+  "kind": "code-review",
+  "taskId": "内部任务-36",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "a606252ebc664e08d441460b78d17446202e9324",
+      "worktreeHash": "sha256:0eb678440ae8552626d99251ca699c20e1e242284db390d197b557f0a9265d00"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:0bee034e16d0bdae3781eb4558f6d1af7b4b0c3b23b4b3c27842705068a0964a",
+      "documents": "115"
+    },
+    "planSha256": {
+      "path": "内部计划",
+      "sha256": "sha256:a8dc1d8f2788838d75bc608c2d98d9536a45a5f2d977af1329cc13a0c9acaa28"
+    },
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-17T16:46:15+08:00",
+  "status": "passed",
+  "verificationReceipt": "verification-内部任务-36-1",
+  "evidenceProfile": "full",
+  "summary": "三维并行终审（简洁性/正确性/项目约定）：8 发现全处置（F-A 内部未决-2 翻正/F-B 前瞻句回收/F-C 墓碑 101 条补关闭日/F-D 把守面纠偏/F-E 八源/F-F 阈值定值/F-G 承载收口/F-H 分诊句常量化/F-I 扫描单点），复验全绿",
+  "reviewInstances": 3,
+  "reviewMode": "three-dim",
+  "integritySha256": "sha256:edacbe1f9e9bf3e92cd11512e98b04a7584bdc755918e39e91fa1c8866ba3d5c"
+}

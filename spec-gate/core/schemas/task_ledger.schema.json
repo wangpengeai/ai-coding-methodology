@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.task-ledger",
+  "title": "Project task ledger (.sdd/ledger.json)",
+  "description": "跨会话任务状态台账：快速通道 deadline、任务最终状态、项目级 opt-out 与未决项的唯一持久位置。宿主无关——任何宿主都读写同一个项目文件（RULE-LEDGER-001..003）。",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^TASK-\\d+$" },
+          "title": { "type": "string", "minLength": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["active", "converged", "temporary-mitigation", "expired"]
+          },
+          "createdAt": { "type": "string", "minLength": 1 },
+          "finalStatus": {
+            "type": ["string", "null"],
+            "enum": ["complete", "partial", "blocked", "temporary-mitigation", null]
+          },
+          "fastTrack": { "type": "boolean" },
+          "deadline": { "type": ["string", "null"] },
+          "owner": { "type": ["string", "null"] },
+          "pendingSpec": { "type": ["string", "null"] },
+          "pendingTests": { "type": ["string", "null"] },
+          "pendingTrace": { "type": ["string", "null"] },
+          "gateReportRef": { "type": ["string", "null"] }
+        },
+        "required": ["id", "title", "status", "createdAt"],
+        "if": { "properties": { "fastTrack": { "const": true } } },
+        "then": { "required": ["deadline", "owner"] }
+      }
+    },
+    "optOuts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": { "type": "string" },
+          "scope": { "type": "string", "enum": ["all", "sdd", "ddd", "ddd-strategic", "tdd"] },
+          "mode": { "type": "string", "enum": ["persistent", "current-task"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "createdAt": { "type": "string", "minLength": 1 },
+          "createdBy": { "type": "string", "minLength": 1 },
+          "taskId": { "type": ["string", "null"] },
+          "expiresAt": { "type": ["string", "null"] },
+          "sourceMechanism": { "type": "string", "minLength": 1 }
+        },
+        "required": ["schemaVersion", "scope", "mode", "reason", "createdAt", "createdBy", "sourceMechanism"]
+      }
+    },
+    "openItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^OPEN-\\d+$" },
+          "status": { "type": "string", "enum": ["open", "resolved", "accepted-risk"] },
+          "owner": { "type": "string", "minLength": 1 },
+          "impact": { "type": "string", "minLength": 1 },
+          "blocking": { "type": "boolean" },
+          "resolutionTrigger": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string" },
+          "riskAcceptanceRationale": { "type": "string" },
+          "riskAcceptanceTrigger": { "type": "string" }
+        },
+        "required": ["id", "status", "owner", "impact", "blocking", "resolutionTrigger", "evidence"]
+      }
+    }
+  },
+  "required": ["schemaVersion", "tasks"]
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.suite-config",
+  "title": "Validation suite configuration",
+  "description": "声明校验根、文件类型、校验模式、manifest 位置与允许跨根访问的公开资产。无法识别文件类型必须返回工具错误，不得猜测。（历史注记：曾含 validationRoots 字段——自登记起零消费，已于 DEV-347/OPEN-141 移除。）",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "suiteRoot": { "type": "string", "minLength": 1 },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "documentType": { "type": "string", "minLength": 1 },
+          "validationMode": { "type": "string", "enum": ["template", "draft", "baseline"] },
+          "note": { "type": "string", "description": "条目备注：为何该模式/为何收窄（CHG-12 登记面，校验器只验形态）" }
+        },
+        "required": ["path", "documentType", "validationMode"]
+      }
+    },
+    "exemptions": {
+      "type": "array",
+      "description": "收窄/排除受检文档的裁决记录（CHG-12 登记面，无执行行为）：被排除路径不回 documents，理由与依据留痕于此",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "ref": { "type": "string", "description": "裁决依据引用（如 OPEN-n / 用户裁决日期）" }
+        },
+        "required": ["path", "reason"]
+      }
+    },
+    "manifest": { "type": "string", "minLength": 1 },
+    "allowedPublicAssets": { "type": "array", "items": { "type": "string" } },
+    "implementationNoiseTerms": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["schemaVersion", "suiteRoot", "documents", "manifest"]
+}

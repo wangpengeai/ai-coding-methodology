@@ -1,0 +1,14 @@
+{
+  "entries": [
+    {
+      "id": "FAST-1",
+      "category": "production-incident",
+      "owner": "dev",
+      "deadline": "2026-09-05T00:00:00+00:00",
+      "status": "temporary-mitigation",
+      "pendingSpec": "回调契约修订",
+      "pendingTests": "补单幂等测试",
+      "pendingTrace": "G-T 登记"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schema.open-item",
+  "title": "Structured open item (OPEN-n)",
+  "description": "规格中的未决内容只能使用结构化未决项；禁止自由文本 TODO/TBD。blocking 未决项不得进入 baseline 定稿；accepted-risk 必须附风险接受依据与触发条件。",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "pattern": "^OPEN-\\d+$" },
+    "status": { "type": "string", "enum": ["open", "resolved", "accepted-risk"] },
+    "owner": { "type": "string", "minLength": 1 },
+    "impact": { "type": "string", "minLength": 1 },
+    "blocking": { "type": "boolean" },
+    "resolutionTrigger": { "type": "string", "minLength": 1 },
+    "evidence": { "type": "string" },
+    "riskAcceptanceRationale": { "type": "string" },
+    "riskAcceptanceTrigger": { "type": "string" }
+  },
+  "required": ["id", "status", "owner", "impact", "blocking", "resolutionTrigger", "evidence"],
+  "if": { "properties": { "status": { "const": "accepted-risk" } } },
+  "then": { "required": ["riskAcceptanceRationale", "riskAcceptanceTrigger"] }
+}

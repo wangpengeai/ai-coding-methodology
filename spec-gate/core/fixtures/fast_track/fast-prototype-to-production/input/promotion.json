@@ -1,0 +1,7 @@
+{
+  "prototype": "spike-payment-retry",
+  "target": "production-branch",
+  "formalSpec": null,
+  "traceability": null,
+  "fullVerification": null
+}

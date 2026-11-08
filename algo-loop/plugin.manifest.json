@@ -1,0 +1,19 @@
+{
+  "manifestVersion": 1,
+  "name": "algo-loop",
+  "version": "0.23.4",
+  "description": "算法迭代纪律：指标契约、实验台账、bad case 库与基线注册表的迭代环编排，测量工具链由项目自建、插件不解析领域数据 —— 触发条件：项目已立项算法迭代（.algo/project.json 存在）或用户显式声明算法迭代/实验调优/bad case 处置意图时。",
+  "displayName": "AI Coding 方法论 · 算法迭代",
+  "author": "wangp",
+  "hooks": [
+    {
+      "event": "SessionStart",
+      "matcher": "startup|resume|clear|compact",
+      "type": "process",
+      "command": "node",
+      "args": ["${PLUGIN_ROOT}/hooks/session-start.mjs"],
+      "timeoutMs": 10000,
+      "statusMessage": "algo-loop 迭代摘要"
+    }
+  ]
+}

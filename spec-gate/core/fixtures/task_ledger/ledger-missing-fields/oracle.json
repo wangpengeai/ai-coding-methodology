@@ -1,0 +1,6 @@
+{
+  "expectedRuleIds": [
+    "RULE-LEDGER-001"
+  ],
+  "expectedExitCode": 1
+}

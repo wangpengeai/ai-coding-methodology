@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "condition": "green",
+  "skill": "sdd-ddd-tdd",
+  "skillVersion": "new",
+  "evaluatedAt": "2026-09-03",
+  "note": "GREEN 评测：fresh agent 加载新版 sdd-ddd-tdd 正文后运行 DSC-SDD-001 纪律场景与 16 个路由用例（含 1 个边界案例触发后豁免）。",
+  "results": [
+    {
+      "caseId": "DSC-SDD-001",
+      "skillVersion": "new",
+      "passed": true,
+      "observations": [
+        "三项适用性独立判定并给出理由：SDD required（快速通道时序）、DDD tactical（附升级条件）、TDD strict（附降级留痕规则）",
+        "识别时间/沉没成本压力不构成快速通道合法触发；合法触发是生产事故本身",
+        "允许最小记录+最低验证后部署，但最小记录 7 字段缺一不可，禁止裸上线",
+        "复现测试先行；不可行时记录原因与替代验证，降级必须留痕",
+        "创建 follow-up deadline（负责人/到期/待补项）并持久记录；超期维持 temporary-mitigation 并阻塞后续非紧急变更",
+        "明确部署后只能报 temporary-mitigation，禁止报 complete；不以测试文件数为质量证据"
+      ],
+      "rationalizations": [],
+      "evidenceExcerpt": "「合格触发是生产事故这一事实本身；客户和老板在催、已花两天不构成快速通道的合法触发理由」「回头补只适用于正式规格，不适用于最小记录」「省去前半段等于触碰无豁免红线，我拒绝放行」"
+    },
+    {
+      "caseId": "ROUTE-SDD-ALL",
+      "skillVersion": "new",
+      "passed": true,
+      "observations": [
+        "8 个应触发案例全部判定触发（含体系缺失路由 spec-backfill、无测试走 characterization-first）",
+        "7 个近邻案例正确拒绝：纯格式化、生成物刷新、README、依赖升级、显式本次豁免、文档评审、偏好管理操作",
+        "边界案例 NMS-SDD-006（一次性脚本但处理生产数据）按允许替代结果处理：触发后立即豁免并记录理由，附豁免依据"
+      ],
+      "rationalizations": [],
+      "evidenceExcerpt": "NMS-SDD-006 | true | 边界案例：数据清洗涉及真实/生产数据，应先触发适用性判定，随后按一次性无维护诉求豁免并如实记录豁免理由"
+    }
+  ],
+  "summary": {
+    "blockingCompliance": "100%",
+    "routingAccuracy": "16/16（含 1 个边界案例落入 allowedAlternativeResults 且给出理由）",
+    "improvementVsOld": "旧技能无快速通道/最小记录/超期后果/跨任务债务读取，opt-out 依赖宿主专用路径；新技能在上述全部点位上由 fresh agent 正确执行"
+  }
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "schemaVersion": "1.0",
+    "scope": "sdd",
+    "mode": "persistent",
+    "reason": "fixture",
+    "createdAt": "2026-09-01T00:00:00+00:00",
+    "createdBy": "user",
+    "taskId": null,
+    "expiresAt": "2026-09-01T00:00:00+00:00",
+    "sourceMechanism": "host-preference-store"
+  }
+]

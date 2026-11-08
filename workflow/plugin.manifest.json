@@ -1,0 +1,24 @@
+{
+  "manifestVersion": 1,
+  "name": "workflow",
+  "version": "0.23.4",
+  "description": "对话式开发流程引擎：workflow 的 20 个技能构成唯一路由体系（想法评估→澄清→计划→执行→调试→评审→收尾），含编码纪律、TDD、根因调试、只读定位 agent（code-reviewer 工具面含 Bash，受四命令白名单约束）与危险命令护栏 —— 触发条件：任何开发任务开始时先查 workflow 元技能路由表。",
+  "displayName": "AI Coding 方法论 · 工作流",
+  "author": "wangp",
+  "surfaces": {
+    "agents": { "defaultMount": false }
+  },
+  "hooks": [
+    { "event": "SessionStart", "matcher": "startup|resume|clear|compact", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/session-start.mjs"], "timeoutMs": 10000, "statusMessage": "workflow 元技能注入" },
+    { "event": "UserPromptSubmit", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/user-prompt.mjs"], "timeoutMs": 5000, "statusMessage": "workflow 路由提醒" },
+    { "event": "Stop", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/task-recap.mjs"], "timeoutMs": 5000, "statusMessage": "自察收尾提醒" },
+    { "event": "Stop", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/learnings-recap.mjs"], "timeoutMs": 5000, "statusMessage": "learnings 沉淀提醒" },
+    { "event": "Stop", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/verify-gate.mjs"], "timeoutMs": 60000, "statusMessage": "verify-gate 完成闸" },
+    { "event": "PreToolUse", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/check-careful.mjs"], "timeoutMs": 5000, "statusMessage": "危险命令护栏" },
+    { "event": "PreToolUse", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/check-freeze.mjs"], "timeoutMs": 5000, "statusMessage": "编辑冻结护栏" },
+    { "event": "PreToolUse", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/routing-gate.mjs"], "timeoutMs": 5000, "statusMessage": "任务租约闸" },
+    { "event": "PreToolUse", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/write-guard.mjs"], "timeoutMs": 2000, "statusMessage": "写仓闸（enforce）" },
+    { "event": "PostToolUseFailure", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/post-tool.mjs"], "timeoutMs": 5000, "statusMessage": "自察捕获（工具失败主通道）" },
+    { "event": "PostToolUse", "type": "process", "command": "node", "args": ["${PLUGIN_ROOT}/hooks/post-tool.mjs"], "timeoutMs": 5000, "statusMessage": "自察捕获（防御解析兜底）" }
+  ]
+}

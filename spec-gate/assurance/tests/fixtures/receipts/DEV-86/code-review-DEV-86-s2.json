@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "2.0.0",
+  "receiptId": "code-review-内部任务-86-s2",
+  "kind": "code-review",
+  "taskId": "内部任务-86",
+  "revision": {
+    "sourceRevision": {
+      "algorithm": "git-head-worktree-v1",
+      "head": "0b3b2a9ddb3907675090ac0bceb42701b08ad512",
+      "worktreeHash": "sha256:37b62aa6dda76ef0f3f4c7b2ec6bc626037e13df938498531dfce7a622a31725"
+    },
+    "specRevision": {
+      "algorithm": "spec-suite-v1",
+      "suiteHash": "sha256:c949c5dbc727cee20c74a4db09c04dffbaa1e2631dcb0e904be0d6e8e57e84b7",
+      "documents": "117"
+    },
+    "planSha256": {
+      "path": "内部计划",
+      "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
+    },
+    "algorithmVersion": "1"
+  },
+  "createdAt": "2026-10-18T11:34:02+08:00",
+  "status": "passed",
+  "stage": "2",
+  "stageReceipt": true,
+  "evidenceProfile": "full",
+  "summary": "门②项目约定维单实例评审：1 blocking+6 非阻塞全采纳并修（补 scout-tx 三例与直跑对拍、CLI 契约对齐、realpath 守卫、死协议面补测）",
+  "reviewInstances": 1,
+  "reviewMode": "single-instance",
+  "integritySha256": "sha256:71508c4bcd37c5706f3efe5fe1fc7bd7e740873afef7a14a3f95cb6985a066fe"
+}
