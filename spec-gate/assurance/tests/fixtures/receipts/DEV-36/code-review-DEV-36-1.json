@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "code-review-内部任务-36-1",
+  "receiptId": "code-review-DEV-36-1",
   "kind": "code-review",
-  "taskId": "内部任务-36",
+  "taskId": "DEV-36",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,16 +15,16 @@
       "documents": "115"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-17-DEV-36-open-item-tracking-phase1-with-lease-guidance-fix.md",
       "sha256": "sha256:a8dc1d8f2788838d75bc608c2d98d9536a45a5f2d977af1329cc13a0c9acaa28"
     },
     "algorithmVersion": "1"
   },
   "createdAt": "2026-10-17T16:46:15+08:00",
   "status": "passed",
-  "verificationReceipt": "verification-内部任务-36-1",
+  "verificationReceipt": "verification-DEV-36-1",
   "evidenceProfile": "full",
-  "summary": "三维并行终审（简洁性/正确性/项目约定）：8 发现全处置（F-A 内部未决-2 翻正/F-B 前瞻句回收/F-C 墓碑 101 条补关闭日/F-D 把守面纠偏/F-E 八源/F-F 阈值定值/F-G 承载收口/F-H 分诊句常量化/F-I 扫描单点），复验全绿",
+  "summary": "三维并行终审（简洁性/正确性/项目约定）：8 发现全处置（F-A OPEN-2 翻正/F-B 前瞻句回收/F-C 墓碑 101 条补关闭日/F-D 把守面纠偏/F-E 八源/F-F 阈值定值/F-G 承载收口/F-H 分诊句常量化/F-I 扫描单点），复验全绿",
   "reviewInstances": 3,
   "reviewMode": "three-dim",
   "integritySha256": "sha256:edacbe1f9e9bf3e92cd11512e98b04a7584bdc755918e39e91fa1c8866ba3d5c"

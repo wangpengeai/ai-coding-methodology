@@ -67,57 +67,57 @@ function withProvider(path) {
 
 test('open：v3 五字段落盘 + open 事件留痕 + status valid', async () => {
   const root = makeRoot();
-  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', owner: 'wangp' });
+  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', owner: 'wangp' });
   assert.equal(r.ok, true);
   const mode = JSON.parse(readFileSync(join(root, '.scout', 'mode.json'), 'utf8'));
   assert.equal(mode.schemaVersion, 3);
   assert.equal(mode.mode, 'explore');
-  assert.equal(mode.taskId, '内部任务-T-1');
+  assert.equal(mode.taskId, 'TASK-T-1');
   assert.ok(mode.transactionId);
   const ev = ledgerEvents(root);
   assert.equal(ev[0].event, 'open');
-  assert.equal(ev[0].taskId, '内部任务-T-1');
+  assert.equal(ev[0].taskId, 'TASK-T-1');
   assert.equal(ev[0].expiry, '2999-01-01');
   const s = m.status(root);
   assert.equal(s.valid, true);
   assert.equal(s.mode, 'explore');
-  assert.equal(s.taskId, '内部任务-T-1');
+  assert.equal(s.taskId, 'TASK-T-1');
 });
 
 test('open：参数校验（非法 mode / taskId / expiry 形态）拒绝且不写状态', async () => {
   const root = makeRoot();
-  assert.equal(m.open(root, { mode: 'bogus', expiry: '2999-01-01', taskId: '内部任务-T-1' }).ok, false);
+  assert.equal(m.open(root, { mode: 'bogus', expiry: '2999-01-01', taskId: 'TASK-T-1' }).ok, false);
   assert.equal(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'bad id!' }).ok, false);
-  assert.equal(m.open(root, { mode: 'explore', expiry: '01/01/2999', taskId: '内部任务-T-1' }).ok, false);
+  assert.equal(m.open(root, { mode: 'explore', expiry: '01/01/2999', taskId: 'TASK-T-1' }).ok, false);
   assert.equal(existsSync(join(root, '.scout', 'mode.json')), false);
   assert.deepEqual(ledgerEvents(root), []);
 });
 
-test('open：任务号并集形态（内部未决-76）——域前缀新形态通过，坏形态仍拒', async () => {
+test('open：任务号并集形态（OPEN-76）——域前缀新形态通过，坏形态仍拒', async () => {
   const root = makeRoot();
-  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-1' });
+  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'DEV-1' });
   assert.equal(r.ok, true, '域前缀任务号（workflow 新形态）可通过');
   const mode = JSON.parse(readFileSync(join(root, '.scout', 'mode.json'), 'utf8'));
-  assert.equal(mode.taskId, '内部任务-1');
+  assert.equal(mode.taskId, 'DEV-1');
   const root2 = makeRoot();
   assert.equal(m.open(root2, { mode: 'explore', expiry: '2999-01-01', taskId: 'dev-1' }).ok, false, '小写域码仍拒（并集只认大写域码）');
 });
 
 test('open：重复开启拒绝且既有状态保持', async () => {
   const root = makeRoot();
-  assert.equal(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' }).ok, true);
-  const again = m.open(root, { mode: 'disposable', expiry: '2999-02-02', taskId: '内部任务-T-2' });
+  assert.equal(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' }).ok, true);
+  const again = m.open(root, { mode: 'disposable', expiry: '2999-02-02', taskId: 'TASK-T-2' });
   assert.equal(again.ok, false);
   const s = m.status(root);
   assert.equal(s.valid, true);
   assert.equal(s.mode, 'explore');
-  assert.equal(s.taskId, '内部任务-T-1');
+  assert.equal(s.taskId, 'TASK-T-1');
 });
 
 test('renew：更新 expiry + transactionId 轮换 + renew 事件', async () => {
   const root = makeRoot();
-  const first = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
-  const r = m.renew(root, { taskId: '内部任务-T-1', newExpiry: '2999-06-01' });
+  const first = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
+  const r = m.renew(root, { taskId: 'TASK-T-1', newExpiry: '2999-06-01' });
   assert.equal(r.ok, true);
   const mode = JSON.parse(readFileSync(join(root, '.scout', 'mode.json'), 'utf8'));
   assert.equal(mode.expiry, '2999-06-01');
@@ -131,14 +131,14 @@ test('renew：更新 expiry + transactionId 轮换 + renew 事件', async () => 
 
 test('renew：非本任务或非活跃模式拒绝', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   assert.equal(m.renew(root, { taskId: 'TASK-OTHER', newExpiry: '2999-06-01' }).ok, false);
 });
 
 test('abandon：删除 mode + abandon 事件含 disposition', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'disposable', expiry: '2999-01-01', taskId: '内部任务-T-1' });
-  const r = m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档，不并入主干' });
+  m.open(root, { mode: 'disposable', expiry: '2999-01-01', taskId: 'TASK-T-1' });
+  const r = m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档，不并入主干' });
   assert.equal(r.ok, true);
   assert.equal(existsSync(join(root, '.scout', 'mode.json')), false);
   const ev = ledgerEvents(root).find((e) => e.event === 'abandon');
@@ -148,14 +148,14 @@ test('abandon：删除 mode + abandon 事件含 disposition', async () => {
 
 test('abandon：空 disposition 拒绝（B-M9-3 处置声明义务）', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'disposable', expiry: '2999-01-01', taskId: '内部任务-T-1' });
-  assert.equal(m.abandon(root, { taskId: '内部任务-T-1', disposition: '  ' }).ok, false);
+  m.open(root, { mode: 'disposable', expiry: '2999-01-01', taskId: 'TASK-T-1' });
+  assert.equal(m.abandon(root, { taskId: 'TASK-T-1', disposition: '  ' }).ok, false);
   assert.equal(m.status(root).valid, true);
 });
 
 test('status：过期声明 valid=false 且 overdue=true（保留 mode/expiry 供提醒）', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'explore', expiry: '2000-01-01', taskId: '内部任务-T-1' });
+  m.open(root, { mode: 'explore', expiry: '2000-01-01', taskId: 'TASK-T-1' });
   const s = m.status(root);
   assert.equal(s.valid, false);
   assert.equal(s.overdue, true);
@@ -170,7 +170,7 @@ test('并发单胜：新鲜他人锁存在时 open 认负退 1，状态不变', 
   mkdirSync(join(root, '.scout', 'transactions'), { recursive: true });
   const lockFd = openSync(join(root, '.scout', 'transactions', 'lock'), 'wx');
   closeSync(lockFd);
-  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   assert.equal(r.ok, false);
   assert.equal(m.status(root).valid, false);
 });
@@ -184,7 +184,7 @@ test('陈旧锁回收：mtime 超过 300s 的锁经 rename 占先后回收，ope
   closeSync(fd);
   const stale = new Date(Date.now() - 400_000);
   utimesSync(lockPath, stale, stale);
-  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+  const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   assert.equal(r.ok, true);
   assert.equal(m.status(root).valid, true);
   assert.equal(existsSync(lockPath), false);
@@ -194,12 +194,12 @@ test('陈旧锁回收：mtime 超过 300s 的锁经 rename 占先后回收，ope
 
 test('故障注入：journal 写后崩溃 → 无模式 + pendingRecovery → recover 回滚', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   const beforeMode = readFileSync(join(root, '.scout', 'mode.json'), 'utf8');
   const beforeLen = statSync(join(root, '.scout', 'ledger.jsonl')).size;
   m._testHooks.afterJournal = () => { throw new Error('注入故障：journal 后'); };
   try {
-    const r = m.renew(root, { taskId: '内部任务-T-1', newExpiry: '2999-07-01' });
+    const r = m.renew(root, { taskId: 'TASK-T-1', newExpiry: '2999-07-01' });
     assert.equal(r.ok, false);
   } finally {
     m._testHooks.afterJournal = null;
@@ -216,12 +216,12 @@ test('故障注入：journal 写后崩溃 → 无模式 + pendingRecovery → re
 
 test('故障注入：ledger append 后崩溃 → recover truncate 回滚、mode 未写新值', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   const beforeMode = JSON.parse(readFileSync(join(root, '.scout', 'mode.json'), 'utf8'));
   const beforeLen = statSync(join(root, '.scout', 'ledger.jsonl')).size;
   m._testHooks.afterLedgerAppend = () => { throw new Error('注入故障：ledger 后'); };
   try {
-    m.renew(root, { taskId: '内部任务-T-1', newExpiry: '2999-08-01' });
+    m.renew(root, { taskId: 'TASK-T-1', newExpiry: '2999-08-01' });
   } finally {
     m._testHooks.afterLedgerAppend = null;
   }
@@ -235,10 +235,10 @@ test('故障注入：ledger append 后崩溃 → recover truncate 回滚、mode 
 
 test('故障注入：abandon 中断 → recover 恢复 mode 文件', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   m._testHooks.afterLedgerAppend = () => { throw new Error('注入故障：mode 提交前'); };
   try {
-    m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' });
+    m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' });
   } finally {
     m._testHooks.afterLedgerAppend = null;
   }
@@ -249,7 +249,7 @@ test('故障注入：abandon 中断 → recover 恢复 mode 文件', async () =>
 
 test('recover：无 journal 残留只清锁（action=clean，幂等）', async () => {
   const root = makeRoot();
-  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+  m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   const r1 = m.recover(root);
   assert.equal(r1.ok, true);
   assert.equal(r1.action, 'clean');
@@ -265,7 +265,7 @@ test('migrateV2：合法未过期 v2 → 保留 mode/expiry/taskId、轮换 txId
   mkdirSync(join(root, '.scout'), { recursive: true });
   writeFileSync(
     join(root, '.scout', 'mode.json'),
-    JSON.stringify({ schemaVersion: 2, mode: 'disposable', expiry: '2999-03-03', taskId: '内部任务-V2-1', transactionId: 'oldtx' }),
+    JSON.stringify({ schemaVersion: 2, mode: 'disposable', expiry: '2999-03-03', taskId: 'TASK-V2-1', transactionId: 'oldtx' }),
   );
   const r = m.migrateV2(root);
   assert.equal(r.ok, true);
@@ -273,7 +273,7 @@ test('migrateV2：合法未过期 v2 → 保留 mode/expiry/taskId、轮换 txId
   assert.equal(mode.schemaVersion, 3);
   assert.equal(mode.mode, 'disposable');
   assert.equal(mode.expiry, '2999-03-03');
-  assert.equal(mode.taskId, '内部任务-V2-1');
+  assert.equal(mode.taskId, 'TASK-V2-1');
   assert.notEqual(mode.transactionId, 'oldtx');
   assert.ok(existsSync(join(root, '.scout', 'mode.json.v2-retired')));
   assert.ok(ledgerEvents(root).some((e) => e.event === 'migrate' && e.from === 'v2'));
@@ -298,10 +298,10 @@ test('migrateV2：v1 / 损坏 / 已过期 v2 拒绝迁移（按无模式处理�
   assert.equal(m.migrateV2(root3).ok, false);
 });
 
-test('故障注入：migrate-v2 中断 → pendingRecovery → recover 回滚到 v2 原件（内部验收-7 迁移中断项）', async () => {
+test('故障注入：migrate-v2 中断 → pendingRecovery → recover 回滚到 v2 原件（A-M9-7 迁移中断项）', async () => {
   const root = makeRoot();
   mkdirSync(join(root, '.scout'), { recursive: true });
-  const v2Text = `${JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-05-05', taskId: '内部任务-V2-9', transactionId: 'oldtx' })}\n`;
+  const v2Text = `${JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-05-05', taskId: 'TASK-V2-9', transactionId: 'oldtx' })}\n`;
   writeFileSync(join(root, '.scout', 'mode.json'), v2Text);
   m._testHooks.afterLedgerAppend = () => { throw new Error('注入故障：迁移留痕后'); };
   try {
@@ -326,7 +326,7 @@ test('SCOUT_TX_PROVIDER 指 .py：明示退役错误（计划修订 10），本�
   writeFileSync(py, '# legacy python bridge\n');
   const restore = withProvider(py);
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, true);
     assert.ok(String(r.warning).includes('已随 1b 退役，改指 scout-tx.mjs'), `实际 warning：${r.warning}`);
   } finally {
@@ -340,7 +340,7 @@ test('桥登记失败：open 仍 ok 但留 pendingSync 事件（本地权威不�
   const root = makeRoot();
   const restore = withProvider(makeBridgeStub(false));
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, true);
   } finally {
     restore();
@@ -353,7 +353,7 @@ test('sync：换成功 stub 重放 pendingSync → synced 事件、pendingSync �
   const root = makeRoot();
   const restoreFail = withProvider(makeBridgeStub(false));
   try {
-    m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   } finally {
     restoreFail();
   }
@@ -371,18 +371,18 @@ test('sync：换成功 stub 重放 pendingSync → synced 事件、pendingSync �
   assert.equal(ev.filter((e) => e.event === 'pendingSync').length, 0);
 });
 
-test('sync：后续成功事务按 taskId 压缩清除早期 pendingSync（不重放，内部决策-065 T6/F8）', async () => {
+test('sync：后续成功事务按 taskId 压缩清除早期 pendingSync（不重放，ADR-065 T6/F8）', async () => {
   const root = makeRoot();
   // 场景：open 桥失败留 pendingSync(txA) → 桥恢复后 abandon 直接登记成功 → 同 taskId 的早期意图被压缩清除
   const restoreFail = withProvider(makeBridgeStub(false));
   try {
-    m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
   } finally {
     restoreFail();
   }
   const restoreOk = withProvider(makeBridgeStub(true));
   try {
-    m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' }); // 成功事务按 taskId 压缩早期 pending
+    m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' }); // 成功事务按 taskId 压缩早期 pending
     const r = m.sync(root);
     assert.equal(r.ok, true);
     assert.equal(r.replayed, 0, '被取代的 open 意图不得重放');
@@ -402,7 +402,7 @@ test('v2 journal 兼容：before 含 ledgerText 的残留可被 recover 消费�
   mkdirSync(join(root, '.scout', 'transactions'), { recursive: true });
   writeFileSync(
     join(root, '.scout', 'mode.json'),
-    JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-V2', transactionId: 't' }),
+    JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-V2', transactionId: 't' }),
   );
   writeFileSync(
     join(root, '.scout', 'transactions', 'journal.json'),
@@ -446,7 +446,7 @@ function runCliAsync(args) {
 
 function seedValidMode(root) {
   mkdirSync(join(root, '.scout'), { recursive: true });
-  const text = `${JSON.stringify({ schemaVersion: 3, mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 'tx0' }, null, 2)}\n`;
+  const text = `${JSON.stringify({ schemaVersion: 3, mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 'tx0' }, null, 2)}\n`;
   writeFileSync(join(root, '.scout', 'mode.json'), text);
   return text;
 }
@@ -529,7 +529,7 @@ test('acquireLock：owner 写失败回滚自建锁且操作失败可见', () => 
   const root = makeRoot();
   m._testHooks.beforeLockOwnerWrite = () => { throw new Error('注入故障：owner 写失败'); };
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, false);
   } finally {
     m._testHooks.beforeLockOwnerWrite = null;
@@ -626,7 +626,7 @@ test('锁：盗到新鲜锁 → link 复原并认负（注入缝确定性）', (
     utimesSync(retired, new Date(), new Date());
   };
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.match(String(r.error), /让位|进行中/);
     assert.equal(existsSync(LOCKP(root)), true, '新鲜锁必须被 link 复原（不得删他人锁）');
@@ -650,7 +650,7 @@ test('锁：link 复原失败 → fail-stop 保留证据（注入缝）', () => 
     mkdirSync(lockPath);
   };
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.match(String(r.error), /fail-stop/);
     const retired = readdirSync(TX(root)).filter((n) => n.startsWith('lock.retired-'));
@@ -741,9 +741,9 @@ test('journal 残留：open/renew/abandon/migrate/sync 全部拒绝且 journal �
   const journalText = JSON.stringify({ schemaVersion: 1, transactionId: 't', op: 'open', state: 'prepared', before: { modeExists: true, modeText: 'x', ledgerLength: 0 } });
   writeFileSync(JOURNALP(root), journalText);
   const checks = [
-    m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-2' }),
-    m.renew(root, { taskId: '内部任务-T-1', newExpiry: '2999-02-02' }),
-    m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' }),
+    m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-2' }),
+    m.renew(root, { taskId: 'TASK-T-1', newExpiry: '2999-02-02' }),
+    m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' }),
     m.sync(root),
   ];
   for (const r of checks) {
@@ -752,7 +752,7 @@ test('journal 残留：open/renew/abandon/migrate/sync 全部拒绝且 journal �
     assert.match(String(r.error), /recover/, `失败回执须指向 recover：${JSON.stringify(r)}`);
   }
   // migrate-v2 需先有合法 v2 声明才会进入锁内守卫（无 v2 时按「无可迁移」返回，不触守卫）
-  writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 't2' }));
+  writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 't2' }));
   const mig = m.migrateV2(root);
   assert.equal(mig.ok, false, JSON.stringify(mig));
   assert.equal(mig.recoverRequired, true, JSON.stringify(mig));
@@ -767,7 +767,7 @@ test('open：锁内复核拦截并发覆盖', () => {
     writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 3, mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-OTHER', transactionId: 't' }));
   };
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.equal(r.concurrencyRejected, true, JSON.stringify(r));
   } finally {
@@ -783,7 +783,7 @@ test('abandon：删 mode 失败回滚退 1', () => {
     mkdirSync(mp); // unlink(目录) 抛 EISDIR/EPERM，触发 T5 失败回滚路径
   };
   try {
-    const r = m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' });
+    const r = m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' });
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.match(String(r.error), /删除失败|已回滚/, JSON.stringify(r));
   } finally {
@@ -798,9 +798,9 @@ test('sync：后续 renew 取代早期 pendingSync（中央=新 expiry/txId）',
   const restore = withProvider(stub.js);
   try {
     seedLedger(root, [
-      { at: 't0', event: 'pendingSync', op: 'open', taskId: '内部任务-T-1', transactionId: 'tx-old', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 'tx-old' } },
-      { at: 't1', event: 'renew', mode: 'explore', expiry: '2999-02-02', taskId: '内部任务-T-1', transactionId: 'tx-new' },
-      { at: 't2', event: 'pendingSync', op: 'renew', taskId: '内部任务-T-1', transactionId: 'tx-new', payload: { event: 'renew', mode: 'explore', expiry: '2999-02-02', taskId: '内部任务-T-1', transactionId: 'tx-new' } },
+      { at: 't0', event: 'pendingSync', op: 'open', taskId: 'TASK-T-1', transactionId: 'tx-old', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 'tx-old' } },
+      { at: 't1', event: 'renew', mode: 'explore', expiry: '2999-02-02', taskId: 'TASK-T-1', transactionId: 'tx-new' },
+      { at: 't2', event: 'pendingSync', op: 'renew', taskId: 'TASK-T-1', transactionId: 'tx-new', payload: { event: 'renew', mode: 'explore', expiry: '2999-02-02', taskId: 'TASK-T-1', transactionId: 'tx-new' } },
     ]);
     const r = m.sync(root);
     assert.equal(r.ok, true, JSON.stringify(r));
@@ -818,7 +818,7 @@ test('sync：后续 renew 取代早期 pendingSync（中央=新 expiry/txId）',
 test('sync：skippedInvalid payload 压缩且计数', () => {
   const root = makeRoot();
   seedLedger(root, [
-    { at: 't0', event: 'pendingSync', op: 'open', taskId: '内部任务-T-1', transactionId: 'tx-bad', payload: { event: 'open', mode: 'explore', taskId: '内部任务-T-1', transactionId: 'tx-bad' } },
+    { at: 't0', event: 'pendingSync', op: 'open', taskId: 'TASK-T-1', transactionId: 'tx-bad', payload: { event: 'open', mode: 'explore', taskId: 'TASK-T-1', transactionId: 'tx-bad' } },
   ]);
   const r = m.sync(root);
   assert.equal(r.ok, true, JSON.stringify(r));
@@ -833,7 +833,7 @@ test('sync：skippedInvalid payload 压缩且计数', () => {
 test('migrate-v2：非法 mode 拒绝', () => {
   const root = makeRoot();
   mkdirSync(join(root, '.scout'), { recursive: true });
-  writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'bogus', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 't' }));
+  writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'bogus', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 't' }));
   const r = m.migrateV2(root);
   assert.equal(r.ok, false, JSON.stringify(r));
   assert.match(String(r.error), /非法|无可迁移|合法 v2/);
@@ -842,7 +842,7 @@ test('migrate-v2：非法 mode 拒绝', () => {
 test('ledger：坏行 dropped 计数、压缩拒绝重写', () => {
   const root = makeRoot();
   mkdirSync(join(root, '.scout'), { recursive: true });
-  const goodPending = JSON.stringify({ at: 't0', event: 'pendingSync', op: 'open', taskId: '内部任务-T-1', transactionId: 'tx1', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 'tx1' } });
+  const goodPending = JSON.stringify({ at: 't0', event: 'pendingSync', op: 'open', taskId: 'TASK-T-1', transactionId: 'tx1', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 'tx1' } });
   writeFileSync(join(root, '.scout', 'ledger.jsonl'), `{bad-json-line\n${goodPending}\n`);
   const r = m.sync(root);
   assert.equal(r.ok, false, JSON.stringify(r));
@@ -857,7 +857,7 @@ test('sync：锁超预算（模拟）→ ok:false 保留 pending', () => {
   m._testHooks.syncBudgetMs = -1;
   try {
     seedLedger(root, [
-      { at: 't0', event: 'pendingSync', op: 'open', taskId: '内部任务-T-1', transactionId: 'tx1', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 'tx1' } },
+      { at: 't0', event: 'pendingSync', op: 'open', taskId: 'TASK-T-1', transactionId: 'tx1', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 'tx1' } },
     ]);
     const r = m.sync(root);
     assert.equal(r.ok, false, JSON.stringify(r));
@@ -879,7 +879,7 @@ test('sync：锁 owner 失配（写前 fencing）→ 放弃写入 ok:false', () 
   };
   try {
     seedLedger(root, [
-      { at: 't0', event: 'pendingSync', op: 'open', taskId: '内部任务-T-1', transactionId: 'tx1', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 'tx1' } },
+      { at: 't0', event: 'pendingSync', op: 'open', taskId: 'TASK-T-1', transactionId: 'tx1', payload: { event: 'open', mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 'tx1' } },
     ]);
     const r = m.sync(root);
     assert.equal(r.ok, false, JSON.stringify(r));
@@ -906,12 +906,12 @@ test('桥缺席：open 零 pendingSync/零 warning；abandon 静默 pendingSync�
   const root = makeRoot();
   m._testHooks.bridgePresent = false;
   try {
-    const opened = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', owner: 'wangp' });
+    const opened = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', owner: 'wangp' });
     assert.equal(opened.ok, true, JSON.stringify(opened));
     assert.equal(opened.warning, undefined, '桥缺席不得 warning');
     let events = readFileSync(join(root, '.scout', 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
     assert.equal(events.filter((e) => e.event === 'pendingSync').length, 0, 'open 桥缺席不落 pendingSync');
-    const ab = m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' });
+    const ab = m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' });
     assert.equal(ab.ok, true, JSON.stringify(ab));
     assert.equal(ab.warning, undefined, '桥缺席 abandon 不 warning');
     events = readFileSync(join(root, '.scout', 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
@@ -933,7 +933,7 @@ test('桥失败：warning 含 stderr 首行（T10 诊断）', () => {
   const prev = process.env.SCOUT_TX_PROVIDER;
   process.env.SCOUT_TX_PROVIDER = makeStderrBridge();
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, true, JSON.stringify(r));
     assert.match(String(r.warning), /bridge-stderr-first/, String(r.warning));
   } finally {
@@ -948,7 +948,7 @@ test('崩溃：register 成功后 compact 前中断 → pendingSync 保留、再
   m._testHooks.afterBridgeBeforeCompact = () => { throw new Error('注入：登记成功后压缩前中断'); };
   const restore = withProvider(makeRecordingBridge().js);
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.match(String(r.error), /事务失败/);
     assert.equal(existsSync(JOURNALP(root)), false, 'journal 已清（崩溃点在 journalClear 之后）');
@@ -972,7 +972,7 @@ test('compact 失败：warning + pendingSync 保留（⑫）', () => {
   m._testHooks.compactFail = () => { throw new Error('注入：压缩失败'); };
   const restore = withProvider(makeRecordingBridge().js);
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, true, JSON.stringify(r));
     assert.match(String(r.warning), /压缩失败/, String(r.warning));
     const events = readFileSync(join(root, '.scout', 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
@@ -993,9 +993,9 @@ test('owner：renew/abandon 未显式传 owner 时沿用最近声明 owner（T11
   const rec = makeRecordingBridge();
   const restore = withProvider(rec.js);
   try {
-    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', owner: 'wangp' }).ok);
-    assert.ok(m.renew(root, { taskId: '内部任务-T-1', newExpiry: '2999-02-02' }).ok);
-    assert.ok(m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' }).ok);
+    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', owner: 'wangp' }).ok);
+    assert.ok(m.renew(root, { taskId: 'TASK-T-1', newExpiry: '2999-02-02' }).ok);
+    assert.ok(m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' }).ok);
     const calls = rec.calls();
     assert.equal(calls.length, 3, JSON.stringify(calls));
     for (const argv of calls) {
@@ -1012,7 +1012,7 @@ test('sync：桥在场时零 pending 也补登当前声明（T8）', () => {
   const root = makeRoot();
   m._testHooks.bridgePresent = false;
   try {
-    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', owner: 'wangp' }).ok);
+    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', owner: 'wangp' }).ok);
   } finally {
     m._testHooks.bridgePresent = null;
   }
@@ -1026,7 +1026,7 @@ test('sync：桥在场时零 pending 也补登当前声明（T8）', () => {
     const calls = rec.calls();
     assert.equal(calls.length, 1, JSON.stringify(calls));
     assert.ok(calls[0].includes('2999-01-01'));
-    assert.ok(calls[0].includes('内部任务-T-1'));
+    assert.ok(calls[0].includes('TASK-T-1'));
   } finally {
     restore();
     m._testHooks.bridgePresent = null;
@@ -1066,22 +1066,22 @@ test('sync：本地 expired/absent + 中央 active → 不自动补偿（只留 
 
 test('CLI：非法参数退 2，正常 open 退 0，双开退 1', async () => {
   const root = makeRoot();
-  const bad = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'bogus', '--expiry', '2999-01-01', '--task-id', '内部任务-T-1'], { encoding: 'utf8' });
+  const bad = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'bogus', '--expiry', '2999-01-01', '--task-id', 'TASK-T-1'], { encoding: 'utf8' });
   assert.equal(bad.status, 2);
-  const good = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'explore', '--expiry', '2999-01-01', '--task-id', '内部任务-T-1'], { encoding: 'utf8' });
+  const good = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'explore', '--expiry', '2999-01-01', '--task-id', 'TASK-T-1'], { encoding: 'utf8' });
   assert.equal(good.status, 0);
-  const dup = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'disposable', '--expiry', '2999-02-02', '--task-id', '内部任务-T-2'], { encoding: 'utf8' });
+  const dup = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'disposable', '--expiry', '2999-02-02', '--task-id', 'TASK-T-2'], { encoding: 'utf8' });
   assert.equal(dup.status, 1);
 });
 
-test('内部决策-045 三段任务号受理（与 workflow 主源形态同步——内部未决-125 scout 侧钉死哨兵）', async () => {
+test('ADR-045 三段任务号受理（与 workflow 主源形态同步——OPEN-125 scout 侧钉死哨兵）', async () => {
   const root = makeRoot();
   try {
-    const ok3 = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'explore', '--expiry', '2999-01-01', '--task-id', '内部任务-WP-1'], { encoding: 'utf8' });
+    const ok3 = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'explore', '--expiry', '2999-01-01', '--task-id', 'DEV-WP-1'], { encoding: 'utf8' });
     assert.equal(ok3.status, 0, '三段形态 open 受理（可选维护者段）');
     const badLower = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'disposable', '--expiry', '2999-02-02', '--task-id', 'DEV-wp-2'], { encoding: 'utf8' });
     assert.equal(badLower.status, 2, '维护者码小写拒（invalidArgs 退 2）');
-    const bad4 = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'disposable', '--expiry', '2999-03-03', '--task-id', '内部任务-WP-X-3'], { encoding: 'utf8' });
+    const bad4 = spawnSync(process.execPath, [CLI, '--project-root', root, 'open', '--mode', 'disposable', '--expiry', '2999-03-03', '--task-id', 'DEV-WP-X-3'], { encoding: 'utf8' });
     assert.equal(bad4.status, 2, '四段形态拒');
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -1096,9 +1096,9 @@ test('owner：renew/abandon 显式 --owner 覆盖最近声明 owner（T11）', (
   const rec = makeRecordingBridge();
   const restore = withProvider(rec.js);
   try {
-    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', owner: 'wangp' }).ok);
-    assert.ok(m.renew(root, { taskId: '内部任务-T-1', newExpiry: '2999-02-02', owner: 'explicit-renew' }).ok);
-    assert.ok(m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档', owner: 'explicit-abandon' }).ok);
+    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', owner: 'wangp' }).ok);
+    assert.ok(m.renew(root, { taskId: 'TASK-T-1', newExpiry: '2999-02-02', owner: 'explicit-renew' }).ok);
+    assert.ok(m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档', owner: 'explicit-abandon' }).ok);
     const owners = rec.calls().map((argv) => argv[argv.indexOf('--owner') + 1]);
     assert.deepEqual(owners, ['wangp', 'explicit-renew', 'explicit-abandon'], JSON.stringify(rec.calls()));
   } finally {
@@ -1113,9 +1113,9 @@ test('abandon + compactFail → sync 幂等收敛且审计字段保留（⑰）'
   const rec = makeRecordingBridge();
   const restore = withProvider(rec.js);
   try {
-    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', owner: 'wangp' }).ok);
+    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', owner: 'wangp' }).ok);
     m._testHooks.compactFail = () => { throw new Error('注入：压缩失败'); };
-    const ab = m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' });
+    const ab = m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' });
     assert.equal(ab.ok, true, JSON.stringify(ab));
     assert.match(String(ab.warning), /压缩失败/, String(ab.warning));
     let events = readFileSync(join(root, '.scout', 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
@@ -1188,7 +1188,7 @@ test('桥失败：stdout 非 JSON → warning 含 stdout 原文摘要（T10）',
   const restore = withProvider(stub);
   m._testHooks.bridgePresent = true;
   try {
-    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' });
+    const r = m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' });
     assert.equal(r.ok, true, JSON.stringify(r));
     assert.match(String(r.warning), /stdout: bridge-stdout-garbage/, String(r.warning));
   } finally {
@@ -1200,7 +1200,7 @@ test('桥失败：stdout 非 JSON → warning 含 stdout 原文摘要（T10）',
 test('migrate-v2：桥调用携带 owner（缺省 unknown，F6）', () => {
   const root = makeRoot();
   mkdirSync(join(root, '.scout'), { recursive: true });
-  writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1', transactionId: 'tx-v2' }));
+  writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1', transactionId: 'tx-v2' }));
   const rec = makeRecordingBridge();
   const restore = withProvider(rec.js);
   m._testHooks.bridgePresent = true;
@@ -1223,8 +1223,8 @@ test('sync：declarationHint 按 reason 分态（absent→null；corrupt→recov
   const restore = withProvider(rec.js);
   m._testHooks.bridgePresent = true;
   try {
-    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' }).ok);
-    assert.ok(m.abandon(root, { taskId: '内部任务-T-1', disposition: '归档' }).ok);
+    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' }).ok);
+    assert.ok(m.abandon(root, { taskId: 'TASK-T-1', disposition: '归档' }).ok);
     const absent = m.sync(root);
     assert.equal(absent.ok, true, JSON.stringify(absent));
     assert.equal(absent.skippedDeclaration, true, JSON.stringify(absent));
@@ -1236,11 +1236,11 @@ test('sync：declarationHint 按 reason 分态（absent→null；corrupt→recov
     assert.equal(corrupt.ok, true, JSON.stringify(corrupt));
     assert.equal(corrupt.declarationReason, 'corrupt', JSON.stringify(corrupt));
     assert.match(String(corrupt.declarationHint), /recover/, JSON.stringify(corrupt));
-    writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-2', transactionId: 't' }));
+    writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-2', transactionId: 't' }));
     const v2 = m.sync(root);
     assert.equal(v2.declarationReason, 'migratable-v2', JSON.stringify(v2));
     assert.match(String(v2.declarationHint), /migrate-v2/, JSON.stringify(v2));
-    writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 3, mode: 'explore', expiry: '2000-01-01', taskId: '内部任务-T-3', transactionId: 't' }));
+    writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 3, mode: 'explore', expiry: '2000-01-01', taskId: 'TASK-T-3', transactionId: 't' }));
     const expired = m.sync(root);
     assert.equal(expired.declarationReason, 'expired', JSON.stringify(expired));
     assert.match(String(expired.declarationHint), /到期检查点/, JSON.stringify(expired));
@@ -1258,12 +1258,12 @@ test('故障注入：mode 原子写后崩溃 → recover 回滚到事务前 mode
   const ledgerPath = join(root, '.scout', 'ledger.jsonl');
   const ledgerLines = () => readFileSync(ledgerPath, 'utf8').split('\n').filter(Boolean).length;
   try {
-    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-T-1' }).ok);
+    assert.ok(m.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'TASK-T-1' }).ok);
     const beforeMode = readFileSync(modePath);
     const beforeLines = ledgerLines();
     // rename 后崩溃：磁盘 mode 已写新值（判别性），recover 必须回滚到事务前字节
     m._testHooks.afterModeWrite = () => { throw new Error('注入：mode 原子写后中断'); };
-    const r = m.renew(root, { taskId: '内部任务-T-1', newExpiry: '2999-02-02' });
+    const r = m.renew(root, { taskId: 'TASK-T-1', newExpiry: '2999-02-02' });
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.notDeepEqual(readFileSync(modePath), beforeMode, '崩溃后 mode 字节须已写新值（自证注入点）');
     assert.ok(ledgerLines() > beforeLines, 'ledger 已追加（待回滚）');

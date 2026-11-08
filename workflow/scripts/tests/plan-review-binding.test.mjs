@@ -26,7 +26,7 @@ function fixture({ planText = '# 计划正文\n', sidecar = null } = {}) {
   if (sidecar !== null) writeFileSync(join(proj, 'docs', 'plans', 'feat-review.md'), sidecar);
   return {
     proj,
-    planRel: '内部计划',
+    planRel: 'docs/plans/feat.md',
     cleanup() {
       rmSync(home, { recursive: true, force: true });
     },
@@ -37,7 +37,7 @@ function fixture({ planText = '# 计划正文\n', sidecar = null } = {}) {
  *  listPrefix=true 时结论行渲染为列表形——形态误写用例的唯一出口。
  *  includeReviewFields=false 用于锁「三评审字段是新凭据必填」的拒绝面。 */
 function v2Sidecar({
-  taskId = '内部任务-1', planRel = '内部计划', planText = '# 计划正文\n',
+  taskId = 'TASK-1', planRel = 'docs/plans/feat.md', planText = '# 计划正文\n',
   pass = true, ratify = false, ratifyValue = 'host-plan', specRefs = false, listPrefix = false,
   includeReviewFields = true, includeReviewInstances = true,
   reviewMode = null, reviewInstances = null, reviewReason = null,
@@ -62,7 +62,7 @@ function v2Sidecar({
       `reviewReason: "${reason}"`,
     ] : []),
     ...(ratify ? [`ratify: ${ratifyValue}`] : []),
-    ...(specRefs ? ['specRefs: [内部需求-1, 内部决策-007]'] : []), // 内部未决-9 同源追溯容忍字段
+    ...(specRefs ? ['specRefs: [FR-wf-1, ADR-007]'] : []), // 内部未决-9 同源追溯容忍字段
     '---',
     '',
   ].join('\n');
@@ -75,7 +75,7 @@ function v2Sidecar({
  *  A9（内部任务-193）：ratify/ratifyValue/extraFrontmatter 必须真写进 frontmatter——旧的
  *  「内部决策-020 容忍」用例通过 v2 helper 传 ratify 但 v3 路径静默丢弃，用例是空载的。 */
 function v3Sidecar({
-  taskId = '内部任务-1', planRel = '内部计划', planText = '# 计划正文\n',
+  taskId = 'TASK-1', planRel = 'docs/plans/feat.md', planText = '# 计划正文\n',
   mode = 'independent', instances = 2, round = 1, provenance = null, pass = true,
   reason = null, omitRound = false, omitProvenance = false, rawProvenance = null,
   ratify = false, ratifyValue = 'host-plan', extraFrontmatter = [],
@@ -110,7 +110,7 @@ function v3Sidecar({
 
 /** 生成可变规模的计划文本：steps 个步骤标题 + 可选文件级清单/代码围栏。 */
 function sizedPlan({ steps = 0, files = [], includeFileList = true, fence = false } = {}) {
-  const lines = ['---', 'specRefs: [内部需求-1]', '---', '# 规模计划', ''];
+  const lines = ['---', 'specRefs: [FR-wf-1]', '---', '# 规模计划', ''];
   if (fence) lines.push('```js', '### 步骤 99：围栏内的假步骤', '| 1 | `src/fenced.mjs` | 新建 | 职责 |', '```', '');
   for (let i = 1; i <= steps; i += 1) {
     lines.push(`### 步骤 ${i}：做第 ${i} 件事`, '', '验收：命令退出 0', '');
@@ -130,7 +130,7 @@ function sizedPlan({ steps = 0, files = [], includeFileList = true, fence = fals
 test('合法 v2 sidecar：哈希与 taskId 一致且结论通过 → 放行', () => {
   const f = fixture({ sidecar: v2Sidecar() });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, true);
     assert.equal(r.planSha256, lfHash('# 计划正文\n'));
   } finally {
@@ -142,7 +142,7 @@ test('评审后计划改一字 → 拒绝（哈希失配）', () => {
   const f = fixture({ sidecar: v2Sidecar() });
   try {
     writeFileSync(join(f.proj, f.planRel), '# 计划正文改\n');
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /哈希/);
   } finally {
@@ -151,12 +151,12 @@ test('评审后计划改一字 → 拒绝（哈希失配）', () => {
 });
 
 test('仓库中其他计划的通过记录不构成本计划凭据', () => {
-  const f = fixture({ sidecar: v2Sidecar({ planRel: '内部计划', planText: '# 计划正文\n' }) });
+  const f = fixture({ sidecar: v2Sidecar({ planRel: 'docs/plans/feat.md', planText: '# 计划正文\n' }) });
   try {
     // 另一份计划 other.md 与其通过 sidecar——feat.md 声明不得被其放行
     writeFileSync(join(f.proj, 'docs', 'plans', 'other.md'), '# 其他计划\n');
-    writeFileSync(join(f.proj, 'docs', 'plans', 'other-review.md'), v2Sidecar({ planRel: '内部计划', planText: '# 其他计划\n' }));
-    const r = verifyReviewedPlan(f.proj, '内部计划', '内部任务-1');
+    writeFileSync(join(f.proj, 'docs', 'plans', 'other-review.md'), v2Sidecar({ planRel: 'docs/plans/other.md', planText: '# 其他计划\n' }));
+    const r = verifyReviewedPlan(f.proj, 'docs/plans/feat-review-wrong-target.md', 'TASK-1');
     // 目标计划不存在 → 拒绝
     assert.equal(r.ok, false);
   } finally {
@@ -165,9 +165,9 @@ test('仓库中其他计划的通过记录不构成本计划凭据', () => {
 });
 
 test('sidecar taskId 与声明 taskId 不一致 → 拒绝', () => {
-  const f = fixture({ sidecar: v2Sidecar({ taskId: '内部任务-9' }) });
+  const f = fixture({ sidecar: v2Sidecar({ taskId: 'TASK-9' }) });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /taskId/);
   } finally {
@@ -178,13 +178,13 @@ test('sidecar taskId 与声明 taskId 不一致 → 拒绝', () => {
 test('sidecar planPath 与实际计划不一致 → 拒绝', () => {
   const planText = '# 计划正文\n';
   const fm = [
-    '---', 'schemaVersion: 2', 'taskId: 内部任务-1', 'planPath: 内部计划',
+    '---', 'schemaVersion: 2', 'taskId: TASK-1', 'planPath: docs/plans/evil.md',
     `planSha256: ${lfHash(planText)}`, 'reviewedAt: 2026-09-13T00:00:00+08:00',
     'reviewMode: self', 'reviewInstances: 0', 'reviewReason: "planPath 不一致夹具"', '---', '',
   ].join('\n');
   const f = fixture({ sidecar: `${fm}结论：通过\n` });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /planPath/);
   } finally {
@@ -195,8 +195,8 @@ test('sidecar planPath 与实际计划不一致 → 拒绝', () => {
 test('路径越界（../ 与绝对路径）→ 拒绝', () => {
   const f = fixture({ sidecar: v2Sidecar() });
   try {
-    assert.equal(verifyReviewedPlan(f.proj, '../escape.md', '内部任务-1').ok, false);
-    assert.equal(verifyReviewedPlan(f.proj, '/etc/passwd', '内部任务-1').ok, false);
+    assert.equal(verifyReviewedPlan(f.proj, '../escape.md', 'TASK-1').ok, false);
+    assert.equal(verifyReviewedPlan(f.proj, '/etc/passwd', 'TASK-1').ok, false);
   } finally {
     f.cleanup();
   }
@@ -205,7 +205,7 @@ test('路径越界（../ 与绝对路径）→ 拒绝', () => {
 test('legacy sidecar（无 frontmatter 哈希）→ 拒绝并提示迁移', () => {
   const f = fixture({ sidecar: '# 评审记录\n\n结论：通过\n' });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /legacy|迁移/);
   } finally {
@@ -216,7 +216,7 @@ test('legacy sidecar（无 frontmatter 哈希）→ 拒绝并提示迁移', () =
 test('结论不通过 → 拒绝（即使哈希正确）', () => {
   const f = fixture({ sidecar: v2Sidecar({ pass: false }) });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /不通过|结论/);
   } finally {
@@ -230,7 +230,7 @@ test('结论不通过 → 拒绝（即使哈希正确）', () => {
 test('列表形结论行（- 结论：通过）→ 拒因指明列表前缀与顶格要求', () => {
   const f = fixture({ sidecar: v2Sidecar({ listPrefix: true }) });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /列表前缀/);
     assert.match(r.reason ?? '', /顶格独占/);
@@ -245,7 +245,7 @@ test('顶格不通过 + 正文引述列表形结论行 → 拒因保持「非通
   const quoted = `${v2Sidecar({ pass: false })}- 结论：通过（上次记录）\n`;
   const f = fixture({ sidecar: quoted });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.doesNotMatch(r.reason ?? '', /列表前缀/);
     assert.match(r.reason ?? '', /不通过|结论/);
@@ -257,18 +257,18 @@ test('顶格不通过 + 正文引述列表形结论行 → 拒因保持「非通
 test('无 sidecar / 计划不存在 → 拒绝', () => {
   const f = fixture({ sidecar: null });
   try {
-    assert.equal(verifyReviewedPlan(f.proj, f.planRel, '内部任务-1').ok, false);
-    assert.equal(verifyReviewedPlan(f.proj, '内部计划', '内部任务-1').ok, false);
+    assert.equal(verifyReviewedPlan(f.proj, f.planRel, 'TASK-1').ok, false);
+    assert.equal(verifyReviewedPlan(f.proj, 'docs/plans/missing.md', 'TASK-1').ok, false);
   } finally {
     f.cleanup();
   }
 });
 
 test('planSha256 输出与 assurance 口径一致（LF 规范化）', () => {
-  const f = fixture({ planText: '---\r\nspecRefs: [内部需求-1]\r\n---\r\n# P\r\n' });
+  const f = fixture({ planText: '---\r\nspecRefs: [FR-wf-1]\r\n---\r\n# P\r\n' });
   try {
     // CRLF 计划的哈希必须等于手工 LF 版本（与 assurance/revision.py 同语义）
-    const manual = lfHash('---\nspecRefs: [内部需求-1]\n---\n# P\n');
+    const manual = lfHash('---\nspecRefs: [FR-wf-1]\n---\n# P\n');
     assert.equal(planSha256(join(f.proj, f.planRel)), manual);
   } finally {
     f.cleanup();
@@ -284,7 +284,7 @@ test('planSha256 输出与 assurance 口径一致（LF 规范化）', () => {
 test('宿主追认档（ratify: host-plan）v2 sidecar：四字段齐备且结论通过 → 放行', () => {
   const f = fixture({ sidecar: v2Sidecar({ ratify: true }) });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, true, 'ratify 字段不得破坏凭据判定（追认档与标准档同等放行）');
     assert.equal(r.planSha256, lfHash('# 计划正文\n'));
   } finally {
@@ -295,7 +295,7 @@ test('宿主追认档（ratify: host-plan）v2 sidecar：四字段齐备且结�
 test('ratify sidecar 但正文结论不通过 → 仍拒（追认标记不豁免结论行契约）', () => {
   const f = fixture({ sidecar: v2Sidecar({ ratify: true, pass: false }) });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /不通过|结论/);
   } finally {
@@ -305,10 +305,10 @@ test('ratify sidecar 但正文结论不通过 → 仍拒（追认标记不豁免
 
 // 内部未决-9 批次（2026-09-15）：sidecar 携带 specRefs 同源追溯字段（供 core plan 批量扫描）
 // ——与 ratify 同类的非凭据容忍字段，verifyReviewedPlan 零感知。
-test('specRefs 同源追溯字段（内部未决-9）：sidecar 凭据判定不受影响 → 放行', () => {
+test('specRefs 同源追溯字段（OPEN-9）：sidecar 凭据判定不受影响 → 放行', () => {
   const f = fixture({ sidecar: v2Sidecar({ specRefs: true }) });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, true, 'specRefs 字段不得破坏凭据判定（同源追溯容忍）');
   } finally {
     f.cleanup();
@@ -324,7 +324,7 @@ test('P1 序列：canonical=旧哈希不通过 + review2=现哈希通过 → 放
   const f = fixture({ planText: '# 修订后计划\n', sidecar: v2Sidecar({ planText: '# 旧版计划\n', pass: false }) });
   try {
     writeFileSync(join(f.proj, 'docs', 'plans', 'feat-review2.md'), v2Sidecar({ planText: '# 修订后计划\n', pass: true }));
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, true, 'review2 内容匹配（当前哈希+通过）即构成 v2 凭据');
     assert.equal(r.planSha256, lfHash('# 修订后计划\n'));
   } finally {
@@ -336,7 +336,7 @@ test('P1 序列：canonical=通过 + 历史轮归档（-review-round1.md 旧哈�
   const f = fixture({ sidecar: v2Sidecar({ pass: true }) });
   try {
     writeFileSync(join(f.proj, 'docs', 'plans', 'feat-review-round1.md'), v2Sidecar({ planText: '# 旧版计划\n', pass: false }));
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, true, 'canonical 直接过，归档轮并存不失效');
   } finally {
     f.cleanup();
@@ -347,7 +347,7 @@ test('P1 序列：canonical 缺失 + 仅 review2=现哈希通过 → 放行', ()
   const f = fixture({ sidecar: null });
   try {
     writeFileSync(join(f.proj, 'docs', 'plans', 'feat-review2.md'), v2Sidecar({ pass: true }));
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, true, '序列扫描不要求 canonical 存在');
   } finally {
     f.cleanup();
@@ -358,7 +358,7 @@ test('P1 序列：全序列哈希失配 → 拒绝并注记扫描未命中', () 
   const f = fixture({ sidecar: v2Sidecar({ planText: '# 旧版一\n', pass: false }) });
   try {
     writeFileSync(join(f.proj, 'docs', 'plans', 'feat-review2.md'), v2Sidecar({ planText: '# 旧版二\n', pass: true }));
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.match(r.reason ?? '', /序列/);
     assert.match(r.reason ?? '', /未命中/);
@@ -378,17 +378,17 @@ test('W4 planRoot 解耦：缺省=声明键仓根（行为等价）；显式 pla
   mkdirSync(join(main, 'docs', 'plans'), { recursive: true });
   const planText = '# W4 计划\n';
   writeFileSync(join(main, 'docs', 'plans', 'w4.md'), planText);
-  const fm = `---\nschemaVersion: 2\ntaskId: 内部任务-4\nplanPath: 内部计划\nplanSha256: ${lfHash(planText)}\nreviewedAt: 2026-09-16T00:00:00+08:00\nreviewMode: self\nreviewInstances: 0\nreviewReason: "W4 夹具"\n---\n\n`;
+  const fm = `---\nschemaVersion: 2\ntaskId: TASK-4\nplanPath: docs/plans/w4.md\nplanSha256: ${lfHash(planText)}\nreviewedAt: 2026-09-16T00:00:00+08:00\nreviewMode: self\nreviewInstances: 0\nreviewReason: "W4 夹具"\n---\n\n`;
   writeFileSync(join(main, 'docs', 'plans', 'w4-review.md'), `${fm}结论：通过\n`);
   try {
     // 缺省：凭据按声明键仓根解析——嵌套仓根下无 内部计划 → 拒（既有行为保持）
-    const def = verifyReviewedPlan(nested, '内部计划', '内部任务-4');
+    const def = verifyReviewedPlan(nested, 'docs/plans/w4.md', 'TASK-4');
     assert.equal(def.ok, false, '缺省行为等价回归：凭据根=声明键仓根');
     // 显式 planRoot=主仓根 → 命中凭据（W4 解锁的形态）
-    const dec = verifyReviewedPlan(nested, '内部计划', '内部任务-4', main);
+    const dec = verifyReviewedPlan(nested, 'docs/plans/w4.md', 'TASK-4', main);
     assert.equal(dec.ok, true, '显式 planRoot 放行嵌套键声明');
     // planRoot 不存在 → 专属拒因（防以任意目录的 sidecar 冒充凭据）
-    const bad = verifyReviewedPlan(nested, '内部计划', '内部任务-4', join(home, 'nope'));
+    const bad = verifyReviewedPlan(nested, 'docs/plans/w4.md', 'TASK-4', join(home, 'nope'));
     assert.equal(bad.ok, false);
     assert.ok(String(bad.reason).includes('plan-root'), '非法 planRoot 专属拒因');
   } finally {
@@ -424,7 +424,7 @@ test('planChangeSurface：超过 8 步 / 超过 8 文件 / 超过 2 新模块才
   assert.equal(manyModules.newModules, 3);
   assert.equal(manyModules.overThreshold, true, '3 个新模块触发');
 
-  const pureDoc = planChangeSurface(sizedPlan({ steps: 9, files: [{ path: '内部计划', action: '新建' }] }));
+  const pureDoc = planChangeSurface(sizedPlan({ steps: 9, files: [{ path: 'docs/plans/x.md', action: '新建' }] }));
   assert.equal(pureDoc.isImplementation, false, '纯文档计划不因步骤多被判实现类');
   assert.equal(pureDoc.overThreshold, false, '纯文档计划不触发独立实例义务');
 });
@@ -435,7 +435,7 @@ test('planChangeSurface：代码围栏与过程文件节不计数；无文件清
   assert.equal(fenced.isImplementation, true, '代码围栏标识实现类');
 
   const proseImpl = planChangeSurface([
-    '---', 'specRefs: [内部需求-1]', '---', '# 计划', '',
+    '---', 'specRefs: [FR-wf-1]', '---', '# 计划', '',
     '### 步骤 1：改 routing-lib 的 hook', '', '验收：测试退出 0', '',
   ].join('\n'));
   assert.equal(proseImpl.hasFileList, false);
@@ -445,18 +445,18 @@ test('planChangeSurface：代码围栏与过程文件节不计数；无文件清
   const withProcess = planChangeSurface([
     sizedPlan({ steps: 1, files: ['src/a.mjs'] }),
     '## 过程文件', '',
-    '- `内部证据`',
+    '- `docs/plans/evidence/DEV-156/execution-log.md`',
   ].join('\n'));
   assert.equal(withProcess.files, 1, '过程文件节路径不计入文件数');
 });
 
 test('planChangeSurface：文件清单格式/目录级/职责列/过宽令牌/清单外代码路径（W1 评审处置）', () => {
-  const ordered = ['---', 'specRefs: [内部需求-1]', '---', '# 计划', '', '## 文件清单', '',
+  const ordered = ['---', 'specRefs: [FR-wf-1]', '---', '# 计划', '', '## 文件清单', '',
     ...Array.from({ length: 9 }, (_, i) => `${i + 1}. \`src/f${i}.mjs\``)].join('\n');
   assert.equal(planChangeSurface(ordered).files, 9, '有序列表文件清单计数');
   assert.equal(planChangeSurface(ordered).overThreshold, true, '有序列表 9 文件触发');
 
-  const pipeless = ['---', 'specRefs: [内部需求-1]', '---', '# 计划', '', '## 文件清单', '',
+  const pipeless = ['---', 'specRefs: [FR-wf-1]', '---', '# 计划', '', '## 文件清单', '',
     '文件 | 动作 | 职责', '--- | --- | ---',
     ...Array.from({ length: 9 }, (_, i) => `\`src/p${i}.mjs\` | 改 | 职责`)].join('\n');
   assert.equal(planChangeSurface(pipeless).files, 9, '无前导管线表格计数');
@@ -511,7 +511,7 @@ test('planChangeSurface：文件清单格式/目录级/职责列/过宽令牌/�
 
   const rootFiles = ['# 计划', '', '## 文件清单', '', '| # | 文件 | 动作 |', '|---|---|---|',
     ...Array.from({ length: 8 }, (_, i) => `| ${i + 1} | \`root${i}.mjs\` | 改 |`),
-    '| 9 | `经验记录` | 改 |', '| 10 | `src/a.go` | 新建 |', '', '### 步骤 1：改 hook', '', '验收：x'].join('\n');
+    '| 9 | `learnings.md` | 改 |', '| 10 | `src/a.go` | 新建 |', '', '### 步骤 1：改 hook', '', '验收：x'].join('\n');
   const rootR = planChangeSurface(rootFiles);
   assert.equal(rootR.files, 10, '根级文件与非白名单扩展名均计数');
   assert.equal(rootR.newModules, 1);
@@ -522,7 +522,7 @@ test('planChangeSurface：文件清单格式/目录级/职责列/过宽令牌/�
   assert.equal(planChangeSurface(pureDocCommand).isImplementation, false, '验收命令中的代码路径不把纯文档计划判为实现类');
 
   const specsOnly = ['# 计划', '', '## 文件清单', '',
-    ...Array.from({ length: 9 }, (_, i) => `| ${i + 1} | \`内部规格${i}.md\` | 改 |`),
+    ...Array.from({ length: 9 }, (_, i) => `| ${i + 1} | \`specs/modules/M${i}.md\` | 改 |`),
     '', '### 步骤 1：回写规格', '', '```js', 'const x = 1;', '```'].join('\n');
   const specsR = planChangeSurface(specsOnly);
   assert.equal(specsR.isImplementation, false, 'specs 纯文档计划（含示例围栏）不判实现类');
@@ -569,7 +569,7 @@ function verifyWith(planText, opts = {}) {
     : v2Sidecar({ planText, ...opts });
   const f = fixture({ planText, sidecar });
   try {
-    return verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    return verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
   } finally {
     f.cleanup();
   }
@@ -615,19 +615,19 @@ test('sidecar 缺字段/缺实例/非法值：低阈值同样拒（新凭据必�
   }).ok, false, '超长数字（Number 后 Infinity）须拒');
 });
 
-test('内部决策-020 容忍：ratify 与 independent 同现时 ratify 不作机器判据', () => {
+test('ADR-020 容忍：ratify 与 independent 同现时 ratify 不作机器判据', () => {
   // A9（内部任务-193）：旧 v3Sidecar 静默丢弃 ratify/未知字段，本用例是空载的——先做非空载
   // 断言（夹具必须真把字段写进 v3 frontmatter），再断言凭据判定对它们零感知。
   const loaded = v3Sidecar({
     planText: lowPlan, mode: 'independent', instances: 2, reason: '两视角独立',
-    ratify: true, ratifyValue: 'host-plan', extraFrontmatter: ['reviewOrigin: 内部决策-020'],
+    ratify: true, ratifyValue: 'host-plan', extraFrontmatter: ['reviewOrigin: ADR-020'],
   });
   assert.match(loaded, /^ratify: host-plan$/m, '夹具必须真载 ratify 字段（防空载回归）');
-  assert.match(loaded, /^reviewOrigin: 内部决策-020$/m, '夹具必须真载未知 frontmatter 字段');
+  assert.match(loaded, /^reviewOrigin: ADR-020$/m, '夹具必须真载未知 frontmatter 字段');
   const r = verifyFixtureWith(loaded, { planText: lowPlan });
-  assert.equal(r.ok, true, 'ratify 字段不被校验（内部决策-020 D3 零改动）');
+  assert.equal(r.ok, true, 'ratify 字段不被校验（ADR-020 D3 零改动）');
   const passthrough = verifyWith(lowPlan, {
-    ratify: true, ratifyValue: 'host-plan', extraFrontmatter: ['reviewOrigin: 内部决策-020'],
+    ratify: true, ratifyValue: 'host-plan', extraFrontmatter: ['reviewOrigin: ADR-020'],
     reviewMode: 'independent', reviewInstances: 2, reviewReason: '两视角独立',
   });
   assert.equal(passthrough.ok, true, 'verifyWith 透传 ratify/未知字段后仍放行');
@@ -646,10 +646,10 @@ test('内部决策-020 容忍：ratify 与 independent 同现时 ratify 不作�
 test('surface：计划可读时失败也附改动面；早退失败为 null', () => {
   const f = fixture({ planText: bigPlan, sidecar: v2Sidecar({ planText: bigPlan, includeReviewFields: false }) });
   try {
-    const r = verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    const r = verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
     assert.equal(r.ok, false);
     assert.equal(r.surface?.overThreshold, true, '失败结果附 surface');
-    const missing = verifyReviewedPlan(f.proj, '内部计划', '内部任务-1');
+    const missing = verifyReviewedPlan(f.proj, 'docs/plans/missing.md', 'TASK-1');
     assert.equal(missing.ok, false);
     assert.equal(missing.surface, null, '早退失败 surface=null');
   } finally {
@@ -664,22 +664,22 @@ function verifyFixtureWith(sidecar, { planText = '# 计划正文\n', extraFiles 
   const f = fixture({ planText, sidecar });
   try {
     for (const { rel, text } of extraFiles) writeFileSync(join(f.proj, rel), text);
-    return verifyReviewedPlan(f.proj, f.planRel, '内部任务-1');
+    return verifyReviewedPlan(f.proj, f.planRel, 'TASK-1');
   } finally {
     f.cleanup();
   }
 }
 
-const CHAIN = 'plan:内部计划';
+const CHAIN = 'plan:docs/plans/feat.md';
 const freshEntries = (n = 2) => Array.from({ length: n }, (_, i) => ({
   role: i === 0 ? 'engineering' : `role-${i + 1}`, instance: `inst-${i + 1}`, chain: CHAIN, state: 'fresh',
 }));
 /** 前轮失败档（round1 不通过）：只作结构锚与序列归档，不构成有效凭据。 */
 const priorRoundFile = (planText = '# 计划正文\n') => ([{
-  rel: '内部计划', text: v3Sidecar({ planText, round: 1, pass: false }),
+  rel: 'docs/plans/feat-review-round1.md', text: v3Sidecar({ planText, round: 1, pass: false }),
 }]);
 
-test('内部任务-191：v2 independent/mixed → 判拒并给 v3 迁移文案（schemaVersion: 3 / reviewProvenance）', () => {
+test('DEV-191：v2 independent/mixed → 判拒并给 v3 迁移文案（schemaVersion: 3 / reviewProvenance）', () => {
   for (const mode of ['independent', 'mixed']) {
     const r = verifyFixtureWith(v2Sidecar({ reviewMode: mode, reviewInstances: mode === 'independent' ? 2 : 1 }));
     assert.equal(r.ok, false, `${mode} v2 必须拒`);
@@ -688,14 +688,14 @@ test('内部任务-191：v2 independent/mixed → 判拒并给 v3 迁移文案�
   }
 });
 
-test('内部任务-191：v3 round=1 两 fresh 放行；round=2 同链 reused 放行（前轮档在案）', () => {
+test('DEV-191：v3 round=1 两 fresh 放行；round=2 同链 reused 放行（前轮档在案）', () => {
   assert.equal(verifyFixtureWith(v3Sidecar()).ok, true, 'v3 round1 fresh 放行');
   const reused = freshEntries(2).map((e) => ({ ...e, state: 'reused' }));
   const r = verifyFixtureWith(v3Sidecar({ round: 2, provenance: reused }), { extraFiles: priorRoundFile() });
   assert.equal(r.ok, true, `round2 同链 reused 应放行（reason：${r.reason}）`);
 });
 
-test('内部任务-191：v3 round=1 含 rehydrated → 拒；rehydrated 补位不计入 countable', () => {
+test('DEV-191：v3 round=1 含 rehydrated → 拒；rehydrated 补位不计入 countable', () => {
   const mixedStates = [{ ...freshEntries(1)[0] }, { ...freshEntries(1)[0], role: 'ceo', instance: 'inst-2', state: 'rehydrated' }];
   const r1 = verifyFixtureWith(v3Sidecar({ provenance: mixedStates }));
   assert.equal(r1.ok, false, 'round1 必须全 fresh');
@@ -707,8 +707,8 @@ test('内部任务-191：v3 round=1 含 rehydrated → 拒；rehydrated 补位�
   assert.equal(pass.ok, true, 'countable=2 时 rehydrated 可作补位');
 });
 
-test('内部任务-191：v3 跨任务 chain / JSON 非法 / 缺 round / 重复 instance·role / crossStage 缺 note → 拒', () => {
-  const cross = verifyFixtureWith(v3Sidecar({ provenance: freshEntries(2).map((e) => ({ ...e, chain: 'plan:内部计划' })) }));
+test('DEV-191：v3 跨任务 chain / JSON 非法 / 缺 round / 重复 instance·role / crossStage 缺 note → 拒', () => {
+  const cross = verifyFixtureWith(v3Sidecar({ provenance: freshEntries(2).map((e) => ({ ...e, chain: 'plan:docs/plans/other.md' })) }));
   assert.equal(cross.ok, false);
   assert.match(cross.reason ?? '', /链/);
   const badJson = verifyFixtureWith(v3Sidecar({ rawProvenance: '[{"role":' }));
@@ -737,18 +737,18 @@ test('内部任务-191：v3 跨任务 chain / JSON 非法 / 缺 round / 重复 i
   assert.match(crossStage.reason ?? '', /crossStage|note/);
 });
 
-test('内部任务-191：round>1 缺前轮档 → 拒；前轮档名 N 与 reviewRound 不符 → 拒', () => {
+test('DEV-191：round>1 缺前轮档 → 拒；前轮档名 N 与 reviewRound 不符 → 拒', () => {
   const noPrior = verifyFixtureWith(v3Sidecar({ round: 2, provenance: freshEntries(2).map((e) => ({ ...e, state: 'reused' })) }));
   assert.equal(noPrior.ok, false);
   assert.match(noPrior.reason ?? '', /前轮/);
   const mismatched = verifyFixtureWith(null, {
-    extraFiles: [{ rel: '内部计划', text: v3Sidecar({ round: 1 }) }],
+    extraFiles: [{ rel: 'docs/plans/feat-review-round2.md', text: v3Sidecar({ round: 1 }) }],
   });
   assert.equal(mismatched.ok, false);
   assert.match(mismatched.reason ?? '', /文件名|reviewRound/);
 });
 
-test('内部任务-191：v3 self/ratified 须 round 且 provenance 为空数组', () => {
+test('DEV-191：v3 self/ratified 须 round 且 provenance 为空数组', () => {
   const selfEmpty = verifyFixtureWith(v3Sidecar({ mode: 'self', instances: 0, provenance: [] }));
   assert.equal(selfEmpty.ok, true, 'v3 self/0 + 空 provenance 放行');
   const selfNonEmpty = verifyFixtureWith(v3Sidecar({ mode: 'self', instances: 0, provenance: freshEntries(1) }));
@@ -769,7 +769,7 @@ test('A12 前轮档精确 stem：异常命名不构成前轮档，精确命名�
   // 反例：feat-review-review-round1.md 对 stem=feat 是异名档（旧逻辑按前缀误认）
   const bypass = verifyFixtureWith(canonical, {
     extraFiles: [{
-      rel: '内部计划',
+      rel: 'docs/plans/feat-review-review-round1.md',
       text: v3Sidecar({ round: 1, pass: false }),
     }],
   });
@@ -788,7 +788,7 @@ test('A12 前轮档内容抽检：planPath 相等才认锚，taskId 可异', () 
   // 正例：taskId 异 / planPath 同（换号续审）——前轮档对应旧计划版本，planSha256 故意不同
   const otherTaskId = verifyFixtureWith(canonical, {
     extraFiles: [{
-      rel: '内部计划',
+      rel: 'docs/plans/feat-review-round1.md',
       text: v3Sidecar({ planText: '# 上一版计划\n', round: 1, pass: false, taskId: 'TASK-OTHER' }),
     }],
   });
@@ -796,15 +796,15 @@ test('A12 前轮档内容抽检：planPath 相等才认锚，taskId 可异', () 
   // 反例：planPath 异 → 前轮档不属于本计划，fail-closed
   const otherPlan = verifyFixtureWith(canonical, {
     extraFiles: [{
-      rel: '内部计划',
-      text: v3Sidecar({ planRel: '内部计划', planText: '# 上一版计划\n', round: 1, pass: false }),
+      rel: 'docs/plans/feat-review-round1.md',
+      text: v3Sidecar({ planRel: 'docs/plans/other.md', planText: '# 上一版计划\n', round: 1, pass: false }),
     }],
   });
   assert.equal(otherPlan.ok, false, 'planPath 异不得作前轮档');
   assert.match(otherPlan.reason ?? '', /前轮/);
   // 反例：无 frontmatter（legacy 档）→ 无法抽检，fail-closed
   const noFrontmatter = verifyFixtureWith(canonical, {
-    extraFiles: [{ rel: '内部计划', text: '# 历史轮记录\n\n结论：通过\n' }],
+    extraFiles: [{ rel: 'docs/plans/feat-review-round1.md', text: '# 历史轮记录\n\n结论：通过\n' }],
   });
   assert.equal(noFrontmatter.ok, false, '无 frontmatter 前轮档 fail-closed');
   assert.match(noFrontmatter.reason ?? '', /前轮/);
@@ -815,13 +815,13 @@ test('A12 前轮档内容抽检：planPath 相等才认锚，taskId 可异', () 
 test('A12 -reviewN 轮次一致：文件名轮次与 reviewRound 同校', () => {
   // 反例：feat-review2.md 内容自称 round1 → 拒
   const mismatch = verifyFixtureWith(null, {
-    extraFiles: [{ rel: '内部计划', text: v3Sidecar({ round: 1 }) }],
+    extraFiles: [{ rel: 'docs/plans/feat-review2.md', text: v3Sidecar({ round: 1 }) }],
   });
   assert.equal(mismatch.ok, false, '-reviewN 文件名轮次与 reviewRound 不符须拒');
   assert.match(mismatch.reason ?? '', /文件名|reviewRound/);
   // 反例（-review-roundN 形态同校）：feat-review-round2.md 内容自称 round1 → 拒
   const roundName = verifyFixtureWith(null, {
-    extraFiles: [{ rel: '内部计划', text: v3Sidecar({ round: 1 }) }],
+    extraFiles: [{ rel: 'docs/plans/feat-review-round2.md', text: v3Sidecar({ round: 1 }) }],
   });
   assert.equal(roundName.ok, false, '-review-roundN 文件名轮次与 reviewRound 不符须拒');
   assert.match(roundName.reason ?? '', /文件名|reviewRound/);
@@ -829,8 +829,8 @@ test('A12 -reviewN 轮次一致：文件名轮次与 reviewRound 同校', () => 
   const reused = freshEntries(2).map((e) => ({ ...e, state: 'reused' }));
   const ok = verifyFixtureWith(null, {
     extraFiles: [
-      { rel: '内部计划', text: v3Sidecar({ round: 1, pass: false }) },
-      { rel: '内部计划', text: v3Sidecar({ round: 2, provenance: reused }) },
+      { rel: 'docs/plans/feat-review-round1.md', text: v3Sidecar({ round: 1, pass: false }) },
+      { rel: 'docs/plans/feat-review2.md', text: v3Sidecar({ round: 2, provenance: reused }) },
     ],
   });
   assert.equal(ok.ok, true, `-reviewN 轮次一致应放行（reason：${ok.reason}）`);

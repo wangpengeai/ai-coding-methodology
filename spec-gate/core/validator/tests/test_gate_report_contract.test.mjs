@@ -40,11 +40,11 @@ test('command_evidence 六字段与 acceptance_report 字段/枚举', () => {
   for (const f of ['acceptanceId', 'status', 'blocking', 'evidence']) assert.ok(result.required.includes(f));
 });
 
-test('migration_ledger 字段/枚举与 deprecated 条件分支（内部任务-347/内部未决-143：不可达分支已删）', () => {
+test('migration_ledger 字段/枚举与 deprecated 条件分支（DEV-347/OPEN-143：不可达分支已删）', () => {
   const s = schema('migration_ledger.schema.json');
   const entry = s.properties.entries.items;
   for (const f of ['asset', 'status', 'target', 'reason', 'referenceCleanupEvidence']) assert.ok(f in entry.properties);
   assert.deepEqual([...entry.properties.status.enum].sort(), [...MIGRATION_STATUSES].sort());
-  assert.equal(entry.if, undefined, 'deprecated 条件分支已删除（枚举从未含该值，属不可达分支——内部任务-347/内部未决-143）');
+  assert.equal(entry.if, undefined, 'deprecated 条件分支已删除（枚举从未含该值，属不可达分支——DEV-347/OPEN-143）');
   assert.equal(entry.then, undefined, '对应的 then 块同批删除');
 });

@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "generatedBy": "spec-gate/assurance/tests/gen_golden.py",
-  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（内部决策-051 D4，内部任务-60 计划评审 F7）；patch 锚＝production_model.uuid.uuid4＋production_model.now_iso（模块属性，计划修订 6）",
+  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（ADR-051 D4，DEV-60 计划评审 F7）；patch 锚＝production_model.uuid.uuid4＋production_model.now_iso（模块属性，计划修订 6）",
   "cases": [
     {
       "name": "single-basic",
       "events": [
         {
           "args": {
-            "changeId": "内部变更-1",
-            "taskId": "内部任务-86",
+            "changeId": "CHG-1",
+            "taskId": "DEV-86",
             "profileId": "default@1",
             "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "sourceRevision": {
@@ -20,7 +20,7 @@
             "artifactDigest": null,
             "environment": "local",
             "evidenceRefs": [
-              "内部证据"
+              "docs/plans/evidence/DEV-86/execution-log.md"
             ],
             "notApplicable": null,
             "waiverRefs": null,
@@ -44,8 +44,8 @@
       "events": [
         {
           "args": {
-            "changeId": "内部变更-1",
-            "taskId": "内部任务-86",
+            "changeId": "CHG-1",
+            "taskId": "DEV-86",
             "profileId": "default@1",
             "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "sourceRevision": {
@@ -56,7 +56,7 @@
             "artifactDigest": null,
             "environment": "local",
             "evidenceRefs": [
-              "内部证据"
+              "docs/plans/evidence/DEV-86/execution-log.md"
             ],
             "notApplicable": null,
             "waiverRefs": null,
@@ -88,8 +88,8 @@
       "events": [
         {
           "args": {
-            "changeId": "内部变更-1",
-            "taskId": "内部任务-86",
+            "changeId": "CHG-1",
+            "taskId": "DEV-86",
             "profileId": "default@1",
             "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "sourceRevision": {
@@ -100,7 +100,7 @@
             "artifactDigest": null,
             "environment": "local",
             "evidenceRefs": [
-              "内部证据"
+              "docs/plans/evidence/DEV-86/execution-log.md"
             ],
             "notApplicable": null,
             "waiverRefs": null,
@@ -119,8 +119,8 @@
         },
         {
           "args": {
-            "changeId": "内部变更-1",
-            "taskId": "内部任务-86",
+            "changeId": "CHG-1",
+            "taskId": "DEV-86",
             "profileId": "default@1",
             "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "sourceRevision": {
@@ -131,7 +131,7 @@
             "artifactDigest": null,
             "environment": "local",
             "evidenceRefs": [
-              "内部证据"
+              "docs/plans/evidence/DEV-86/execution-log.md"
             ],
             "notApplicable": null,
             "waiverRefs": null,
@@ -150,8 +150,8 @@
         },
         {
           "args": {
-            "changeId": "内部变更-1",
-            "taskId": "内部任务-86",
+            "changeId": "CHG-1",
+            "taskId": "DEV-86",
             "profileId": "default@1",
             "profileDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "sourceRevision": {
@@ -162,7 +162,7 @@
             "artifactDigest": null,
             "environment": "local",
             "evidenceRefs": [
-              "内部证据"
+              "docs/plans/evidence/DEV-86/execution-log.md"
             ],
             "notApplicable": null,
             "waiverRefs": null,

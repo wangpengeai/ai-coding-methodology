@@ -122,7 +122,7 @@ function treeSnapshot(root) {
   return out;
 }
 
-test('拒生成零写：坏 manifest 下 materialize 退 1 且生成物树零新增零改写（A-pc-1 闭口，内部未决-199）', () => {
+test('拒生成零写：坏 manifest 下 materialize 退 1 且生成物树零新增零改写（A-pc-1 闭口，OPEN-199）', () => {
   const root = tempRoot('materialize-nowrite');
   try {
     writeFile(root, 'workflow/plugin.manifest.json', JSON.stringify({ manifestVersion: 1, name: 'workflow', version: '1.0.0', description: 'bad' }));

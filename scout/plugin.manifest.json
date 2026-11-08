@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "name": "scout",
-  "version": "0.23.4",
+  "version": "1.0.0",
   "description": "探路插件：为探索性项目与一次性交付物提供项目级低纪律档位（模式声明、到期检查点、续期、放弃与毕业移交；流程可轻量，安全与数据完整性底线不降级） —— 触发条件：项目处于探路模式或需要开关该模式时。",
   "displayName": "AI Coding 方法论 · 探路",
   "author": "wangp",

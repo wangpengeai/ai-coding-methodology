@@ -22,7 +22,7 @@ function makePublishFixture() {
   const repo = join(home, 'repo');
   const market = join(home, 'market');
   for (const p of PLUGINS) {
-    writePluginPair(repo, p, '0.1.0', `${p} 测试（内部决策-017）`);
+    writePluginPair(repo, p, '0.1.0', `${p} 测试（ADR-017）`);
     writeFile(join(repo, p, 'skills', 'demo.md'), '# demo\n');
   }
   writeFile(join(market, 'marketplace.json'), JSON.stringify({ name: 'fixture-market', plugins: [] }));
@@ -58,7 +58,7 @@ test('成功路径：spawn 形态（--validate-only + 解释器=process.execPath
     //（脚本被执行本身即证明 spawn 目标命中；路径不在 slice(2) 内）
     assert.deepEqual(argv, ['--validate-only'], 'spawn 参数面恰为 --validate-only');
     assert.ok(lines.join('').includes('验证集全绿'), '非跳过路径输出「验证集全绿」');
-    assert.ok(lines.join('').includes('[release-suite] 测量对象：干净（HEAD abc1234）'), '全绿分支须转发测量对象披露行（内部任务-349）');
+    assert.ok(lines.join('').includes('[release-suite] 测量对象：干净（HEAD abc1234）'), '全绿分支须转发测量对象披露行（DEV-349）');
     const mj = JSON.parse(readFileSync(join(f.market, 'marketplace.json'), 'utf8'));
     assert.equal(mj.plugins.length, 6, '清单刷新六条目');
     // 内部任务-11：尾印计数＝实测条目数（防「5 条目」硬编码字面量回潮——与上一行同源，不复制数字）
@@ -67,15 +67,15 @@ test('成功路径：spawn 形态（--validate-only + 解释器=process.execPath
     // 指引关键锚（S2 门 #2 补承接——旧 selftest 指引组的最低承接面；全量 6 组随 S3 selftest.mjs 迁入）
     const guidance = lines.join('');
     assert.ok(guidance.includes('旧版本 cache 目录必须保留'), '指引含旧目录警示句');
-    assert.ok(guidance.includes('.sdd/*') && guidance.includes('!内部治理状态'), '指引含 gitignore 片段基础行');
-    assert.ok(guidance.includes('known_marketplaces.json'), '指引含市场源判别句（内部未决-19）');
+    assert.ok(guidance.includes('.sdd/*') && guidance.includes('!.sdd/suite.json'), '指引含 gitignore 片段基础行');
+    assert.ok(guidance.includes('known_marketplaces.json'), '指引含市场源判别句（OPEN-19）');
     assert.ok(guidance.includes('install-criteria'), '尾印装机指引含操作链收口步');
   } finally {
     f.clean();
   }
 });
 
-test('内部任务-349 非全绿尾印：退 0 但验证集不称全绿时 publish 不得打「验证集全绿」', () => {
+test('DEV-349 非全绿尾印：退 0 但验证集不称全绿时 publish 不得打「验证集全绿」', () => {
   const f = makePublishFixture();
   try {
     writeFile(join(f.repo, 'stub-nongreen'), '1');
@@ -83,7 +83,7 @@ test('内部任务-349 非全绿尾印：退 0 但验证集不称全绿时 publi
     const r = runPublish({ repoRoot: f.repo, marketRoot: f.market, out: (s) => lines.push(s) });
     assert.equal(r.code, 0, `退 0 应继续发布：${lines.join('')}`);
     const text = lines.join('');
-    assert.equal(text.includes('[publish] 验证集全绿'), false, '负向尾印（含「不得称「验证全绿」」同串）不得被判成全绿（内部任务-349 行首锚定）');
+    assert.equal(text.includes('[publish] 验证集全绿'), false, '负向尾印（含「不得称「验证全绿」」同串）不得被判成全绿（DEV-349 行首锚定）');
     assert.ok(text.includes('[publish] 验证集通过（非全绿'), '须明确非全绿通过态');
     assert.ok(text.includes('[release-suite] 测量对象：'), '须转发 release-suite 的测量对象披露行');
   } finally {
@@ -123,7 +123,7 @@ test('验证集失败：退 1 且市场零写副作用', () => {
 
 // ── 内部任务-276 D6/D16：生成物读守护与信号分支 ─────────────────────────────────
 
-test('生成物缺失拒绝：未物化仓库 publish 退 1 且给 materialize 指引、市场零写（内部任务-276 D6）', () => {
+test('生成物缺失拒绝：未物化仓库 publish 退 1 且给 materialize 指引、市场零写（DEV-276 D6）', () => {
   const f = makePublishFixture();
   try {
     rmSync(join(f.repo, 'workflow', '.zcode-plugin', 'plugin.json'), { force: true });
@@ -140,7 +140,7 @@ test('生成物缺失拒绝：未物化仓库 publish 退 1 且给 materialize �
   }
 });
 
-test('验证集被信号杀死：退 1 且原因行含信号名（内部任务-276 D16）', (t) => {
+test('验证集被信号杀死：退 1 且原因行含信号名（DEV-276 D16）', (t) => {
   if (process.platform === 'win32') { t.skip('win32 无 SIGKILL 语义'); return; }
   const f = makePublishFixture();
   try {
@@ -156,7 +156,7 @@ test('验证集被信号杀死：退 1 且原因行含信号名（内部任务-2
   }
 });
 
-test('缺省注入缝与市场清单不可读：默认 out 走 process 流、坏清单拒绝退 1（内部任务-276 覆盖率）', () => {
+test('缺省注入缝与市场清单不可读：默认 out 走 process 流、坏清单拒绝退 1（DEV-276 覆盖率）', () => {
   const f = makePublishFixture();
   const origOut = process.stdout.write.bind(process.stdout);
   try {
@@ -211,7 +211,7 @@ test('同步失败退 1（非 CLI 兜底退 2）：syncImpl 注入抛错 → 「
   }
 });
 
-test('publish 成功后备份清理：二次发布经备份面后无 .publish-backups 残留〔内部任务-275/内部未决-163〕', () => {
+test('publish 成功后备份清理：二次发布经备份面后无 .publish-backups 残留〔DEV-275/OPEN-163〕', () => {
   const f = makePublishFixture();
   try {
     assert.equal(runPublish({ repoRoot: f.repo, marketRoot: f.market, out: () => {} }).code, 0, '首轮（新建面）');

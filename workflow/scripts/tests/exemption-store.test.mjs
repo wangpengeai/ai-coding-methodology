@@ -18,7 +18,7 @@ function tmpRoot() {
 }
 
 const rec = (over = {}) => ({
-  taskId: '内部任务-9',
+  taskId: 'TASK-9',
   skill: 'plan-execution',
   src: 'user',
   scope: 'plan',
@@ -45,11 +45,11 @@ test('审计 v2 字段保真与写失败返回：schemaVersion/scope/reason trim
     const list = readRaw(root);
     assert.equal(list.length, 1);
     const r = list[0];
-    const d = expectDigest('内部任务-9', '不用写计划，直接修');
+    const d = expectDigest('TASK-9', '不用写计划，直接修');
     assert.equal(r.schemaVersion, 2);
     assert.equal(r.id, `ex-${d}`);
     assert.equal(r.digest, d);
-    assert.equal(r.taskId, '内部任务-9');
+    assert.equal(r.taskId, 'TASK-9');
     assert.equal(r.skill, 'plan-execution');
     assert.equal(r.src, 'user');
     assert.equal(r.scope, 'plan');
@@ -92,12 +92,12 @@ test('scope×planPath 规则：非法 scope/缺 planPath/plan 带 planPath/绝�
   try {
     assert.equal(LIB.recordExemption(root, rec({ scope: 'bogus' })).ok, false);
     assert.equal(LIB.recordExemption(root, rec({ scope: 'review' })).ok, false, 'review 缺 planPath');
-    assert.equal(LIB.recordExemption(root, rec({ scope: 'plan', planPath: '内部计划' })).ok, false, 'plan 带 planPath');
+    assert.equal(LIB.recordExemption(root, rec({ scope: 'plan', planPath: 'docs/plans/x.md' })).ok, false, 'plan 带 planPath');
     assert.equal(LIB.recordExemption(root, rec({ scope: 'review', planPath: '/abs/x.md' })).ok, false, '绝对路径');
     assert.equal(LIB.recordExemption(root, rec({ scope: 'review', planPath: '../x.md' })).ok, false, '.. 段');
-    const ok = LIB.recordExemption(root, rec({ scope: 'review', planPath: '内部计划' }));
+    const ok = LIB.recordExemption(root, rec({ scope: 'review', planPath: 'docs/plans/x.md' }));
     assert.equal(ok.ok, true);
-    assert.equal(readRaw(root)[0].planPath, '内部计划');
+    assert.equal(readRaw(root)[0].planPath, 'docs/plans/x.md');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -107,12 +107,12 @@ test('revoke 记录：scope=revoked/src/reason/id/digest；recordExemption 拒�
   const root = tmpRoot();
   try {
     const out = LIB.recordExemptionRevocation(root, {
-      taskId: '内部任务-1',
+      taskId: 'DEV-1',
       reason: '撤销计划豁免，按正常评审计划走',
       src: 'user',
     });
     assert.equal(out.ok, true);
-    const d = expectDigest('内部任务-1', '撤销计划豁免，按正常评审计划走');
+    const d = expectDigest('DEV-1', '撤销计划豁免，按正常评审计划走');
     const r = readRaw(root)[0];
     assert.equal(r.schemaVersion, 2);
     assert.equal(r.scope, 'revoked');
@@ -130,10 +130,10 @@ test('revoke 负例：撤销引文未点名/空/src 非法/system 均拒且不�
   const root = tmpRoot();
   try {
     for (const bad of [
-      { taskId: '内部任务-1', reason: '继续', src: 'user' },
-      { taskId: '内部任务-1', reason: '   ', src: 'user' },
-      { taskId: '内部任务-1', reason: '撤销计划豁免', src: 'bogus' },
-      { taskId: '内部任务-1', reason: '撤销计划豁免', src: 'system' },
+      { taskId: 'DEV-1', reason: '继续', src: 'user' },
+      { taskId: 'DEV-1', reason: '   ', src: 'user' },
+      { taskId: 'DEV-1', reason: '撤销计划豁免', src: 'bogus' },
+      { taskId: 'DEV-1', reason: '撤销计划豁免', src: 'system' },
     ]) {
       const r = LIB.recordExemptionRevocation(root, bad);
       assert.equal(r.ok, false, JSON.stringify(bad));

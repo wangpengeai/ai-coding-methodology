@@ -319,7 +319,7 @@ test('sysmonEnable：collect.vbs 缺场显式报错指回 install（写面失败
 // 内部任务-DEBTFIX-1：采样器须拒收「提供程序宿主」归因事件（采集器自观测伪影）。
 // 行为面依赖 PowerShell + Sysmon 日志，仓库侧不可自动化——本断言的职责是挡住
 // 「拒收子句被误删」；行为证据在计划步骤 4 的真机同一命令前后对拍。
-test('collect-sysmon.ps1 拒收宿主归因且先于落样本（内部任务-DEBTFIX-1）', () => {
+test('collect-sysmon.ps1 拒收宿主归因且先于落样本（TASK-DEBTFIX-1）', () => {
   const src = readFileSync(fileURLToPath(new URL('../adapters/os-observe/collect-sysmon.ps1', import.meta.url)), 'utf8');
   assert.ok(src.includes("$HOST_ATTRIBUTION_HOSTS = @('wmiprvse.exe')"), '宿主名单常量缺场（字面量锁定，删掉即红）');
   assert.ok(src.includes('$HOST_ATTRIBUTION_HOSTS -contains $procName'), '拒收子句缺场');
@@ -335,7 +335,7 @@ test('collect-sysmon.ps1 拒收宿主归因且先于落样本（内部任务-DEB
 });
 
 // 内部任务-SYSMON-REPLAY-1：时间升序分页 + 逐页推进水位（行为面证据在真机三次连跑对拍）
-test('collect-sysmon.ps1 升序分页与逐页水位（内部任务-SYSMON-REPLAY-1）', () => {
+test('collect-sysmon.ps1 升序分页与逐页水位（TASK-SYSMON-REPLAY-1）', () => {
   const src = readFileSync(fileURLToPath(new URL('../adapters/os-observe/collect-sysmon.ps1', import.meta.url)), 'utf8');
   assert.ok(src.includes("TimeCreated[@SystemTime>'$watermark']"), '升序下界缺场（裸 >，PS 5.1 不接受 XML 实体）');
   assert.ok(src.includes("TimeCreated[@SystemTime<='$upper']"), '页上界缺场（裸 <=）');

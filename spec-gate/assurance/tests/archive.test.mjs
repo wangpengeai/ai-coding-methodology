@@ -42,20 +42,20 @@ test('tar 内核：写→读 roundtrip（101 字节文件/嵌套目录/中文文
   const src = tmpRoot('dev85-tar-rt-');
   const dst = tmpRoot('dev85-tar-rt-out-');
   try {
-    mkdirSync(join(src, '内部任务-1', 'sub'), { recursive: true });
-    writeFileSync(join(src, '内部任务-1', 'a.txt'), 'x'.repeat(101), 'utf8');
-    writeFileSync(join(src, '内部任务-1', '中文文件.json'), '{"k":"值"}', 'utf8');
-    writeFileSync(join(src, '内部任务-1', 'sub', 'nested.md'), '# 嵌套', 'utf8');
-    const buf = tarWrite([{ fsRoot: join(src, '内部任务-1'), taskId: '内部任务-1' }]);
+    mkdirSync(join(src, 'DEV-1', 'sub'), { recursive: true });
+    writeFileSync(join(src, 'DEV-1', 'a.txt'), 'x'.repeat(101), 'utf8');
+    writeFileSync(join(src, 'DEV-1', '中文文件.json'), '{"k":"值"}', 'utf8');
+    writeFileSync(join(src, 'DEV-1', 'sub', 'nested.md'), '# 嵌套', 'utf8');
+    const buf = tarWrite([{ fsRoot: join(src, 'DEV-1'), taskId: 'DEV-1' }]);
     const entries = tarRead(buf);
     const names = entries.map((e) => e.name).sort();
-    assert.ok(names.includes('内部任务-1'), '任务根目录条目');
-    assert.ok(names.includes('内部任务-1/中文文件.json'), '中文文件名（读侧 ustar 直读——JS 写侧无 pax 需求）');
-    assert.ok(names.includes('内部任务-1/sub/nested.md'));
+    assert.ok(names.includes('DEV-1'), '任务根目录条目');
+    assert.ok(names.includes('DEV-1/中文文件.json'), '中文文件名（读侧 ustar 直读——JS 写侧无 pax 需求）');
+    assert.ok(names.includes('DEV-1/sub/nested.md'));
     extractEntries(entries, dst);
-    assert.equal(readFileSync(join(dst, '内部任务-1', 'a.txt'), 'utf8'), 'x'.repeat(101), '101 字节文件 roundtrip');
-    assert.equal(readFileSync(join(dst, '内部任务-1', '中文文件.json'), 'utf8'), '{"k":"值"}');
-    assert.equal(readFileSync(join(dst, '内部任务-1', 'sub', 'nested.md'), 'utf8'), '# 嵌套');
+    assert.equal(readFileSync(join(dst, 'DEV-1', 'a.txt'), 'utf8'), 'x'.repeat(101), '101 字节文件 roundtrip');
+    assert.equal(readFileSync(join(dst, 'DEV-1', '中文文件.json'), 'utf8'), '{"k":"值"}');
+    assert.equal(readFileSync(join(dst, 'DEV-1', 'sub', 'nested.md'), 'utf8'), '# 嵌套');
   } finally {
     rmSync(src, { recursive: true, force: true });
     rmSync(dst, { recursive: true, force: true });
@@ -65,10 +65,10 @@ test('tar 内核：写→读 roundtrip（101 字节文件/嵌套目录/中文文
 test('tar 内核负例：checksum 翻字节→明确错误；截断流→条目缺失可检；未识别 pax 键 fail-loud', () => {
   const src = tmpRoot('dev85-tar-neg-');
   try {
-    mkdirSync(join(src, '内部任务-1'), { recursive: true });
-    writeFileSync(join(src, '内部任务-1', 'a.txt'), 'payload', 'utf8');
-    writeFileSync(join(src, '内部任务-1', 'b.txt'), 'payload2', 'utf8');
-    const buf = tarWrite([{ fsRoot: join(src, '内部任务-1'), taskId: '内部任务-1' }]);
+    mkdirSync(join(src, 'DEV-1'), { recursive: true });
+    writeFileSync(join(src, 'DEV-1', 'a.txt'), 'payload', 'utf8');
+    writeFileSync(join(src, 'DEV-1', 'b.txt'), 'payload2', 'utf8');
+    const buf = tarWrite([{ fsRoot: join(src, 'DEV-1'), taskId: 'DEV-1' }]);
     // 翻第一块头一字节（name 区）→ checksum 不符
     const corrupted = Buffer.from(buf);
     const raw = Buffer.from(gunzipSync(corrupted));
@@ -87,7 +87,7 @@ test('tar 内核负例：checksum 翻字节→明确错误；截断流→条目�
       tarHeaderForTest('PaxHeader', paxData.length, 0, 'x'),
       paxData,
       Buffer.alloc(pad),
-      tarHeaderForTest('内部任务-2/x.txt', 0, 0, '0'),
+      tarHeaderForTest('DEV-2/x.txt', 0, 0, '0'),
       Buffer.alloc(1024),
     ]);
     assert.throws(() => tarRead(gzipSync(tar)), /未识别键/);
@@ -100,7 +100,7 @@ test('tar 内核负例：checksum 翻字节→明确错误；截断流→条目�
       tarHeaderForTest('PaxHeader', okData.length, 0, 'x'),
       okData,
       Buffer.alloc(okPad),
-      tarHeaderForTest('内部任务-2/y.txt', 0, 0, '0'),
+      tarHeaderForTest('DEV-2/y.txt', 0, 0, '0'),
       Buffer.alloc(1024),
     ]);
     const okEntries = tarRead(gzipSync(okTar));
@@ -125,20 +125,20 @@ test('tar 内核：symlink 条目 roundtrip（写侧 lstat 存 type-2 不物化�
   const src = tmpRoot('dev85-tar-sym-');
   const dst = tmpRoot('dev85-tar-sym-out-');
   try {
-    mkdirSync(join(src, '内部任务-1', 'sub'), { recursive: true });
-    writeFileSync(join(src, '内部任务-1', 'sub', 'target.json'), '{"t":1}', 'utf8');
-    if (!trySymlink(t, 'sub/target.json', join(src, '内部任务-1', 'link.json'))) return;
+    mkdirSync(join(src, 'DEV-1', 'sub'), { recursive: true });
+    writeFileSync(join(src, 'DEV-1', 'sub', 'target.json'), '{"t":1}', 'utf8');
+    if (!trySymlink(t, 'sub/target.json', join(src, 'DEV-1', 'link.json'))) return;
     // 断链 symlink 目标用相对路径（S03/内部任务-241 后 restore 拒绝绝对/越界 linkTarget；
     // tar linkname 真源恢复语义用相对目标即可覆盖）
-    if (!trySymlink(t, 'missing-broken.target', join(src, '内部任务-1', 'broken.link'))) return;
-    const buf = tarWrite([{ fsRoot: join(src, '内部任务-1'), taskId: '内部任务-1' }]);
+    if (!trySymlink(t, 'missing-broken.target', join(src, 'DEV-1', 'broken.link'))) return;
+    const buf = tarWrite([{ fsRoot: join(src, 'DEV-1'), taskId: 'DEV-1' }]);
     const entries = tarRead(buf); // JS 自读自写必须成立（终审正确性发现 1：checksum 含 linkname）
     const sym = entries.filter((e) => e.type === '2');
     assert.equal(sym.length, 2, 'symlink 条目数');
-    assert.equal(sym.find((e) => e.name === '内部任务-1/link.json').linkTarget, 'sub/target.json', 'linkname 头字段＝真源');
+    assert.equal(sym.find((e) => e.name === 'DEV-1/link.json').linkTarget, 'sub/target.json', 'linkname 头字段＝真源');
     extractEntries(entries, dst);
-    assert.equal(readlinkSync(join(dst, '内部任务-1', 'link.json')).replaceAll('\\', '/'), 'sub/target.json', 'restore 恢复 symlink');
-    assert.equal(readFileSync(join(dst, '内部任务-1', 'sub', 'target.json'), 'utf8'), '{"t":1}');
+    assert.equal(readlinkSync(join(dst, 'DEV-1', 'link.json')).replaceAll('\\', '/'), 'sub/target.json', 'restore 恢复 symlink');
+    assert.equal(readFileSync(join(dst, 'DEV-1', 'sub', 'target.json'), 'utf8'), '{"t":1}');
   } finally {
     rmSync(src, { recursive: true, force: true, maxRetries: 5 });
     rmSync(dst, { recursive: true, force: true, maxRetries: 5 });
@@ -148,10 +148,10 @@ test('tar 内核：symlink 条目 roundtrip（写侧 lstat 存 type-2 不物化�
 test('tar 内核：POSIX symlink linkname 中的反斜杠是合法字面量，不归一', { skip: process.platform === 'win32' && 'win32 路径分隔符语义不同' }, (t) => {
   const src = tmpRoot('dev85-tar-sym-backslash-');
   try {
-    mkdirSync(join(src, '内部任务-1'), { recursive: true });
-    if (!trySymlink(t, 'a\\b', join(src, '内部任务-1', 'link.json'))) return;
-    const entries = tarRead(tarWrite([{ fsRoot: join(src, '内部任务-1'), taskId: '内部任务-1' }]));
-    assert.equal(entries.find((e) => e.name === '内部任务-1/link.json').linkTarget, 'a\\b', 'POSIX 反斜杠不得被改写为 /');
+    mkdirSync(join(src, 'DEV-1'), { recursive: true });
+    if (!trySymlink(t, 'a\\b', join(src, 'DEV-1', 'link.json'))) return;
+    const entries = tarRead(tarWrite([{ fsRoot: join(src, 'DEV-1'), taskId: 'DEV-1' }]));
+    assert.equal(entries.find((e) => e.name === 'DEV-1/link.json').linkTarget, 'a\\b', 'POSIX 反斜杠不得被改写为 /');
   } finally {
     rmSync(src, { recursive: true, force: true, maxRetries: 5 });
   }
@@ -198,7 +198,7 @@ test('阈值注入缝：boundary 翻转（严格大于语义）＋apply 拒绝�
     // apply：达阈打包＋manifest 先落盘再删原目录
     const r = archiveReceipts(root, { thresholds: { thresholdDirs: 1 } });
     assert.equal(r.archived, 2);
-    assert.match(r.batch, /^[0-9]{8}-[0-9]{6}-[0-9a-f]{8}$/, '批次名＝时间戳＋唯一后缀（D07/内部任务-241：防同秒覆盖）');
+    assert.match(r.batch, /^[0-9]{8}-[0-9]{6}-[0-9a-f]{8}$/, '批次名＝时间戳＋唯一后缀（D07/DEV-241：防同秒覆盖）');
     const m = loadManifest(root);
     assert.equal(m.batches.length, 1);
     assert.deepEqual(m.batches[0].taskIds, ['DEV-A', 'DEV-B']);
@@ -206,7 +206,7 @@ test('阈值注入缝：boundary 翻转（严格大于语义）＋apply 拒绝�
     // 幂等二跑：目录已清→阈值不再满足→拒（Python test_archive 幂等用例同款 throws 语义）
     assert.throws(() => archiveReceipts(root, { thresholds: { thresholdDirs: 1 } }), /阈值未达/);
     // 「达阈但零候选」note 分支：目录在但全部不超龄（thresholdDirs:0 恒达阈——0>0 false 但 bytes 分支？恒 false；改用 thresholdBytes:0 使 0 字节不达——直接造非空年轻任务配 thresholdDirs:0：dirs>0 恒真）
-    mkTask(root, '内部任务-YOUNG2', { daysAgo: 5 });
+    mkTask(root, 'DEV-YOUNG2', { daysAgo: 5 });
     const again = archiveReceipts(root, { thresholds: { thresholdDirs: 0 } });
     assert.equal(again.archived, 0);
     assert.ok(again.note.includes('零候选'));
@@ -257,7 +257,7 @@ function sha256Buf(buf) {
   return createHash('sha256').update(buf).digest('hex');
 }
 
-test('D02（内部任务-241）：manifest 损坏 → strict 拒写并保留 .corrupt 副本、原 receipts 不删', () => {
+test('D02（DEV-241）：manifest 损坏 → strict 拒写并保留 .corrupt 副本、原 receipts 不删', () => {
   const root = tmpRoot('dev241-arch-man-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });
@@ -275,7 +275,7 @@ test('D02（内部任务-241）：manifest 损坏 → strict 拒写并保留 .co
   }
 });
 
-test('D02（内部任务-241）：tar 读回校验失败 → 不删原目录且清理坏 tar', () => {
+test('D02（DEV-241）：tar 读回校验失败 → 不删原目录且清理坏 tar', () => {
   const root = tmpRoot('dev241-arch-rb-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });
@@ -289,7 +289,7 @@ test('D02（内部任务-241）：tar 读回校验失败 → 不删原目录且�
   }
 });
 
-test('D02（内部任务-241）：成功归档记录 tarSha256 且批次名带唯一后缀', () => {
+test('D02（DEV-241）：成功归档记录 tarSha256 且批次名带唯一后缀', () => {
   const root = tmpRoot('dev241-arch-ok-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });
@@ -327,13 +327,13 @@ function writeCraftedArchive(root, tarBuf) {
   writeFileSync(join(adir, 'archive-manifest.json'), JSON.stringify({
     schemaVersion: 1,
     batches: [{
-      batch: 'x', taskIds: ['内部任务-1'], files: ['receipts-x.tar.gz'],
+      batch: 'x', taskIds: ['TASK-1'], files: ['receipts-x.tar.gz'],
       tarSha256: `sha256:${sha256Buf(tarBuf)}`,
     }],
   }), 'utf8');
 }
 
-test('S03（内部任务-241）：restore 拒绝 ../ 条目（不落仓外）', () => {
+test('S03（DEV-241）：restore 拒绝 ../ 条目（不落仓外）', () => {
   const root = tmpRoot('dev241-rest-trav-');
   try {
     writeCraftedArchive(root, craftTar([{ name: '../evil.txt', type: '0', size: 4, data: Buffer.from('evil') }]));
@@ -345,10 +345,10 @@ test('S03（内部任务-241）：restore 拒绝 ../ 条目（不落仓外）', 
   }
 });
 
-test('S03（内部任务-241）：restore 拒绝 symlink 目标越界', () => {
+test('S03（DEV-241）：restore 拒绝 symlink 目标越界', () => {
   const root = tmpRoot('dev241-rest-link-');
   try {
-    writeCraftedArchive(root, craftTar([{ name: '内部任务-1/link', type: '2', linkTarget: '../../outside' }]));
+    writeCraftedArchive(root, craftTar([{ name: 'TASK-1/link', type: '2', linkTarget: '../../outside' }]));
     assert.throws(() => restoreReceipts(root, { batch: 'x' }), /symlink 目标非法|越出目标根/);
     assert.equal(exists(join(root, '.sdd', 'outside')), false);
   } finally {
@@ -356,7 +356,7 @@ test('S03（内部任务-241）：restore 拒绝 symlink 目标越界', () => {
   }
 });
 
-test('D05（内部任务-241）：restore --task-id 只还原该任务，兄弟任务不复活', () => {
+test('D05（DEV-241）：restore --task-id 只还原该任务，兄弟任务不复活', () => {
   const root = tmpRoot('dev241-rest-filter-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });
@@ -374,19 +374,19 @@ test('D05（内部任务-241）：restore --task-id 只还原该任务，兄弟�
   }
 });
 
-test('D05（内部任务-241 复审）：restore --task-id 在 tar 无该任务条目时拒绝剔除 manifest', () => {
+test('D05（DEV-241 复审）：restore --task-id 在 tar 无该任务条目时拒绝剔除 manifest', () => {
   const root = tmpRoot('dev241-rest-empty-');
   try {
     const tarBuf = craftTar([{ name: 'OTHER/x.txt', type: '0', size: 1, data: Buffer.from('x') }]);
     writeCraftedArchive(root, tarBuf);
-    assert.throws(() => restoreReceipts(root, { taskId: '内部任务-1' }), /无任何 tar 条目/);
-    assert.deepEqual(loadManifest(root).batches[0].taskIds, ['内部任务-1'], 'manifest 不得被空解包剔除');
+    assert.throws(() => restoreReceipts(root, { taskId: 'TASK-1' }), /无任何 tar 条目/);
+    assert.deepEqual(loadManifest(root).batches[0].taskIds, ['TASK-1'], 'manifest 不得被空解包剔除');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('内部任务-242 安全复审 S-1：manifest 锁被回收后写前 fencing 失败→清理 tar 且原目录保留', () => {
+test('DEV-242 安全复审 S-1：manifest 锁被回收后写前 fencing 失败→清理 tar 且原目录保留', () => {
   const root = tmpRoot('dev242-arch-fence-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });
@@ -407,7 +407,7 @@ test('内部任务-242 安全复审 S-1：manifest 锁被回收后写前 fencing
   }
 });
 
-test('S03（内部任务-241）：restore 校验 tarSha256，被替换即拒', () => {
+test('S03（DEV-241）：restore 校验 tarSha256，被替换即拒', () => {
   const root = tmpRoot('dev241-rest-tamper-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });
@@ -421,7 +421,7 @@ test('S03（内部任务-241）：restore 校验 tarSha256，被替换即拒', (
   }
 });
 
-test('内部任务-242 §四-1：归档 manifest 锁占用时 apply 拒绝且零残留', () => {
+test('DEV-242 §四-1：归档 manifest 锁占用时 apply 拒绝且零残留', () => {
   const root = tmpRoot('dev242-arch-lock-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });
@@ -435,7 +435,7 @@ test('内部任务-242 §四-1：归档 manifest 锁占用时 apply 拒绝且零
   }
 });
 
-test('内部任务-242 §四-1：归档 manifest 锁占用时 restore 拒绝且 manifest 零改', () => {
+test('DEV-242 §四-1：归档 manifest 锁占用时 restore 拒绝且 manifest 零改', () => {
   const root = tmpRoot('dev242-rest-lock-');
   try {
     mkTask(root, 'DEV-A', { daysAgo: 200 });

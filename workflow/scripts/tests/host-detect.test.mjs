@@ -54,7 +54,7 @@ test('host-detect：组合优先级（真实 shim 环境形态）', () => {
 });
 
 test('host-detect：空值忽略且注入 env 不污染 process.env', () => {
-  assert.equal(hostOf({}, { DSH_SESSION_ID: '', KIMI_CODE_HOME: '' }), 'unknown', '空串值视同未设置（与 内部任务-31 口径同源）');
+  assert.equal(hostOf({}, { DSH_SESSION_ID: '', KIMI_CODE_HOME: '' }), 'unknown', '空串值视同未设置（与 DEV-31 口径同源）');
   assert.equal(hostOf({}, { DSH_SESSION_ID: 's', KIMI_CODE_HOME: '' }), 'dsh', '空值不挡住后续前缀');
   const injected = { HOSTDETECT_PROBE_XYZ: '1' };
   assert.equal(hostOf({}, injected), 'unknown');

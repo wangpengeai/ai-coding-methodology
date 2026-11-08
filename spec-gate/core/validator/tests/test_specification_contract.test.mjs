@@ -25,12 +25,12 @@ test('specification schema 家族/G-T 与 IF 编号形态/externalContracts 弃�
   assert.equal(s.properties.externalContracts.deprecated, true);
 });
 
-test('suite_config schema 字段/文档 required/模式枚举（内部任务-347/内部未决-141：validationRoots 已移除）', () => {
+test('suite_config schema 字段/文档 required/模式枚举（DEV-347/OPEN-141：validationRoots 已移除）', () => {
   const s = loadJson(join(SCHEMAS_DIR, 'suite_config.schema.json'));
   for (const f of ['schemaVersion', 'suiteRoot', 'documents', 'manifest', 'allowedPublicAssets']) {
     assert.ok(f in s.properties, `suite_config 缺少字段: ${f}`);
   }
-  assert.equal('validationRoots' in s.properties, false, 'validationRoots 死字段已移除（零消费，内部任务-347/内部未决-141）');
+  assert.equal('validationRoots' in s.properties, false, 'validationRoots 死字段已移除（零消费，DEV-347/OPEN-141）');
   assert.equal(s.required.includes('validationRoots'), false, 'required 同批移除');
   const doc = s.properties.documents.items;
   for (const f of ['path', 'documentType', 'validationMode']) assert.ok(doc.required.includes(f));
@@ -83,7 +83,7 @@ test('模板引用的资产在 manifest 中；原子模板元数据与占位符�
   }
 });
 
-test('内部任务-347 内部未决-142：值侧成对引号剥离；重复键返回 frontmatterError 不抛异常；validateDocument 计 warning', () => {
+test('DEV-347 OPEN-142：值侧成对引号剥离；重复键返回 frontmatterError 不抛异常；validateDocument 计 warning', () => {
   const ok = parseFrontmatter('---\nkey: "value"\nkey2: \'v2\'\nkey3: plain\n---\n正文');
   assert.equal(ok.meta.key, 'value', '双引号剥离一层');
   assert.equal(ok.meta.key2, 'v2', '单引号剥离一层');

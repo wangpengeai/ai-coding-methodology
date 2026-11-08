@@ -3,13 +3,17 @@
 //       十二阶段编排、人工授权中断、checklist 只消费 policy 输出、incident lane、
 //       交接节、claim 分层锚点、无第二入口。
 // 作者：wangp  创建：2026-09-13  版权：MIT（见 workflow/LICENSE）
-import { test } from 'node:test';
+import { test as nodeTest } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+// 公开包守卫（内部任务-365）：skill 散文在公开包内按散文面改写，本文件断言源仓散文——公开包声明 SKIP。
+const IS_SOURCE_REPO = existsSync(resolve(ROOT, '.deliver'));
+// 保留 `test(` 调用形态（锚定索引按此解析）；公开包内整体降级为 skip。
+const test = IS_SOURCE_REPO ? nodeTest : nodeTest.skip;
 const SKILL = readFileSync(join(ROOT, 'workflow/skills/production-change/SKILL.md'), 'utf8');
 const CHECKLIST = readFileSync(join(ROOT, 'workflow/skills/production-change/checklist.md'), 'utf8');
 const RCD = readFileSync(join(ROOT, 'workflow/skills/root-cause-debugging/SKILL.md'), 'utf8');
@@ -25,12 +29,12 @@ test('production-change：十二阶段编排齐备且顺序含授权中断', () 
   const stages = ['装载交接', '建立/读取变更记录', '刷新 PR/CI', '生产就绪', 'release',
     '部署/安装授权', '环境推进与迁移', '观测窗口', 'UAT', 'claim 顶层', '反馈引用留存', '收尾'];
   for (const s of stages) assert.ok(SKILL.includes(s), `缺阶段：${s}`);
-  assert.ok(SKILL.includes('中断等待明确授权'), '外部副作用前必须中断等待授权（内部决策-2）');
+  assert.ok(SKILL.includes('中断等待明确授权'), '外部副作用前必须中断等待授权（D-M10-2）');
   assert.ok(SKILL.includes('回路由表'), '失败信号必须回路由表');
 });
 
-test('production-change：机械裁决只指向 内部接口-13，无第二判定源', () => {
-  assert.ok(SKILL.includes('内部接口-13'));
+test('production-change：机械裁决只指向 IF-COLLAB-13，无第二判定源', () => {
+  assert.ok(SKILL.includes('IF-COLLAB-13'));
   assert.ok(SKILL.includes('gate --claim'), '须给出 gate --claim 裁决命令');
   // 第二入口的形态是"命令正文建议新增 slash 命令"，不是正文里出现 release/deploy 单词
   assert.ok(!/`\/(release|deploy|rollback|incident|production-ready)`/.test(SKILL),
@@ -55,14 +59,14 @@ test('root-cause：active incident lane 含协调五项与 incidentRef 留痕', 
 
 test('branch-finishing：交付前置含 delivery-final，交接节存在且不推进', () => {
   assert.ok(BF.includes('delivery-final'), '收尾前置须含交付报告（gate receipt 链）');
-  assert.ok(BF.includes('生产交付交接'), '交接节存在（内部规则-5）');
+  assert.ok(BF.includes('生产交付交接'), '交接节存在（R-M10-5）');
   assert.ok(BF.includes('只交接不推进'), '本 skill 不等待 CI/不发布/不部署');
-  assert.ok(BF.includes('production.mjs') && BF.includes('init'), '交接含 create-change 命令（node 入口；内部决策-051 阶段1b）');
+  assert.ok(BF.includes('production.mjs') && BF.includes('init'), '交接含 create-change 命令（node 入口；ADR-051 阶段1b）');
 });
 
 test('verification：claim 分层锚点（code-complete 不冒充高层）', () => {
   assert.ok(VER.includes('code-complete 层'), 'claim 分层表述存在');
-  assert.ok(VER.includes('内部接口-13'), '高层 claim 指向 内部接口-13');
+  assert.ok(VER.includes('IF-COLLAB-13'), '高层 claim 指向 IF-COLLAB-13');
 });
 
 test('路由表：第 8 行生产行存在且置于 code-review 之后', () => {

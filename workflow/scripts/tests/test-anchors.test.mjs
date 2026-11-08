@@ -8,7 +8,7 @@
 // 作者：wangp  创建：2026-10-23  版权：MIT（见 workflow/LICENSE）
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -19,6 +19,10 @@ const ROOT = resolve(HERE, '../../..');
 const LIB = join(HERE, '..', 'lib', 'test-anchors-lib.mjs');
 const CHECK_REPO = join(HERE, '..', 'check-test-anchors.mjs');
 const CHECK_PLAN = join(HERE, '..', 'check-plan-test-anchors.mjs');
+// 公开包守卫（内部任务-365）：仓级 scripts/、docs/plans 与 specs/ 未随公开包发布；源仓资产在位时照常执行。
+const HAS_RELEASE_SUITE = existsSync(join(ROOT, 'scripts', 'release-suite.mjs'));
+const HAS_DEV225_PLAN = existsSync(join(ROOT, 'docs', 'plans', '2026-10-23-DEV-225-test-anchoring-plan.md'));
+const HAS_ANCHOR_REGISTRY = existsSync(join(ROOT, 'specs', 'test-anchors.json'));
 
 /** 创建 fixture 根（含空 .git 目录供 gitAncestor 解析根）。 */
 function makeRoot() {
@@ -45,7 +49,7 @@ documentType: module-volume
 
 | 编号 | 假设 | 依赖的条款 | 失效时的修订义务 |
 |---|---|---|---|
-| 内部验收-1 | 前提假设行不得进入锚定解析（与 §6 同号双载） | — | — |
+| A-MX-1 | 前提假设行不得进入锚定解析（与 §6 同号双载） | — | — |
 
 ## 第一部分：规定性规格
 
@@ -53,15 +57,15 @@ documentType: module-volume
 
 | 编号 | 需求（可验证表述） | 追溯 |
 |---|---|---|
-| 内部规则-1 | 规则一 | [内部需求-1] |
-| 内部规则-2 | 规则二 | [内部需求-1/2] |
+| R-MX-1 | 规则一 | [FR-ed-1] |
+| R-MX-2 | 规则二 | [FR-ed-1/2] |
 
 ### 6. 验收与追溯
 
 | 编号 | 可验证行为 | 追溯 | 锁定方式 |
 |---|---|---|---|
-| 内部验收-1 | 行为一 | [内部规则-1] | 单元测试｜tests/demo.test.mjs#行为一 |
-| 内部验收-2 | 行为二 | [内部规则-2] | 自动化测试（旧形态） |
+| A-MX-1 | 行为一 | [R-MX-1] | 单元测试｜tests/demo.test.mjs#行为一 |
+| A-MX-2 | 行为二 | [R-MX-2] | 自动化测试（旧形态） |
 `;
 
 const REQUIREMENTS_DEMO = `---
@@ -72,15 +76,15 @@ documentType: requirement-baseline
 
 | 编号 | 需求 | 优先级 | 状态 | 来源 | 证据 |
 |---|---|---|---|---|---|
-| 内部需求-1 | 需求一 | P1 | accepted | ADR-1 | 内部证据-1 |
-| 内部需求-2 | 需求二 | P1 | accepted | ADR-1 | 内部证据-1 |
+| FR-ed-1 | 需求一 | P1 | accepted | ADR-1 | E-1 |
+| FR-ed-2 | 需求二 | P1 | accepted | ADR-1 | E-1 |
 `;
 
 const MATRIX_ANCHOR = `---
 
 # 追溯矩阵
 
-## 4. V 模型层与测试锚定（内部决策-060）
+## 4. V 模型层与测试锚定（ADR-060）
 
 | V 模型层 | 设计面 | 测试锚类别 | 覆盖口径 |
 |---|---|---|---|
@@ -97,7 +101,7 @@ function defaultRegistry(over = {}) {
     schemaVersion: 1,
     updatedAt: '2026-10-23',
     expectedARows: 2,
-    baseline: { a: ['内部验收-2'], fr: ['内部需求-2'] },
+    baseline: { a: ['A-MX-2'], fr: ['FR-ed-2'] },
     waivers: [],
     visibility: { default: 'internal', overrides: {} },
     ...over,
@@ -111,18 +115,18 @@ function defaultRegistry(over = {}) {
 function defaultRoot(over = {}) {
   const root = makeRoot();
   const reg = over.registry ?? defaultRegistry();
-  writeRel(root, '内部规格', over.module ?? MODULE_DEMO);
-  writeRel(root, '内部规格', over.requirements ?? REQUIREMENTS_DEMO);
-  writeRel(root, '内部规格', over.matrix ?? MATRIX_ANCHOR);
-  writeRel(root, '内部规格', JSON.stringify(reg, null, 2));
+  writeRel(root, 'specs/modules/MX-demo.md', over.module ?? MODULE_DEMO);
+  writeRel(root, 'specs/requirements.md', over.requirements ?? REQUIREMENTS_DEMO);
+  writeRel(root, 'specs/traceability-matrix.md', over.matrix ?? MATRIX_ANCHOR);
+  writeRel(root, 'specs/test-anchors.json', JSON.stringify(reg, null, 2));
   writeRel(root, 'tests/demo.test.mjs', over.testFile ?? TEST_FILE_DEMO);
   if (over.extraFiles) for (const [rel, content] of Object.entries(over.extraFiles)) writeRel(root, rel, content);
   return {
     root,
-    registryPath: join(root, '内部规格'),
-    demo: join(root, '内部规格'),
-    req: join(root, '内部规格'),
-    matrix: join(root, '内部规格'),
+    registryPath: join(root, 'specs/test-anchors.json'),
+    demo: join(root, 'specs/modules/MX-demo.md'),
+    req: join(root, 'specs/requirements.md'),
+    matrix: join(root, 'specs/traceability-matrix.md'),
     testFile: join(root, 'tests/demo.test.mjs'),
   };
 }
@@ -150,9 +154,9 @@ test('共享库：锚定模型与 registry 语义矩阵', async () => {
     const f = defaultRoot();
     try {
       const specs = parseSpecs(f.root);
-      assert.equal(specs.aRows.length, 2, '只解析 §6 验收表（§0.2 前提假设 内部验收-1 不计入）');
-      assert.ok(specs.aRows.every((r) => r.file === '内部规格'));
-      assert.deepEqual(specs.aRows.map((r) => r.id), ['内部验收-1', '内部验收-2']);
+      assert.equal(specs.aRows.length, 2, '只解析 §6 验收表（§0.2 前提假设 A-MX-1 不计入）');
+      assert.ok(specs.aRows.every((r) => r.file === 'specs/modules/MX-demo.md'));
+      assert.deepEqual(specs.aRows.map((r) => r.id), ['A-MX-1', 'A-MX-2']);
       assert.equal(specs.frIds.size, 2, 'requirements FR 行解析');
       const index = buildTestIndex(f.root);
       assert.ok(index.size >= 1, '测试文件索引非空');
@@ -214,7 +218,7 @@ test('共享库：锚定模型与 registry 语义矩阵', async () => {
       const report = validateRegistry({ projectRoot: f.root, registry, specs, testIndex: index });
       assert.deepEqual(report.violations, [], `基础 fixture 应全绿：${JSON.stringify(report.violations)}`);
       assert.equal(report.summary.aRows, 2);
-      assert.equal(report.summary.frAnchored, 1, '内部需求-1 经 R→A 链锚定');
+      assert.equal(report.summary.frAnchored, 1, 'FR-ed-1 经 R→A 链锚定');
     } finally { rmSync(f.root, { recursive: true, force: true }); }
   }
 
@@ -244,11 +248,11 @@ test('共享库：锚定模型与 registry 语义矩阵', async () => {
 
   // ── 基线/豁免族 ──
   const baseCases = [
-    ['a-row-unanchored', null, '自动化测试（旧形态）', { baseline: { a: [], fr: ['内部需求-2'] } }],
-    ['baseline-stale', '单元测试｜tests/demo.test.mjs#行为一', null, { baseline: { a: ['内部验收-2'], fr: ['内部需求-2'] } }],
-    ['baseline-unknown-id', null, null, { baseline: { a: ['内部验收-2', '内部验收-99'], fr: ['内部需求-2'] } }],
-    ['fr-unanchored', null, null, { baseline: { a: ['内部验收-2'], fr: [] } }],
-    ['fr-baseline-unknown', null, null, { baseline: { a: ['内部验收-2'], fr: ['内部需求-2', '内部需求-99'] } }],
+    ['a-row-unanchored', null, '自动化测试（旧形态）', { baseline: { a: [], fr: ['FR-ed-2'] } }],
+    ['baseline-stale', '单元测试｜tests/demo.test.mjs#行为一', null, { baseline: { a: ['A-MX-2'], fr: ['FR-ed-2'] } }],
+    ['baseline-unknown-id', null, null, { baseline: { a: ['A-MX-2', 'A-MX-99'], fr: ['FR-ed-2'] } }],
+    ['fr-unanchored', null, null, { baseline: { a: ['A-MX-2'], fr: [] } }],
+    ['fr-baseline-unknown', null, null, { baseline: { a: ['A-MX-2'], fr: ['FR-ed-2', 'FR-ed-99'] } }],
   ];
   for (const [rule, anchorLock, legacyLock, over] of baseCases) {
     let module = MODULE_DEMO;
@@ -264,7 +268,7 @@ test('共享库：锚定模型与 registry 语义矩阵', async () => {
   // ── waiver 合法/非法 ──
   {
     const module = MODULE_DEMO.replace('自动化测试（旧形态）', '人工走查');
-    const registry = defaultRegistry({ baseline: { a: [], fr: ['内部需求-2'] }, waivers: [{ id: '内部验收-2', category: '人工走查', reason: '仅人工演练可覆盖', ref: '内部决策-060' }] });
+    const registry = defaultRegistry({ baseline: { a: [], fr: ['FR-ed-2'] }, waivers: [{ id: 'A-MX-2', category: '人工走查', reason: '仅人工演练可覆盖', ref: 'ADR-060' }] });
     const f = defaultRoot({ module, registry });
     try {
       const report = validateRegistry({ projectRoot: f.root, registry: JSON.parse(readFileSync(f.registryPath, 'utf8')), specs: parseSpecs(f.root), testIndex: buildTestIndex(f.root) });
@@ -272,14 +276,14 @@ test('共享库：锚定模型与 registry 语义矩阵', async () => {
     } finally { rmSync(f.root, { recursive: true, force: true }); }
   }
   const waiverCases = [
-    ['waiver-invalid', { id: '内部验收-2', category: '人工走查', reason: '短', ref: '内部决策-060' }],
-    ['waiver-invalid', { id: '内部验收-2', category: '单元测试', reason: '仅人工演练可覆盖', ref: '内部决策-060' }],
-    ['waiver-invalid', { id: '内部验收-99', category: '人工走查', reason: '仅人工演练可覆盖', ref: '内部决策-060' }],
-    ['waiver-invalid', { id: '内部验收-2', category: '人工走查', reason: '仅人工演练可覆盖', ref: '' }],
+    ['waiver-invalid', { id: 'A-MX-2', category: '人工走查', reason: '短', ref: 'ADR-060' }],
+    ['waiver-invalid', { id: 'A-MX-2', category: '单元测试', reason: '仅人工演练可覆盖', ref: 'ADR-060' }],
+    ['waiver-invalid', { id: 'A-MX-99', category: '人工走查', reason: '仅人工演练可覆盖', ref: 'ADR-060' }],
+    ['waiver-invalid', { id: 'A-MX-2', category: '人工走查', reason: '仅人工演练可覆盖', ref: '' }],
   ];
   for (const [rule, waiver] of waiverCases) {
     const module = MODULE_DEMO.replace('自动化测试（旧形态）', '人工走查');
-    const f = defaultRoot({ module, registry: defaultRegistry({ baseline: { a: [], fr: ['内部需求-2'] }, waivers: [waiver] }) });
+    const f = defaultRoot({ module, registry: defaultRegistry({ baseline: { a: [], fr: ['FR-ed-2'] }, waivers: [waiver] }) });
     try {
       const report = validateRegistry({ projectRoot: f.root, registry: JSON.parse(readFileSync(f.registryPath, 'utf8')), specs: parseSpecs(f.root), testIndex: buildTestIndex(f.root) });
       assert.ok(rules(report).includes(rule), `期望规则 ${rule}，实得 ${JSON.stringify(rules(report))}`);
@@ -326,8 +330,8 @@ documentType: module-volume
 
   // ── legacy 行登记 waiver → 非法（内部决策-060 修正案 4 决策 13；基线内外均违例）──
   for (const [name, registry] of [
-    ['legacy 非基线 + waiver', defaultRegistry({ baseline: { a: [], fr: ['内部需求-2'] }, waivers: [{ id: '内部验收-2', category: '人工走查', reason: '仅人工演练可覆盖断言', ref: '内部决策-060' }] })],
-    ['legacy 在基线 + waiver', defaultRegistry({ waivers: [{ id: '内部验收-2', category: '人工走查', reason: '仅人工演练可覆盖断言', ref: '内部决策-060' }] })],
+    ['legacy 非基线 + waiver', defaultRegistry({ baseline: { a: [], fr: ['FR-ed-2'] }, waivers: [{ id: 'A-MX-2', category: '人工走查', reason: '仅人工演练可覆盖断言', ref: 'ADR-060' }] })],
+    ['legacy 在基线 + waiver', defaultRegistry({ waivers: [{ id: 'A-MX-2', category: '人工走查', reason: '仅人工演练可覆盖断言', ref: 'ADR-060' }] })],
   ]) {
     const f = defaultRoot({ registry });
     try {
@@ -346,15 +350,15 @@ documentType: module-volume
 
 | 编号 | 需求（可验证表述） | 追溯 |
 |---|---|---|
-| 内部规则-1 | 规则一 | [内部需求-1] |
-| 内部规则-2 | 规则二 | [内部需求-1] |
+| R-MX-1 | 规则一 | [FR-ed-1] |
+| R-MX-2 | 规则二 | [FR-ed-1] |
 
 ### 6. 验收与追溯
 
 | 验收 | 行为 | 锁定方式 |
 |---|---|---|
-| 内部验收-1 | 行为一 —— [内部规则-1] | 单元测试｜tests/demo.test.mjs#行为一 |
-| 内部验收-2 | 行为二 —— [内部规则-2] | 自动化测试（旧形态） |
+| A-MX-1 | 行为一 —— [R-MX-1] | 单元测试｜tests/demo.test.mjs#行为一 |
+| A-MX-2 | 行为二 —— [R-MX-2] | 自动化测试（旧形态） |
 `;
     const f = defaultRoot({ module: threeCol });
     try {
@@ -374,7 +378,7 @@ documentType: module-volume
 
 | 编号 | 可验证行为 | 追溯 | 锁定方式 | 备注 |
 |---|---|---|---|---|
-| 内部验收-1 | 行为一 | [内部规则-1] | 自动化测试（旧形态） | x |
+| A-MX-1 | 行为一 | [R-MX-1] | 自动化测试（旧形态） | x |
 `;
     const f = defaultRoot({ module: fiveCol, registry: defaultRegistry({ expectedARows: 1 }) });
     try {
@@ -385,7 +389,7 @@ documentType: module-volume
 
   // ── 可执行锚行登记 waiver → 非法 ──
   {
-    const f = defaultRoot({ registry: defaultRegistry({ waivers: [{ id: '内部验收-1', category: '人工走查', reason: '仅人工演练可覆盖断言', ref: '内部决策-060' }] }) });
+    const f = defaultRoot({ registry: defaultRegistry({ waivers: [{ id: 'A-MX-1', category: '人工走查', reason: '仅人工演练可覆盖断言', ref: 'ADR-060' }] }) });
     try {
       const report = validateRegistry({ projectRoot: f.root, registry: JSON.parse(readFileSync(f.registryPath, 'utf8')), specs: parseSpecs(f.root), testIndex: buildTestIndex(f.root) });
       assert.ok(rules(report).includes('waiver-invalid'), '可执行锚行 + waiver 须红');
@@ -402,8 +406,8 @@ documentType: module-volume
 
 | 编号 | 可验证行为 | 追溯 | 锁定方式 |
 |---|---|---|---|
-| 内部验收-1 | 行为一 | [内部规则-1] | 自动化测试（旧形态） |
-| 内部验收-2 | 缺列行 | [内部规则-2] |
+| A-MX-1 | 行为一 | [R-MX-1] | 自动化测试（旧形态） |
+| A-MX-2 | 缺列行 | [R-MX-2] |
 `;
     const f = defaultRoot({ module: malformed, registry: defaultRegistry({ expectedARows: 2 }) });
     try {
@@ -424,7 +428,7 @@ documentType: module-volume
 
 // ── 内部验收-23 锚：覆盖报告与 release-suite 接线矩阵 ────────────────────────────
 
-test('覆盖报告与 release-suite 接线矩阵', async () => {
+test('覆盖报告与 release-suite 接线矩阵', async (t) => {
   const { validateRegistry, parseSpecs, buildTestIndex, computeCoverage, formatMarkdownReport, expandIdRefs } = await lib();
   const f = defaultRoot();
   try {
@@ -436,7 +440,7 @@ test('覆盖报告与 release-suite 接线矩阵', async () => {
     for (const key of ['modules', 'layers', 'domains', 'interfaces', 'summary']) {
       assert.ok(Object.prototype.hasOwnProperty.call(report.coverage, key), `coverage 缺节：${key}`);
     }
-    assert.ok(report.coverage.modules['内部规格'], '模块级覆盖存在');
+    assert.ok(report.coverage.modules['specs/modules/MX-demo.md'], '模块级覆盖存在');
     for (const layer of ['unit', 'integration', 'system', 'acceptance', 'command', 'nonExecutable']) {
       assert.ok(Object.prototype.hasOwnProperty.call(report.coverage.layers, layer), `layers 缺层：${layer}`);
     }
@@ -460,51 +464,53 @@ test('覆盖报告与 release-suite 接线矩阵', async () => {
     assert.ok(md.includes('## 覆盖报告'), 'md 含覆盖报告标题');
     assert.ok(md.includes('命令级') || md.includes('command'), 'md 呈现命令级层');
     // ID 引用展开（斜杠与区间）
-    const refs = expandIdRefs('[内部规则-1/2][内部规则-1..3][内部需求-2/10]');
-    assert.ok(refs.R.has('内部规则-1') && refs.R.has('内部规则-2') && refs.R.has('内部规则-1') && refs.R.has('内部规则-3'));
-    assert.ok(refs.FR.has('内部需求-2') && refs.FR.has('内部需求-10'));
+    const refs = expandIdRefs('[R-M8-1/2][R-M20-1..3][FR-wf-2/10]');
+    assert.ok(refs.R.has('R-M8-1') && refs.R.has('R-M8-2') && refs.R.has('R-M20-1') && refs.R.has('R-M20-3'));
+    assert.ok(refs.FR.has('FR-wf-2') && refs.FR.has('FR-wf-10'));
     // computeCoverage 单独可调（覆盖算法五节）
     const cov = computeCoverage({ specs, testIndex: index, methodStates: report.methodStates, anchoredFr: new Set() });
     assert.ok(cov.summary && typeof cov.summary.aRows === 'number');
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 
-  // release-suite 接线防回退断言（源码含新步骤）
-  const suite = readFileSync(join(ROOT, 'scripts/release-suite.mjs'), 'utf8');
-  assert.ok(suite.includes('check-test-anchors.mjs'), 'release-suite 须含 check-test-anchors.mjs 步');
-  const selftest = suite.slice(suite.indexOf('function selftest'));
-  assert.ok(selftest.includes('check-test-anchors.mjs'), 'release-suite selftest 须含防回退锚');
+  // release-suite 接线防回退断言（源码含新步骤）；公开包无仓级 scripts/ 时声明 SKIP
+  await t.test('release-suite 接线', { skip: HAS_RELEASE_SUITE ? false : '公开包不含仓级 scripts/（源仓照跑）' }, () => {
+    const suite = readFileSync(join(ROOT, 'scripts/release-suite.mjs'), 'utf8');
+    assert.ok(suite.includes('check-test-anchors.mjs'), 'release-suite 须含 check-test-anchors.mjs 步');
+    const selftest = suite.slice(suite.indexOf('function selftest'));
+    assert.ok(selftest.includes('check-test-anchors.mjs'), 'release-suite selftest 须含防回退锚');
+  });
 });
 
 // ── 内部验收-19 锚：计划「测试锚定」门禁矩阵 ────────────────────────────────────
 
 function planText({ sectionLines = [], implementation = true, hasSection = true, position = 'before' } = {}) {
-  const fileRow = implementation ? '| workflow/scripts/lib/x.mjs | 新建 | 代码 |' : '| 内部计划 | 新建 | 文档 |';
+  const fileRow = implementation ? '| workflow/scripts/lib/x.mjs | 新建 | 代码 |' : '| docs/plans/x.md | 新建 | 文档 |';
   const section = hasSection
     ? ['## 测试锚定', '', ...sectionLines, '']
     : [];
   const step = ['## 执行步骤', '', '### 步骤 1：x', '', '验收：exit 0', ''];
-  return ['---', 'specRefs: [内部需求-1]', '---', '', '# 计划：fixture', '', '## 目标', '', 'demo', '', '## 文件清单（文件级）', '', '| 文件 | 动作 | 职责 |', '|---|---|---|', fileRow, '', ...(position === 'before' ? section : step), ...(position === 'before' ? step : section)].join('\n');
+  return ['---', 'specRefs: [FR-ed-1]', '---', '', '# 计划：fixture', '', '## 目标', '', 'demo', '', '## 文件清单（文件级）', '', '| 文件 | 动作 | 职责 |', '|---|---|---|', fileRow, '', ...(position === 'before' ? section : step), ...(position === 'before' ? step : section)].join('\n');
 }
 
 function planRoot(textContent) {
   const root = makeRoot();
-  writeRel(root, '内部规格', MODULE_DEMO);
-  writeRel(root, '内部规格', REQUIREMENTS_DEMO);
-  writeRel(root, '内部规格', MATRIX_ANCHOR);
-  writeRel(root, '内部规格', JSON.stringify(defaultRegistry(), null, 2));
+  writeRel(root, 'specs/modules/MX-demo.md', MODULE_DEMO);
+  writeRel(root, 'specs/requirements.md', REQUIREMENTS_DEMO);
+  writeRel(root, 'specs/traceability-matrix.md', MATRIX_ANCHOR);
+  writeRel(root, 'specs/test-anchors.json', JSON.stringify(defaultRegistry(), null, 2));
   writeRel(root, 'tests/demo.test.mjs', TEST_FILE_DEMO);
-  writeRel(root, '内部计划', textContent);
-  return { root, plan: join(root, '内部计划') };
+  writeRel(root, 'docs/plans/fixture-plan.md', textContent);
+  return { root, plan: join(root, 'docs/plans/fixture-plan.md') };
 }
 
-test('计划「测试锚定」门禁矩阵', async () => {
+test('计划「测试锚定」门禁矩阵', async (t) => {
   // 合法：可执行锚＋派生锚＋非可执行类别＋说明行
   {
     const { root, plan } = planRoot(planText({ sectionLines: [
-      '- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一',
-      '- 内部需求-1：派生｜内部验收-1',
-      '- 内部验收-2：人工走查｜人工演练可覆盖断言',
-      '- 说明：本批新增 内部验收-1 锚',
+      '- A-MX-1：单元测试｜tests/demo.test.mjs#行为一',
+      '- FR-ed-1：派生｜A-MX-1',
+      '- A-MX-2：人工走查｜人工演练可覆盖断言',
+      '- 说明：本批新增 A-MX-1 锚',
     ] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
@@ -531,7 +537,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 节位置错（位于步骤后）
   {
-    const { root, plan } = planRoot(planText({ position: 'after', sectionLines: ['- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一'] }));
+    const { root, plan } = planRoot(planText({ position: 'after', sectionLines: ['- A-MX-1：单元测试｜tests/demo.test.mjs#行为一'] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1);
@@ -541,7 +547,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   // 内部任务-348/内部未决-180③ STEP_HEADING 新门判别（负向）：日期起首标题（数字后无 [.、:：]）不判
   // 步骤——旧门裸 \d 把 `## 2026-…` 当步骤锚点会触发 section-position 误报（回退旧门即红）
   {
-    const withDate = planText({ sectionLines: ['- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一'] })
+    const withDate = planText({ sectionLines: ['- A-MX-1：单元测试｜tests/demo.test.mjs#行为一'] })
       .replace('## 测试锚定', '## 2026-11-07 日期起首标题不判步骤\n\n叙事行\n\n## 测试锚定');
     const { root, plan } = planRoot(withDate);
     try {
@@ -551,7 +557,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // STEP_HEADING 新门判别（正向）：`\d+[.、:：]` 编号标题判步骤（节位于其后即 section-position）
   {
-    const withNumbered = planText({ sectionLines: ['- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一'] })
+    const withNumbered = planText({ sectionLines: ['- A-MX-1：单元测试｜tests/demo.test.mjs#行为一'] })
       .replace('## 测试锚定', '## 1. 编号步骤标题\n\n验收：demo。\n\n## 测试锚定');
     const { root, plan } = planRoot(withNumbered);
     try {
@@ -562,7 +568,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 重复节
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一'] }) + '\n## 测试锚定\n\n- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一\n');
+    const { root, plan } = planRoot(planText({ sectionLines: ['- A-MX-1：单元测试｜tests/demo.test.mjs#行为一'] }) + '\n## 测试锚定\n\n- A-MX-1：单元测试｜tests/demo.test.mjs#行为一\n');
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1);
@@ -583,7 +589,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 叙事行（非三类形态）→ invalid-anchor
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部验收-1：经 内部验收-2 链可达（叙事行）'] }));
+    const { root, plan } = planRoot(planText({ sectionLines: ['- A-MX-1：经 A-MX-2 链可达（叙事行）'] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1);
@@ -592,7 +598,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 派生引用悬空
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部需求-1：派生｜内部验收-99'] }));
+    const { root, plan } = planRoot(planText({ sectionLines: ['- FR-ed-1：派生｜A-MX-99'] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1);
@@ -601,7 +607,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 命令冒烟路径空 → invalid-anchor
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部验收-1：命令冒烟｜'] }));
+    const { root, plan } = planRoot(planText({ sectionLines: ['- A-MX-1：命令冒烟｜'] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1);
@@ -628,7 +634,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   // 整体豁免 + ID 行并存 → 歧义违例（内部规则-19「与其他行并存即歧义」）
   {
     const { root, plan } = planRoot(planText({ implementation: false, sectionLines: [
-      '- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一',
+      '- A-MX-1：单元测试｜tests/demo.test.mjs#行为一',
       '- 测试锚定：整体豁免｜纯文档批次无规格面变更',
     ] }));
     try {
@@ -639,7 +645,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 行内 ID 悬空 → dangling-id
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部验收-99：单元测试｜tests/demo.test.mjs#行为一'] }));
+    const { root, plan } = planRoot(planText({ sectionLines: ['- A-MX-99：单元测试｜tests/demo.test.mjs#行为一'] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1);
@@ -647,7 +653,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
     } finally { rmSync(root, { recursive: true, force: true }); }
   }
   // 非法类别 / 空片段 → invalid-anchor
-  for (const line of ['- 内部验收-1：未知类别｜x', '- 内部验收-1：单元测试｜tests/demo.test.mjs#']) {
+  for (const line of ['- A-MX-1：未知类别｜x', '- A-MX-1：单元测试｜tests/demo.test.mjs#']) {
     const { root, plan } = planRoot(planText({ sectionLines: [line] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
@@ -657,18 +663,18 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 计划不存在 → exit 2
   {
-    const r = runCli(CHECK_PLAN, ['内部计划' + Date.now() + '.md'], ROOT);
+    const r = runCli(CHECK_PLAN, ['docs/plans/no-such-plan-' + Date.now() + '.md'], ROOT);
     assert.equal(r.status, 2, '不可读计划为工具错误退 2');
   }
   // 围栏内伪节 / HTML 注释伪节 / H3 同名节 → 均不算 `## 测试锚定` 节
   for (const [name, body] of [
-    ['围栏伪节', '```markdown\n## 测试锚定\n\n- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一\n```\n'],
-    ['注释伪节', '<!--\n## 测试锚定\n\n- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一\n-->\n'],
-    ['H3 同名节', '### 测试锚定\n\n- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一\n'],
+    ['围栏伪节', '```markdown\n## 测试锚定\n\n- A-MX-1：单元测试｜tests/demo.test.mjs#行为一\n```\n'],
+    ['注释伪节', '<!--\n## 测试锚定\n\n- A-MX-1：单元测试｜tests/demo.test.mjs#行为一\n-->\n'],
+    ['H3 同名节', '### 测试锚定\n\n- A-MX-1：单元测试｜tests/demo.test.mjs#行为一\n'],
     // S2 门复审注记 2：多行注释内的围栏标记行不得误开 fence——否则 `-->` 被围栏吞掉，
     // 注释后的正文围栏错位闭合、围栏内伪节漏判（修前该形态 exit 0 漏报，修后 missing-section）
-    ['注释内围栏＋闭合后正文围栏伪节', '<!--\n```\n-->\n```markdown\n## 测试锚定\n\n- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一\n```\n'],
-    ['注释内围栏伪节', '<!--\n```\n## 测试锚定\n\n- 内部验收-1：单元测试｜tests/demo.test.mjs#行为一\n-->\n'],
+    ['注释内围栏＋闭合后正文围栏伪节', '<!--\n```\n-->\n```markdown\n## 测试锚定\n\n- A-MX-1：单元测试｜tests/demo.test.mjs#行为一\n```\n'],
+    ['注释内围栏伪节', '<!--\n```\n## 测试锚定\n\n- A-MX-1：单元测试｜tests/demo.test.mjs#行为一\n-->\n'],
   ]) {
     const text = planText({ hasSection: false }) + '\n' + body;
     const { root, plan } = planRoot(text);
@@ -680,7 +686,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   }
   // 派生锚引用非 A 行 → invalid-anchor（派生只指向验收条目链）
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部需求-1：派生｜内部规则-1'] }));
+    const { root, plan } = planRoot(planText({ sectionLines: ['- FR-ed-1：派生｜R-MX-1'] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1);
@@ -690,7 +696,7 @@ test('计划「测试锚定」门禁矩阵', async () => {
   // 内部任务-348/内部未决-180①：派生列表混入垃圾 token → 透传后仍 invalid-anchor（lib expandIdRefs
   // 用 matchAll 静默丢弃非匹配 token，直接消费会丢垃圾 token 检出＝门禁变宽；本地展开保留透传语义）
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部需求-1：派生｜内部验收-1、garbage'] }));
+    const { root, plan } = planRoot(planText({ sectionLines: ['- FR-ed-1：派生｜A-MX-1、garbage'] }));
     try {
       const r = runCli(CHECK_PLAN, [plan]);
       assert.equal(r.status, 1, '垃圾 token 不得被静默丢弃');
@@ -700,11 +706,11 @@ test('计划「测试锚定」门禁矩阵', async () => {
   // 内部任务-348/内部未决-180④：IF 族长段 ID（内部接口-1，段长 7 超 {1,6}）索引不漏——specIdIndex
   // 行首 token 经 PLAN_ID_RE 单源判定（S2 门评审发现 1：平行段长正则会漏收 → dangling-id 假红）
   {
-    const { root, plan } = planRoot(planText({ sectionLines: ['- 内部接口-1：单元测试｜tests/demo.test.mjs#行为一'] }));
+    const { root, plan } = planRoot(planText({ sectionLines: ['- IF-ADAPTER-1：单元测试｜tests/demo.test.mjs#行为一'] }));
     try {
-      writeRel(root, '内部规格', '# 接口登记\n\n| ID | 名称 |\n|---|---|\n| 内部接口-1 | 外部控制面适配信封 |\n');
+      writeRel(root, 'specs/interface-registry.md', '# 接口登记\n\n| ID | 名称 |\n|---|---|\n| IF-ADAPTER-1 | 外部控制面适配信封 |\n');
       const r = runCli(CHECK_PLAN, [plan]);
-      assert.equal(r.status, 0, `内部接口-1 已在 interface-registry 登记须可解析（漏索引即 dangling-id 假红）：${r.stdout}${r.stderr}`);
+      assert.equal(r.status, 0, `IF-ADAPTER-1 已在 interface-registry 登记须可解析（漏索引即 dangling-id 假红）：${r.stdout}${r.stderr}`);
     } finally { rmSync(root, { recursive: true, force: true }); }
   }
   // n/a 行重复 / 整体豁免行重复 → invalid-line
@@ -724,11 +730,11 @@ test('计划「测试锚定」门禁矩阵', async () => {
     const r = runCli(CHECK_PLAN, []);
     assert.equal(r.status, 2, '无参为工具错误退 2');
   }
-  // 本仓真实计划自适用（引入批：checker 落盘后必须能跑当前计划）
-  {
-    const r = runCli(CHECK_PLAN, ['内部计划'], ROOT);
+  // 本仓真实计划自适用（引入批：checker 落盘后必须能跑当前计划）；公开包无该计划时声明 SKIP
+  await t.test('本仓真实计划自适用', { skip: HAS_DEV225_PLAN ? false : '公开包不含内部计划（源仓照跑）' }, () => {
+    const r = runCli(CHECK_PLAN, ['docs/plans/2026-10-23-DEV-225-test-anchoring-plan.md'], ROOT);
     assert.equal(r.status, 0, `本批计划自身应通过：${r.stdout.slice(0, 400)}${r.stderr}`);
-  }
+  });
 });
 
 // ── 仓检查器 CLI：exit 2>1>0 与 fixture 矩阵 ────────────────────────────────
@@ -749,7 +755,7 @@ test('仓检查器 CLI：fixture 绿/红/配置错误与双载排除', async () 
   }
   // 未锚 → exit 1
   {
-    const f = defaultRoot({ module: MODULE_DEMO.replace('自动化测试（旧形态）', '自动化测试（新但未锚）'), registry: defaultRegistry({ baseline: { a: [], fr: ['内部需求-2'] } }) });
+    const f = defaultRoot({ module: MODULE_DEMO.replace('自动化测试（旧形态）', '自动化测试（新但未锚）'), registry: defaultRegistry({ baseline: { a: [], fr: ['FR-ed-2'] } }) });
     try {
       const r = runCli(CHECK_REPO, ['--project-root', f.root]);
       assert.equal(r.status, 1);
@@ -760,7 +766,7 @@ test('仓检查器 CLI：fixture 绿/红/配置错误与双载排除', async () 
   {
     const f = defaultRoot();
     try {
-      rmSync(join(f.root, '内部规格'));
+      rmSync(join(f.root, 'specs/test-anchors.json'));
       const r = runCli(CHECK_REPO, ['--project-root', f.root]);
       assert.equal(r.status, 2, '缺 registry 为配置错误 exit 2');
       assert.ok(r.stderr.length > 0);
@@ -770,7 +776,7 @@ test('仓检查器 CLI：fixture 绿/红/配置错误与双载排除', async () 
   {
     const f = defaultRoot();
     try {
-      writeRel(f.root, '内部规格', '{ not json');
+      writeRel(f.root, 'specs/test-anchors.json', '{ not json');
       const r = runCli(CHECK_REPO, ['--project-root', f.root]);
       assert.equal(r.status, 2, '坏 JSON registry 为配置错误 exit 2');
     } finally { rmSync(f.root, { recursive: true, force: true }); }
@@ -779,7 +785,7 @@ test('仓检查器 CLI：fixture 绿/红/配置错误与双载排除', async () 
   for (const raw of ['[]', 'null']) {
     const f = defaultRoot();
     try {
-      writeRel(f.root, '内部规格', raw);
+      writeRel(f.root, 'specs/test-anchors.json', raw);
       const r = runCli(CHECK_REPO, ['--project-root', f.root]);
       assert.equal(r.status, 2, `非对象 registry（${raw}）为配置错误 exit 2`);
     } finally { rmSync(f.root, { recursive: true, force: true }); }
@@ -788,7 +794,7 @@ test('仓检查器 CLI：fixture 绿/红/配置错误与双载排除', async () 
   {
     const f = defaultRoot();
     try {
-      const r = runCli(CHECK_REPO, ['--project-root', f.root, '--registry', '内部规格']);
+      const r = runCli(CHECK_REPO, ['--project-root', f.root, '--registry', 'specs/test-anchors.json']);
       assert.equal(r.status, 0, '显式 --registry 同路径应等价通过');
     } finally { rmSync(f.root, { recursive: true, force: true }); }
   }
@@ -796,34 +802,34 @@ test('仓检查器 CLI：fixture 绿/红/配置错误与双载排除', async () 
   {
     const f = defaultRoot();
     try {
-      rmSync(join(f.root, '内部规格'), { recursive: true, force: true });
+      rmSync(join(f.root, 'specs/modules'), { recursive: true, force: true });
       const r = runCli(CHECK_REPO, ['--project-root', f.root]);
-      assert.equal(r.status, 2, '缺 内部规格 为工具错误 exit 2');
+      assert.equal(r.status, 2, '缺 specs/modules 为工具错误 exit 2');
     } finally { rmSync(f.root, { recursive: true, force: true }); }
   }
 });
 
 // ── 内部验收-23 真仓下限：试点 内部模块-15 ≥6 / 内部模块-8 ≥11、点名行逐 ID 有效可执行锚、0 missing ──
 
-test('真仓试点锚定下限与点名行（内部模块-15 ≥6 / 内部模块-8 ≥11 / 0 missing）', async () => {
+test('真仓试点锚定下限与点名行（M15 ≥6 / M8 ≥11 / 0 missing）', { skip: HAS_ANCHOR_REGISTRY ? false : '公开包不含内部资产 specs/（源仓照跑）' }, async () => {
   const { parseSpecs, buildTestIndex, loadRegistry, validateRegistry } = await lib();
   const report = validateRegistry({
     projectRoot: ROOT,
-    registry: loadRegistry(join(ROOT, '内部规格')),
+    registry: loadRegistry(join(ROOT, 'specs/test-anchors.json')),
     specs: parseSpecs(ROOT),
     testIndex: buildTestIndex(ROOT),
   });
   assert.equal(report.ok, true, `真仓锚定面须全绿：${JSON.stringify(report.violations.slice(0, 5))}`);
-  const m15 = report.coverage.modules['内部规格'];
-  const m8 = report.coverage.modules['内部规格'];
-  assert.ok(m15 && m15.executable >= 6, `内部模块-15 可执行锚须 ≥6（实际 ${m15?.executable}）`);
-  assert.equal(m15.missing, 0, '内部模块-15 须 0 missing');
-  assert.ok(m8 && m8.executable >= 11, `内部模块-8 可执行锚须 ≥11（实际 ${m8?.executable}）`);
-  assert.equal(m8.missing, 0, '内部模块-8 须 0 missing');
+  const m15 = report.coverage.modules['specs/modules/M15-run-self-observability.md'];
+  const m8 = report.coverage.modules['specs/modules/M8-guard-hooks.md'];
+  assert.ok(m15 && m15.executable >= 6, `M15 可执行锚须 ≥6（实际 ${m15?.executable}）`);
+  assert.equal(m15.missing, 0, 'M15 须 0 missing');
+  assert.ok(m8 && m8.executable >= 11, `M8 可执行锚须 ≥11（实际 ${m8?.executable}）`);
+  assert.equal(m8.missing, 0, 'M8 须 0 missing');
   const named = [
-    '内部验收-1', '内部验收-22', '内部验收-2', '内部验收-3', '内部验收-5', '内部验收-6',
-    '内部验收-9', '内部验收-10', '内部验收-15', '内部验收-16', '内部验收-18', '内部验收-20',
-    '内部验收-21', '内部验收-23', '内部验收-24', '内部验收-25', '内部验收-26',
+    'A-M15-1', 'A-M15-22', 'A-M15-2', 'A-M15-3', 'A-M15-5', 'A-M15-6',
+    'A-M8-9', 'A-M8-10', 'A-M8-15', 'A-M8-16', 'A-M8-18', 'A-M8-20',
+    'A-M8-21', 'A-M8-23', 'A-M8-24', 'A-M8-25', 'A-M8-26',
   ];
   for (const id of named) {
     assert.equal(report.methodStates[id]?.validExec, true, `${id} 须为有效可执行锚（点名行逐 ID 断言）`);

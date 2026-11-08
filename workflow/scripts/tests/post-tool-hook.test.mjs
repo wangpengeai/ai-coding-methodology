@@ -15,7 +15,7 @@ import { digestOf } from '../lib/incident-store.mjs';
 /** 判据缺陷期（内部未决-46）账本实测的粗 digest 字面量——防回归判据，删掉即失去锚。 */
 const LEGACY_COARSE = ['d7a83521cf4fdddf', '7d8dcda09367dc59'];
 
-test('字符串形态不再单独构成失败判据（内部未决-46① 假阳性族）', () => {
+test('字符串形态不再单独构成失败判据（OPEN-46① 假阳性族）', () => {
   assert.equal(postTool.classifyResult('pwsh', 'error.js\ndone-listing'), null, '真实文件名行不得判失败');
   assert.equal(postTool.classifyResult('pwsh', 'ok\nTraceback (most recent call last)'), null, '回显他次正文不得判失败');
   assert.equal(postTool.classifyResult('edit', 'error-field'), null, '正文含 token 不得判失败');
@@ -47,7 +47,7 @@ test('判序：error 字段 > is_error > 退出码（显式事实优先于推断
   assert.equal(postTool.classifyResult('pwsh', { is_error: true, exit_code: 1 })?.errorClass, 'error-flag');
 });
 
-test('digest 细分：errorClass + 退出变体 + 命令指纹（内部未决-46③）', () => {
+test('digest 细分：errorClass + 退出变体 + 命令指纹（OPEN-46③）', () => {
   const a = postTool.classifyResult('pwsh', { exit_code: 2 }, { command: 'git status' });
   const b = postTool.classifyResult('pwsh', { exit_code: 2 }, { command: 'git log' });
   const a2 = postTool.classifyResult('pwsh', { exit_code: 2 }, { command: 'git   status' });
@@ -121,7 +121,7 @@ test('commandFingerprint：字段优先级、空白归一、缺省 nocmd、路�
   assert.ok(!postTool.commandFingerprint({ command: 'secret-token-abc' }).includes('secret'));
 });
 
-test('N-4（内部任务-2 批）：重试环状态写面为 tmp+rename（静态断言——双注册并行下裸覆写产生半截 JSON）', async () => {
+test('N-4（DEV-2 批）：重试环状态写面为 tmp+rename（静态断言——双注册并行下裸覆写产生半截 JSON）', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../../hooks/post-tool.mjs', import.meta.url), 'utf8');
   assert.ok(!src.includes('writeFileSync(ringStateFile(sessionId)'), 'ringStateFile 不得裸 writeFileSync（须 tmp+rename 原子替换）');
@@ -144,7 +144,7 @@ async function runPostTool(payload, incidentRoot, extraEnv = {}) {
   return { status: r.status, stdout: r.stdout ?? '' };
 }
 
-test('内部任务-8 任务 2.2：非目标族 PostToolUse 成功负载零拦截零输出、零落账（matcher 放宽后锁定）', async () => {
+test('DEV-8 任务 2.2：非目标族 PostToolUse 成功负载零拦截零输出、零落账（matcher 放宽后锁定）', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -166,7 +166,7 @@ test('内部任务-8 任务 2.2：非目标族 PostToolUse 成功负载零拦截
   }
 });
 
-test('内部任务-8 任务 2.2：双通道去重语义不变——同一次失败经两通道到达只算一条（读侧 id 幂等）', async () => {
+test('DEV-8 任务 2.2：双通道去重语义不变——同一次失败经两通道到达只算一条（读侧 id 幂等）', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -190,7 +190,7 @@ test('内部任务-8 任务 2.2：双通道去重语义不变——同一次失�
 
 // ── 内部任务-20 B 批（F3）：errorCode 的形态化 + 语义作用域 + provenance ──
 
-test('内部任务-20 B/F3：errorCode 形态化——大写蛇形与小写类别串均接受，拒形不落', () => {
+test('DEV-20 B/F3：errorCode 形态化——大写蛇形与小写类别串均接受，拒形不落', () => {
   const okUpper = postTool.classifyResult('edit', { is_error: true, errorCode: 'FS_STALE_VERSION' });
   assert.equal(okUpper?.errorCode, 'FS_STALE_VERSION', '宿主守卫码（大写蛇形）须落');
   const okLower = postTool.classifyResult('edit', { is_error: true, errorCode: 'internal' });
@@ -204,19 +204,19 @@ test('内部任务-20 B/F3：errorCode 形态化——大写蛇形与小写类�
   assert.ok(!Object.hasOwn(absent, 'errorCode'), '缺省 ⇒ 不产键');
 });
 
-test('内部任务-20 B/F3：语义作用域——exit-nonzero 永不携带 errorCode（证据层不被染成可归因失败）', () => {
+test('DEV-20 B/F3：语义作用域——exit-nonzero 永不携带 errorCode（证据层不被染成可归因失败）', () => {
   const r = postTool.classifyResult('Bash', { exit_code: 1, errorCode: 'FS_IO_ERROR' });
   assert.equal(r?.errorClass, 'exit-nonzero', '判序不变');
   assert.ok(!Object.hasOwn(r, 'errorCode'), 'exit-nonzero 属证据层：即使载荷带码也不落（评审阻塞 1）');
 });
 
-test('内部任务-20 B/F3：provenance——码只认结构化字段，禁止从文案抠取', () => {
+test('DEV-20 B/F3：provenance——码只认结构化字段，禁止从文案抠取', () => {
   const r = postTool.classifyResult('edit', { is_error: true, stdout: 'error FS_STALE_VERSION happened' });
   assert.ok(r, '仍有失败事实');
   assert.ok(!Object.hasOwn(r, 'errorCode'), '文案里出现码字样不得落字段（provenance 收口）');
 });
 
-test('内部未决-110 e2e：失败落账（带 inputDigest）→ 同参数成功 → open tool-failure 自动 resolved（内部任务-52）', async () => {
+test('OPEN-110 e2e：失败落账（带 inputDigest）→ 同参数成功 → open tool-failure 自动 resolved（DEV-52）', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -249,7 +249,7 @@ test('内部未决-110 e2e：失败落账（带 inputDigest）→ 同参数成�
     assert.equal(s.status, 0);
     const healed = readIncidents(incidentRoot).find((x) => x.id === afterFail[0].id);
     assert.equal(healed.status, 'resolved', '同参数成功后 open tool-failure 被自动收口');
-    assert.equal(healed.note, '同参数随即成功自愈（内部未决-110）');
+    assert.equal(healed.note, '同参数随即成功自愈（OPEN-110）');
     // ③负例：异工具名（同 command）成功不误收口——inputDigest 含工具名，换名即不同键
     const f2 = await runPostTool(
       { hook_event_name: 'PostToolUseFailure', tool_name: 'Bash', tool_use_id: 'u3', session_id: sess, cwd: proj, tool_input: input, tool_result: { exit_code: 1 } },
@@ -274,7 +274,7 @@ test('内部未决-110 e2e：失败落账（带 inputDigest）→ 同参数成�
 
 // ── 内部决策-045/内部任务-96：活动观测点端到端（PostToolUse 心跳顺延/异会话不顺延）──
 
-test('内部决策-045 活动观测端到端：同会话 PostToolUse 顺延租约、异会话不顺延', async () => {
+test('ADR-045 活动观测端到端：同会话 PostToolUse 顺延租约、异会话不顺延', async () => {
   const { mkdtempSync, mkdirSync, readdirSync, readFileSync, writeFileSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -292,7 +292,7 @@ test('内部决策-045 活动观测端到端：同会话 PostToolUse 顺延租�
       // tmpdir 在 /var→/private/var symlink 后两形态分裂，原始路径与读侧 projectKey 恒不等
       const seedKey = projectKey(proj);
       const ch = issueChallenge(seedKey, { sessionId: 'sess-heart' });
-      assert.ok(activateLease(seedKey, { leaseId: ch.leaseId, taskId: '内部任务-30', skill: 'tdd' }).ok);
+      assert.ok(activateLease(seedKey, { leaseId: ch.leaseId, taskId: 'DEV-30', skill: 'tdd' }).ok);
     const actName = readdirSync(stateDir).find((n) => n.startsWith('wf-lease-active-'));
     const actPath = join(stateDir, actName);
     const act = JSON.parse(readFileSync(actPath, 'utf8'));
@@ -336,7 +336,7 @@ async function mkProjectFixture(tag) {
   return { incidentRoot, proj };
 }
 
-test('内部模块-15 v2：失败记录带 cause/severity/ruleId/rulesVersion/observationSource 与归因字段', async () => {
+test('M15 v2：失败记录带 cause/severity/ruleId/rulesVersion/observationSource 与归因字段', async () => {
   const { readIncidents } = await import('../lib/incident-store.mjs');
   const { incidentRoot, proj } = await mkProjectFixture('v2fields');
   try {
@@ -385,7 +385,7 @@ test('内部模块-15 v2：失败记录带 cause/severity/ruleId/rulesVersion/ob
   }
 });
 
-test('内部模块-15 v2：未派发调用（dispatch_fact=not-dispatched）不产生失败事实', async () => {
+test('M15 v2：未派发调用（dispatch_fact=not-dispatched）不产生失败事实', async () => {
   const { readIncidents } = await import('../lib/incident-store.mjs');
   const { incidentRoot, proj } = await mkProjectFixture('v2nodisp');
   try {
@@ -412,7 +412,7 @@ test('内部模块-15 v2：未派发调用（dispatch_fact=not-dispatched）不�
   }
 });
 
-test('内部模块-15 v2：成功路径只触发 retry-heal——lease 族与超龄证据行零写（热路径作用域）', async () => {
+test('M15 v2：成功路径只触发 retry-heal——lease 族与超龄证据行零写（热路径作用域）', async () => {
   const { readIncidents, appendIncident, digestOf } = await import('../lib/incident-store.mjs');
   const { readFileSync } = await import('node:fs');
   const { join } = await import('node:path');
@@ -446,7 +446,7 @@ test('内部模块-15 v2：成功路径只触发 retry-heal——lease 族与超
   }
 });
 
-test('内部模块-15 v2：处置失败经 noteHookIssue 落 hook-errors.jsonl 且仍 exit 0', async (t) => {
+test('M15 v2：处置失败经 noteHookIssue 落 hook-errors.jsonl 且仍 exit 0', async (t) => {
   if (process.platform !== 'win32' && typeof process.getuid === 'function' && process.getuid() === 0) {
     t.skip('root 环境 chmod 不产生 EPERM，写失败面无法取证');
   }
@@ -485,7 +485,7 @@ test('内部模块-15 v2：处置失败经 noteHookIssue 落 hook-errors.jsonl �
   }
 });
 
-test('内部模块-15 v2：账本写失败不抛且 exit 0（记录职责不得反噬会话）', async (t) => {
+test('M15 v2：账本写失败不抛且 exit 0（记录职责不得反噬会话）', async (t) => {
   if (process.platform !== 'win32' && typeof process.getuid === 'function' && process.getuid() === 0) {
     t.skip('root 环境 chmod 不产生 EPERM，写失败面无法取证');
   }
@@ -511,7 +511,7 @@ test('内部模块-15 v2：账本写失败不抛且 exit 0（记录职责不得�
   }
 });
 
-test('内部模块-15 v2：--selftest 项数随批增长（≥38）且全过', async () => {
+test('M15 v2：--selftest 项数随批增长（≥38）且全过', async () => {
   const { spawnSync } = await import('node:child_process');
   const { fileURLToPath } = await import('node:url');
   const hook = fileURLToPath(new URL('../../hooks/post-tool.mjs', import.meta.url));
@@ -558,7 +558,7 @@ test('评审修复 N5：retry-loop 记录带 cause=retry-escalation/ruleId/rules
 // post-tool 仅**同名再导出**（既有调用零改动），session-start 就绪面 canary 改从 lib 导入
 // （禁止跨钩导入）。lib 不得反向 import 钩子入口（单向依赖）。
 // ─────────────────────────────────────────────────────────────────────────────
-test('内部模块-15 v2 判据单源：classifyResult 与指纹链下沉 lib（钩只再导出）', async () => {
+test('M15 v2 判据单源：classifyResult 与指纹链下沉 lib（钩只再导出）', async () => {
   const { readFileSync } = await import('node:fs');
   const { dirname, resolve } = await import('node:path');
   const { fileURLToPath, pathToFileURL } = await import('node:url');
@@ -586,7 +586,7 @@ test('内部模块-15 v2 判据单源：classifyResult 与指纹链下沉 lib（
 
 // ── 内部任务-244 P01：重试自愈索引缓存（失败入索引 → 成功 hit 回读复核收口） ──
 
-test('内部任务-244 P01：失败入索引、同参数成功命中索引自愈收口（不依赖全量回扫）', async () => {
+test('DEV-244 P01：失败入索引、同参数成功命中索引自愈收口（不依赖全量回扫）', async () => {
   const { spawnSync } = await import('node:child_process');
   const { mkdtempSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
@@ -620,7 +620,7 @@ test('内部任务-244 P01：失败入索引、同参数成功命中索引自愈
   }
 });
 
-test('内部任务-244 P01：索引写失败 → hook-errors 落 index-degraded（fallback 仍工作）', async () => {
+test('DEV-244 P01：索引写失败 → hook-errors 落 index-degraded（fallback 仍工作）', async () => {
   const { spawnSync } = await import('node:child_process');
   const { mkdtempSync, readFileSync, existsSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
@@ -645,7 +645,7 @@ test('内部任务-244 P01：索引写失败 → hook-errors 落 index-degraded�
   }
 });
 
-test('内部任务-244 E01：账本写失败经 hook-errors 留痕（ledger-write-failed）', async () => {
+test('DEV-244 E01：账本写失败经 hook-errors 留痕（ledger-write-failed）', async () => {
   const { spawnSync } = await import('node:child_process');
   const { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
@@ -694,7 +694,7 @@ function d07Payload(toolUseId, cwd) {
   };
 }
 
-test('内部任务-244 D07：占位被在途持有者占用时本次不写环（防并行双计数）', async () => {
+test('DEV-244 D07：占位被在途持有者占用时本次不写环（防并行双计数）', async () => {
   const { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync } = await import('node:fs');
   const { sessionStateFile } = await import('../../hooks/hook-lib.mjs');
   const { tmpdir } = await import('node:os');
@@ -722,7 +722,7 @@ test('内部任务-244 D07：占位被在途持有者占用时本次不写环（
   }
 });
 
-test('内部任务-244 D07：崩溃残留（超 TTL 占位）隔离回收后仍可推进并留痕', async () => {
+test('DEV-244 D07：崩溃残留（超 TTL 占位）隔离回收后仍可推进并留痕', async () => {
   const { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync, readFileSync, utimesSync } = await import('node:fs');
   const { sessionStateFile } = await import('../../hooks/hook-lib.mjs');
   const { tmpdir } = await import('node:os');
@@ -761,7 +761,7 @@ test('内部任务-244 D07：崩溃残留（超 TTL 占位）隔离回收后仍�
 
 // ── 内部任务-244 遗留项②：占位陈旧回收残件（.stale-*）超 TTL 清理 ──
 
-test('内部任务-244 遗留：超龄 .stale-* 占位残件在下次推进时清理（1h TTL）', async () => {
+test('DEV-244 遗留：超龄 .stale-* 占位残件在下次推进时清理（1h TTL）', async () => {
   const { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync, utimesSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -794,7 +794,7 @@ test('内部任务-244 遗留：超龄 .stale-* 占位残件在下次推进时�
 
 // ── 内部任务-342：post-tool 归因 taskId own-only（null 桶租约不归因） ──
 
-test('内部任务-342 归因 taskId：post-tool 记录在 null 桶租约下 taskId=null、本会话具名桶下取任务号', async () => {
+test('DEV-342 归因 taskId：post-tool 记录在 null 桶租约下 taskId=null、本会话具名桶下取任务号', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -812,7 +812,7 @@ test('内部任务-342 归因 taskId：post-tool 记录在 null 桶租约下 tas
     process.env.WF_ROUTING_STATE_DIR = state;
     const key = projectKey(proj);
     const chNull = issueChallenge(key);
-    assert.ok(activateLease(key, { leaseId: chNull.leaseId, taskId: '内部任务-960', skill: 'plan-execution' }).ok);
+    assert.ok(activateLease(key, { leaseId: chNull.leaseId, taskId: 'DEV-960', skill: 'plan-execution' }).ok);
     const payload = (sid) => ({
       hook_event_name: 'PostToolUse',
       tool_name: 'Bash',
@@ -828,10 +828,10 @@ test('内部任务-342 归因 taskId：post-tool 记录在 null 桶租约下 tas
     assert.equal(nullRecs.at(-1).taskId, null, 'null 桶租约不得作为 post-tool 记录 taskId');
     // 本会话具名桶声明：记录 taskId 可取
     const ch = issueChallenge(key, { sessionId: 'pt342-sess' });
-    assert.ok(activateLease(key, { leaseId: ch.leaseId, taskId: '内部任务-961', skill: 'plan-execution' }).ok);
+    assert.ok(activateLease(key, { leaseId: ch.leaseId, taskId: 'DEV-961', skill: 'plan-execution' }).ok);
     await runPostTool(payload('pt342-sess'), incidentRoot);
     const recs = readIncidents(incidentRoot).filter((x) => x.kind === 'tool-failure');
-    assert.equal(recs.at(-1).taskId, '内部任务-961', '本会话具名桶记录 taskId 须取该任务号');
+    assert.equal(recs.at(-1).taskId, 'DEV-961', '本会话具名桶记录 taskId 须取该任务号');
   } finally {
     if (prev === undefined) delete process.env.WF_ROUTING_STATE_DIR;
     else process.env.WF_ROUTING_STATE_DIR = prev;
@@ -858,7 +858,7 @@ async function seedDev352Challenge(proj, stateDir, sessionId) {
   }
 }
 
-test('AskUserQuestion 答复提示信封（内部任务-352）', async () => {
+test('AskUserQuestion 答复提示信封（DEV-352）', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -877,7 +877,7 @@ test('AskUserQuestion 答复提示信封（内部任务-352）', async () => {
     );
     assert.equal(r.status, 0, '信封路径仍 exit 0');
     const out = JSON.parse(r.stdout);
-    assert.equal(out.hookSpecificOutput.hookEventName, 'PostToolUse', '内部规则-6：hookEventName 与触发事件一致');
+    assert.equal(out.hookSpecificOutput.hookEventName, 'PostToolUse', 'R-M8-6：hookEventName 与触发事件一致');
     const text = out.hookSpecificOutput.additionalContext;
     assert.ok(text.includes('【workflow 任务租约】'), '含租约行');
     assert.ok(text.includes(seeded.leaseId), '含当前挑战令牌');
@@ -894,7 +894,7 @@ test('AskUserQuestion 答复提示信封（内部任务-352）', async () => {
   }
 });
 
-test('答复提示只读不签发（内部任务-352）', async () => {
+test('答复提示只读不签发（DEV-352）', async () => {
   const { mkdtempSync, mkdirSync, readdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -924,7 +924,7 @@ test('答复提示只读不签发（内部任务-352）', async () => {
   }
 });
 
-test('答复提示触发门-已声明（内部任务-352）', async () => {
+test('答复提示触发门-已声明（DEV-352）', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -937,7 +937,7 @@ test('答复提示触发门-已声明（内部任务-352）', async () => {
   try {
     const seeded = await seedDev352Challenge(proj, stateDir, 'SDEV352DEC');
     const { activateLease } = await import('../../hooks/task-lease-lib.mjs');
-    assert.ok(activateLease(seeded.key, { leaseId: seeded.leaseId, taskId: '内部任务-352', skill: 'plan-execution' }).ok, '夹具：已声明态');
+    assert.ok(activateLease(seeded.key, { leaseId: seeded.leaseId, taskId: 'DEV-352', skill: 'plan-execution' }).ok, '夹具：已声明态');
     const r = await runPostTool(
       { hook_event_name: 'PostToolUse', tool_name: 'AskUserQuestion', tool_use_id: 'call_ask_dev352_dec', session_id: 'SDEV352DEC', cwd: proj, tool_input: {} },
       incidentRoot,
@@ -953,7 +953,7 @@ test('答复提示触发门-已声明（内部任务-352）', async () => {
   }
 });
 
-test('答复提示触发门-非 ask/失败（内部任务-352）', async () => {
+test('答复提示触发门-非 ask/失败（DEV-352）', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -985,7 +985,7 @@ test('答复提示触发门-非 ask/失败（内部任务-352）', async () => {
   }
 });
 
-test('答复提示触发门-委派/域外（内部任务-352）', async () => {
+test('答复提示触发门-委派/域外（DEV-352）', async () => {
   const { mkdtempSync, mkdirSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -1003,7 +1003,7 @@ test('答复提示触发门-委派/域外（内部任务-352）', async () => {
       incidentRoot,
       { WF_POSTTOOL_STATE_DIR: join(incidentRoot, 'ring') },
     );
-    assert.equal(delegated.stdout.trim(), '', '委派会话零输出（内部决策-061 D4：禁止自取号提示）');
+    assert.equal(delegated.stdout.trim(), '', '委派会话零输出（ADR-061 D4：禁止自取号提示）');
     const outsideDomain = await runPostTool(
       { hook_event_name: 'PostToolUse', tool_name: 'AskUserQuestion', tool_use_id: 'call_ask_dev352_out', session_id: 'SDEV352OUT', cwd: outside, tool_input: {} },
       incidentRoot,

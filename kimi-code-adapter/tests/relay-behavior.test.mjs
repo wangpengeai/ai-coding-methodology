@@ -78,7 +78,7 @@ describe('relay 行为回归（两跳中继/连击/阻断保真/跨会话过滤�
     assert.equal(readStateFile().frames.length, 0, '送达后队列清空');
   });
 
-  it('真实 workflow 三处理器声明序：非阻断不清零，第 4 轮 verify-gate 降级（内部任务-305 A2）', () => {
+  it('真实 workflow 三处理器声明序：非阻断不清零，第 4 轮 verify-gate 降级（DEV-305 A2）', () => {
     const proj = tempRoot('relay-real-proj');
     const session = 'SR-real';
     const trustDir = join(homeDir, 'trust-real');
@@ -135,7 +135,7 @@ describe('relay 行为回归（两跳中继/连击/阻断保真/跨会话过滤�
       const frames = readState(join(homeDir, 'plugin-data', 'workflow')).frames.map((f) => f.text).join('\n');
       assert.match(frames, /连击上限/, '降级帧须带 capNote');
       assert.match(frames, /verify-gate|首次发现本项目声明文件/, '降级帧须保留原正文');
-      assert.ok(!hasProjState(repoRouting), '仓库 内部工作流状态 无本测试项目键文件');
+      assert.ok(!hasProjState(repoRouting), '仓库 .workflow/routing-state 无本测试项目键文件');
       assert.ok(!hasProjState(realRouting), '真实 ~/.zcode/cli/routing-state 无本测试项目键文件');
     } finally {
       removeRoot(proj);
@@ -194,7 +194,7 @@ describe('relay 行为回归（两跳中继/连击/阻断保真/跨会话过滤�
     assert.equal(readStateFile().frames.length, 0, '两帧一并投递后队列清空');
   });
 
-  it('跨会话过滤 e2e（内部任务-2 批 A1/A3）：他会话帧不投给当前会话、也不丢（保留待原会话）', () => {
+  it('跨会话过滤 e2e（DEV-2 批 A1/A3）：他会话帧不投给当前会话、也不丢（保留待原会话）', () => {
     writeFileSync(stateFile(), JSON.stringify({
       frames: [
         { sessionKey: 'S-me', id: 'b'.repeat(16), text: '本会话的提醒', ts: 2 },

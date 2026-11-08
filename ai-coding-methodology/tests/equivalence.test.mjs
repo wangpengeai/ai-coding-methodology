@@ -100,7 +100,7 @@ test('等价面：合成的 tool_result 键集与 stderr 常量位 ≡ 旧实现
   const post = buildPayload('PostToolUse', {});
   assert.deepEqual(Object.keys(post.tool_result).sort(), ['is_error', 'stderr', 'stdout'], 'PostToolUse：合成 tool_result 的键集');
   assert.equal(post.tool_result.is_error, false);
-  assert.equal(post.tool_result.stderr, '', 'constants.stderr 恒为空串（本宿主不渲染退出标记，见 内部未决-49）');
+  assert.equal(post.tool_result.stderr, '', 'constants.stderr 恒为空串（本宿主不渲染退出标记，见 OPEN-49）');
   for (const event of ['SessionStart', 'UserPromptSubmit']) {
     assert.equal(buildPayload(event, {}).tool_result, undefined, `${event} 不带合成 tool_result`);
   }

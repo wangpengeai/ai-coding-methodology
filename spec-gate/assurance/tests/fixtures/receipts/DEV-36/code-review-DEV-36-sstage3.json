@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "code-review-内部任务-36-sstage3",
+  "receiptId": "code-review-DEV-36-sstage3",
   "kind": "code-review",
-  "taskId": "内部任务-36",
+  "taskId": "DEV-36",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,7 +15,7 @@
       "documents": "115"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-17-DEV-36-open-item-tracking-phase1-with-lease-guidance-fix.md",
       "sha256": "sha256:a8dc1d8f2788838d75bc608c2d98d9536a45a5f2d977af1329cc13a0c9acaa28"
     },
     "algorithmVersion": "1"

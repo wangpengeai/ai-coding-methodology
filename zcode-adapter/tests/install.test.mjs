@@ -90,7 +90,7 @@ test('成功路径：cache 新版本落位、旧版本目录逐字节仍在、�
   }
 });
 
-test('未注册市场尾印指引：stdout 含注册指引且 known_marketplaces 字节不变〔内部任务-275/内部未决-163〕', () => {
+test('未注册市场尾印指引：stdout 含注册指引且 known_marketplaces 字节不变〔DEV-275/OPEN-163〕', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     const knownPath = join(f.zhome, 'cli', 'plugins', 'known_marketplaces.json');
@@ -107,7 +107,7 @@ test('未注册市场尾印指引：stdout 含注册指引且 known_marketplaces
   }
 });
 
-test('注册指向旧路径：尾印含两路径不一致告警〔内部任务-275/内部未决-163〕', () => {
+test('注册指向旧路径：尾印含两路径不一致告警〔DEV-275/OPEN-163〕', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     const staleDir = join(tmpdir(), `zcode-install-stale-${process.pid}`);
@@ -181,7 +181,7 @@ test('幂等重放：同版本二次 install 结果一致且全绿', () => {
   }
 });
 
-test('备份生命周期：成功路径清本次 .bak（内部未决-122/内部任务-82）＋回滚路径保留', () => {
+test('备份生命周期：成功路径清本次 .bak（OPEN-122/DEV-82）＋回滚路径保留', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     const r = runInstall({ repoRoot: f.repo, marketRoot: f.market, zcodeHome: f.zhome, out: () => {} });
@@ -212,7 +212,7 @@ test('备份生命周期：成功路径清本次 .bak（内部未决-122/内部�
   }
 });
 
-test('超龄清理：31 天前 mtime 的旧 .bak 被清，29 天前的保留（内部未决-122/内部任务-82）', () => {
+test('超龄清理：31 天前 mtime 的旧 .bak 被清，29 天前的保留（OPEN-122/DEV-82）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     // 先装一次建立基线（成功后 .bak 已清）
@@ -258,7 +258,7 @@ test('--bootstrap 从零：空 zcode-home → 市场注册 + 启用 + 装机全�
   }
 });
 
-test('--bootstrap 既有插件目录无清单：同步备份在成功收尾被清理（round1 C4）〔内部任务-275〕', () => {
+test('--bootstrap 既有插件目录无清单：同步备份在成功收尾被清理（round1 C4）〔DEV-275〕', () => {
   const repo0 = makeRepo();
   const marketDir = mkdtempSync(join(tmpdir(), 'zcode-bootstrap-backup-'));
   try {
@@ -368,7 +368,7 @@ function removeRoot_mkdir() {
 
 // ── 内部任务-276 D18：退 2 用法错走 stderr ───────────────────────────────────────
 
-test('退 2 用法错走 stderr：缺市场源与 --version 不符（内部任务-276 D18）', () => {
+test('退 2 用法错走 stderr：缺市场源与 --version 不符（DEV-276 D18）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   const errs = [];
   const orig = process.stderr.write.bind(process.stderr);
@@ -391,7 +391,7 @@ test('退 2 用法错走 stderr：缺市场源与 --version 不符（内部任�
 
 // ── 内部任务-276 D10/D9：install 前置守护 ────────────────────────────────────────
 
-test('市场源目录缺失拒绝：清单有条目但 plugins/<p> 目录缺失→退 1 零写（内部任务-276 D10）', () => {
+test('市场源目录缺失拒绝：清单有条目但 plugins/<p> 目录缺失→退 1 零写（DEV-276 D10）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     rmSync(join(f.market, 'plugins', 'workflow'), { recursive: true, force: true });
@@ -406,7 +406,7 @@ test('市场源目录缺失拒绝：清单有条目但 plugins/<p> 目录缺失�
   }
 });
 
-test('市场清单 plugins 非数组：install 退 1 零写（内部任务-276 D9）', () => {
+test('市场清单 plugins 非数组：install 退 1 零写（DEV-276 D9）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     writeFileSync(join(f.market, 'marketplace.json'), JSON.stringify({ name: 'x', plugins: 'x' }));
@@ -421,7 +421,7 @@ test('市场清单 plugins 非数组：install 退 1 零写（内部任务-276 D
 
 // ── 内部任务-276 D12/D13/D14/D17：install 写面 ───────────────────────────────────
 
-test('同版本重放原子化：内容一致零写跳过（cache 文件 mtime 不变）（内部任务-276 D12）', () => {
+test('同版本重放原子化：内容一致零写跳过（cache 文件 mtime 不变）（DEV-276 D12）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     assert.equal(runInstall({ repoRoot: f.repo, marketRoot: f.market, zcodeHome: f.zhome, out: () => {} }).code, 0);
@@ -434,7 +434,7 @@ test('同版本重放原子化：内容一致零写跳过（cache 文件 mtime �
   }
 });
 
-test('同版本重放原子化：内容漂移交换恢复且无瞬态残留（内部任务-276 D12）', () => {
+test('同版本重放原子化：内容漂移交换恢复且无瞬态残留（DEV-276 D12）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     assert.equal(runInstall({ repoRoot: f.repo, marketRoot: f.market, zcodeHome: f.zhome, out: () => {} }).code, 0);
@@ -449,7 +449,7 @@ test('同版本重放原子化：内容漂移交换恢复且无瞬态残留（�
   }
 });
 
-test('同版本重放交换失败回滚：renameFn 注入 EPERM→退 1 且活跃目录字节未变、无瞬态残留（内部任务-276 D12）', () => {
+test('同版本重放交换失败回滚：renameFn 注入 EPERM→退 1 且活跃目录字节未变、无瞬态残留（DEV-276 D12）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     assert.equal(runInstall({ repoRoot: f.repo, marketRoot: f.market, zcodeHome: f.zhome, out: () => {} }).code, 0);
@@ -471,7 +471,7 @@ test('同版本重放交换失败回滚：renameFn 注入 EPERM→退 1 且活�
   }
 });
 
-test('同版本重放恢复失败：第二/三次 rename 均失败→告警指认旁路且原内容保全（内部任务-276 D12）', () => {
+test('同版本重放恢复失败：第二/三次 rename 均失败→告警指认旁路且原内容保全（DEV-276 D12）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     assert.equal(runInstall({ repoRoot: f.repo, marketRoot: f.market, zcodeHome: f.zhome, out: () => {} }).code, 0);
@@ -497,7 +497,7 @@ test('同版本重放恢复失败：第二/三次 rename 均失败→告警指�
   }
 });
 
-test('同版本重放交换成功后写后即验失败：退 1、登记表回滚、重放目录仍＝市场源（内部任务-276 D12/D14）', () => {
+test('同版本重放交换成功后写后即验失败：退 1、登记表回滚、重放目录仍＝市场源（DEV-276 D12/D14）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     assert.equal(runInstall({ repoRoot: f.repo, marketRoot: f.market, zcodeHome: f.zhome, out: () => {} }).code, 0);
@@ -515,7 +515,7 @@ test('同版本重放交换成功后写后即验失败：退 1、登记表回滚
   }
 });
 
-test('客户端状态写前解析：坏 JSON 登记表→退 1 指认文件且零写（内部任务-276 D13）', () => {
+test('客户端状态写前解析：坏 JSON 登记表→退 1 指认文件且零写（DEV-276 D13）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     writeFileSync(f.z.registryPath, '{bad');
@@ -532,7 +532,7 @@ test('客户端状态写前解析：坏 JSON 登记表→退 1 指认文件且�
   }
 });
 
-test('bootstrap known 形态损坏：marketplaces 非数组→退 1 零写（内部任务-276 D9）', () => {
+test('bootstrap known 形态损坏：marketplaces 非数组→退 1 零写（DEV-276 D9）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     const km = clientPath(f.z.home, 'knownMarketplaces');
@@ -547,7 +547,7 @@ test('bootstrap known 形态损坏：marketplaces 非数组→退 1 零写（内
   }
 });
 
-test('重放旁路存在即拒绝：上次中断遗留 .replay-aside 不被静默删除、且零写副作用（内部任务-276 D12/CEO2）', () => {
+test('重放旁路存在即拒绝：上次中断遗留 .replay-aside 不被静默删除、且零写副作用（DEV-276 D12/CEO2）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     assert.equal(runInstall({ repoRoot: f.repo, marketRoot: f.market, zcodeHome: f.zhome, out: () => {} }).code, 0);
@@ -567,7 +567,7 @@ test('重放旁路存在即拒绝：上次中断遗留 .replay-aside 不被静�
   }
 });
 
-test('写中途失败回滚：copyFn 注入失败→退 1、三客户端文件字节一致、新建 cache 目录删除（内部任务-276 D14）', () => {
+test('写中途失败回滚：copyFn 注入失败→退 1、三客户端文件字节一致、新建 cache 目录删除（DEV-276 D14）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     const regBefore = readFileSync(f.z.registryPath, 'utf8');
@@ -586,7 +586,7 @@ test('写中途失败回滚：copyFn 注入失败→退 1、三客户端文件�
   }
 });
 
-test('rollback 逐项恢复：单文件回写失败不中止其余恢复且逐项告警（内部任务-276 D14）', () => {
+test('rollback 逐项恢复：单文件回写失败不中止其余恢复且逐项告警（DEV-276 D14）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     const regBefore = readFileSync(f.z.registryPath, 'utf8');
@@ -614,7 +614,7 @@ test('rollback 逐项恢复：单文件回写失败不中止其余恢复且逐�
   }
 });
 
-test('cleanupBackups 清理失败告警：不抛、warn 指认路径（内部任务-276 D17）', () => {
+test('cleanupBackups 清理失败告警：不抛、warn 指认路径（DEV-276 D17）', () => {
   const root = tempRoot('dev276-bak');
   try {
     const files = { known: join(root, 'k.json'), registry: join(root, 'r.json'), config: join(root, 'c.json') };
@@ -630,11 +630,11 @@ test('cleanupBackups 清理失败告警：不抛、warn 指认路径（内部任
 
 // ── 内部任务-276 D20：覆盖缺口补强（F2 两臂 / 前置拒绝 / F2 读面 arm） ──────────
 
-test('F2 前置闸两臂：版本臂与树漂移臂各退 1 且零写（内部任务-276 D20）', () => {
+test('F2 前置闸两臂：版本臂与树漂移臂各退 1 且零写（DEV-276 D20）', () => {
   // 版本臂：六清单统一抬到 0.2.0（过 loadManifests）而市场清单仍 0.1.0
   const a = makeInstallFixture();
   try {
-    for (const p of PLUGINS) writePluginPair(a.repo, p, '0.2.0', `${p} 测试（内部决策-017）`);
+    for (const p of PLUGINS) writePluginPair(a.repo, p, '0.2.0', `${p} 测试（ADR-017）`);
     const regBefore = readFileSync(a.z.registryPath, 'utf8');
     const lines = [];
     const r = runInstall({ repoRoot: a.repo, marketRoot: a.market, zcodeHome: a.zhome, out: (s) => lines.push(s) });
@@ -659,7 +659,7 @@ test('F2 前置闸两臂：版本臂与树漂移臂各退 1 且零写（内部�
   }
 });
 
-test('install 前置拒绝三例：坏 JSON / 缺条目 / 版本不统一（内部任务-276 D20）', () => {
+test('install 前置拒绝三例：坏 JSON / 缺条目 / 版本不统一（DEV-276 D20）', () => {
   const a = makeInstallFixture();
   try {
     writeFileSync(join(a.market, 'marketplace.json'), '{bad');
@@ -693,7 +693,7 @@ test('install 前置拒绝三例：坏 JSON / 缺条目 / 版本不统一（内�
   }
 });
 
-test('F2 闸读面问题臂：市场插件目录被同名文件占用→退 1 含「期望树不可读」（内部任务-276 D20/N1）', () => {
+test('F2 闸读面问题臂：市场插件目录被同名文件占用→退 1 含「期望树不可读」（DEV-276 D20/N1）', () => {
   const f = makeInstallFixture();
   try {
     rmSync(join(f.market, 'plugins', 'workflow'), { recursive: true, force: true });
@@ -709,7 +709,7 @@ test('F2 闸读面问题臂：市场插件目录被同名文件占用→退 1 �
 
 // ── 内部任务-276 覆盖率：缺省注入缝（out/warn）+ 顶层非对象闸 ─────────────────────
 
-test('缺省注入缝：out/warn 不注入时走 process 流且不抛（内部任务-276 覆盖率）', () => {
+test('缺省注入缝：out/warn 不注入时走 process 流且不抛（DEV-276 覆盖率）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   const origOut = process.stdout.write.bind(process.stdout);
   const origErr = process.stderr.write.bind(process.stderr);
@@ -737,7 +737,7 @@ test('缺省注入缝：out/warn 不注入时走 process 流且不抛（内部�
   }
 });
 
-test('客户端状态顶层非对象：数组形态→退 1 零写（内部任务-276 D13；内部任务-334/内部未决-251② 补零写断言）', () => {
+test('客户端状态顶层非对象：数组形态→退 1 零写（DEV-276 D13；DEV-334/OPEN-251② 补零写断言）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     writeFileSync(f.z.configPath, '[]');
@@ -754,7 +754,7 @@ test('客户端状态顶层非对象：数组形态→退 1 零写（内部任�
   }
 });
 
-test('形态闸四格：config.plugins / enabledPlugins / registry 条目 / known 条目非对象均零写拒绝（内部任务-276 评审 N3；内部任务-334/内部未决-251② 补零写断言）', () => {
+test('形态闸四格：config.plugins / enabledPlugins / registry 条目 / known 条目非对象均零写拒绝（DEV-276 评审 N3；DEV-334/OPEN-251② 补零写断言）', () => {
   // 快照路径集对四格恒同（三客户端文件）——单常量避免逐 case 重复闭包
   const clientFilesOf = (f) => [f.z.configPath, f.z.registryPath, clientPath(f.z.home, 'knownMarketplaces')];
   const cases = [
@@ -782,7 +782,7 @@ test('形态闸四格：config.plugins / enabledPlugins / registry 条目 / know
   }
 });
 
-test('客户端状态不可读：同名目录造 EISDIR → 拒绝退 1 且零写（内部未决-251①）', () => {
+test('客户端状态不可读：同名目录造 EISDIR → 拒绝退 1 且零写（OPEN-251①）', () => {
   const f = makeInstallFixture({ bumpTo: '0.2.0' });
   try {
     const knownPath = clientPath(f.z.home, 'knownMarketplaces');

@@ -98,6 +98,8 @@ function selftest() {
 
     // 恢复干净包（guide 被删过，重建以便后续规则检查）
     const rebuild = (extra = {}) => {
+      // 清掉上一用例留下的附加路径，保证每个规则矩阵用例自含（内部决策-062 修正案 5 新增矩阵依赖此隔离）
+      for (const rel of ['assets', 'tests', 'specs', 'extra.txt']) rmSync(join(pkg, rel), { recursive: true, force: true });
       writeFileSync(join(pkg, 'README.md'), '# Demo\n\n详见 [指南](docs/guide.md)。\n');
       mkdirSync(join(pkg, 'docs'), { recursive: true });
       writeFileSync(join(pkg, 'docs/guide.md'), '# 指南\n\n返回 [README](../README.md)。\n');
@@ -174,6 +176,36 @@ function selftest() {
     writeFileSync(manifestPath, `${JSON.stringify(buildManifest(pkg, contract, { gitMode: 'none' }), null, 2)}\n`);
     const rewriteResidual = checkPackage({ projectRoot: project, packageDir: pkg, contract, policy: rewritePolicy });
     check('改写残留 → rewrite-residual', rewriteResidual.violations.some((v) => v.rule === RULES.REWRITE_RESIDUAL), JSON.stringify(rewriteResidual.violations));
+
+    // 内部决策-062 修正案 5：改写面 v2——exclude/data 面不计残留；test-code 注释面仍硬检、字符串面不计
+    rebuild();
+    mkdirSync(join(pkg, 'assets'), { recursive: true });
+    writeFileSync(join(pkg, 'assets', 'gitignore-template'), '!/.sdd/suite.json\nDEV-1\n');
+    writeFileSync(manifestPath, `${JSON.stringify(buildManifest(pkg, contract, { gitMode: 'none' }), null, 2)}\n`);
+    const excludePolicy = { ...policy, rewrite: { rules: [{ id: 'rw-ex', pattern: 'DEV-\\d+', replacement: 'DEV-$&' }], exclude: ['assets/gitignore-template'] } };
+    const excluded = checkPackage({ projectRoot: project, packageDir: pkg, contract, policy: excludePolicy });
+    check('rewrite.exclude 面 → 不计 rewrite-residual', !excluded.violations.some((v) => v.rule === RULES.REWRITE_RESIDUAL), JSON.stringify(excluded.violations));
+
+    rebuild();
+    mkdirSync(join(pkg, 'tests', 'fixtures'), { recursive: true });
+    writeFileSync(join(pkg, 'tests', 'fixtures', 'f.json'), '{"id":"DEV-1"}\n');
+    writeFileSync(manifestPath, `${JSON.stringify(buildManifest(pkg, contract, { gitMode: 'none' }), null, 2)}\n`);
+    const dataResidual = checkPackage({ projectRoot: project, packageDir: pkg, contract, policy: rewritePolicy });
+    check('data 面 → 不计 rewrite-residual', !dataResidual.violations.some((v) => v.rule === RULES.REWRITE_RESIDUAL), JSON.stringify(dataResidual.violations));
+
+    rebuild();
+    mkdirSync(join(pkg, 'tests'), { recursive: true });
+    writeFileSync(join(pkg, 'tests', 't.test.mjs'), '// DEV-1\n');
+    writeFileSync(manifestPath, `${JSON.stringify(buildManifest(pkg, contract, { gitMode: 'none' }), null, 2)}\n`);
+    const testCommentResidual = checkPackage({ projectRoot: project, packageDir: pkg, contract, policy: rewritePolicy });
+    check('test-code 注释面 → rewrite-residual', testCommentResidual.violations.some((v) => v.rule === RULES.REWRITE_RESIDUAL), JSON.stringify(testCommentResidual.violations));
+
+    rebuild();
+    mkdirSync(join(pkg, 'tests'), { recursive: true });
+    writeFileSync(join(pkg, 'tests', 't.test.mjs'), 'const s = "DEV-1";\n');
+    writeFileSync(manifestPath, `${JSON.stringify(buildManifest(pkg, contract, { gitMode: 'none' }), null, 2)}\n`);
+    const testStrResidual = checkPackage({ projectRoot: project, packageDir: pkg, contract, policy: rewritePolicy });
+    check('test-code 字符串面 → 不计 rewrite-residual', !testStrResidual.violations.some((v) => v.rule === RULES.REWRITE_RESIDUAL), JSON.stringify(testStrResidual.violations));
 
     const failed = checks.filter(([, okFlag]) => !okFlag);
     for (const [name, okFlag] of checks) process.stdout.write(`${okFlag ? 'PASS' : 'FAIL'} ${name}\n`);

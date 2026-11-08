@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "verification-内部任务-36-1",
+  "receiptId": "verification-DEV-36-1",
   "kind": "verification",
-  "taskId": "内部任务-36",
+  "taskId": "DEV-36",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,7 +15,7 @@
       "documents": "115"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-17-DEV-36-open-item-tracking-phase1-with-lease-guidance-fix.md",
       "sha256": "sha256:a8dc1d8f2788838d75bc608c2d98d9536a45a5f2d977af1329cc13a0c9acaa28"
     },
     "algorithmVersion": "1"
@@ -25,32 +25,32 @@
   "evidenceProfile": "full",
   "evidenceRefs": [
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-36/execution-log.md",
       "sha256": "sha256:fd230e6514422f85f9976ae526e153d39138ea39344c8d380b99e0e5b79e475f",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-36/first-triage.md",
       "sha256": "sha256:54c7a04b31a2f5875c0911973ee265903c7c32179ed3ee8017312294ad02add4",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-36/verification.md",
       "sha256": "sha256:568bdc184228a403ac1bf366102745a6b941e6912d0623a87bf8af13fd670c9b",
       "exitCode": 0
     },
     {
-      "path": "内部评审记录",
+      "path": "docs/plans/code-review-DEV-36-stage1.md",
       "sha256": "sha256:f50e25bef0e533ff0e28acfab6ea99a730c4259a451cac13aef2ecf80691f58c",
       "exitCode": 0
     },
     {
-      "path": "内部评审记录",
+      "path": "docs/plans/code-review-DEV-36-stage2.md",
       "sha256": "sha256:9fb9dbaa79a63aff31bead23e382e7e408de6de61e05d661148865162b893301",
       "exitCode": 0
     },
     {
-      "path": "内部评审记录",
+      "path": "docs/plans/code-review-DEV-36-stage3.md",
       "sha256": "sha256:1f49807158aafab5e94790ad31ba1357159ec24128f0f12a49def7c057149cbb",
       "exitCode": 0
     }

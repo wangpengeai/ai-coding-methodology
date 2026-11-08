@@ -54,16 +54,16 @@ after(() => {
 
 describe('库级纯函数（稳定红绿承载面）', () => {
   test('templateActiveLines：注释/空行过滤＋保序去重＋CRLF 容忍', () => {
-    assert.deepEqual(templateActiveLines('# c\n\n.sdd/*\r\n.sdd/*\n!内部治理状态\n'), [
+    assert.deepEqual(templateActiveLines('# c\n\n.sdd/*\r\n.sdd/*\n!.sdd/suite.json\n'), [
       '.sdd/*',
-      '!内部治理状态',
+      '!.sdd/suite.json',
     ]);
   });
 
   test('subjectOf：剥 ! 前缀与尾部 *与/', () => {
     assert.equal(subjectOf('/.workflow/*'), '/.workflow');
     assert.equal(subjectOf('/.workflow/'), '/.workflow');
-    assert.equal(subjectOf('!内部治理状态'), '内部治理状态');
+    assert.equal(subjectOf('!.sdd/suite.json'), '.sdd/suite.json');
     assert.equal(subjectOf('__pycache__/'), '__pycache__');
   });
 
@@ -87,28 +87,28 @@ describe('库级纯函数（稳定红绿承载面）', () => {
       { templateLine: '/.workflow/*', targetLine: '/.workflow/' },
     ]);
     // 否定行顺序反转（内部未决-17 同族）：目标只含否定行、缺排除行 → conflict 不追加
-    const negation = planMerge(tpl, '!/内部工作流状态\n');
+    const negation = planMerge(tpl, '!/.workflow/domains.json\n');
     assert.equal(negation.action, 'conflict');
     assert.deepEqual(negation.conflicts, [
-      { templateLine: '/.workflow/*', targetLine: '!/内部工作流状态' },
+      { templateLine: '/.workflow/*', targetLine: '!/.workflow/domains.json' },
     ]);
   });
 
-  test('模板文件本体：活行恰 10 条、含 内部未决-76 形态两行与 内部决策-045 维护者注册表否定行', () => {
+  test('模板文件本体：活行恰 10 条、含 OPEN-76 形态两行与 ADR-045 维护者注册表否定行', () => {
     const active = templateActiveLines(readFileSync(TEMPLATE_PATH, 'utf8'));
     assert.equal(active.length, 10);
     assert.ok(active.includes('/.workflow/*'));
-    assert.ok(active.includes('!/内部工作流状态'));
-    assert.ok(active.includes('!/内部工作流状态'));
+    assert.ok(active.includes('!/.workflow/domains.json'));
+    assert.ok(active.includes('!/.workflow/maintainers.json'));
     // 内部任务-214 批 2（内部验收-4）：忽略面合取直证——`.sdd/*` 排除 + 三配置白名单（tracked 半句不在此断言面，内部未决-195）
     assert.ok(active.includes('.sdd/*'), '模板须含 .sdd/* 排除行');
-    for (const whitelisted of ['!内部治理状态', '!内部治理状态', '!内部治理状态']) {
+    for (const whitelisted of ['!.sdd/suite.json', '!.sdd/project.json', '!.sdd/assurance.json']) {
       assert.ok(active.includes(whitelisted), `模板须含 .sdd 配置白名单：${whitelisted}`);
     }
-    assert.ok(!active.some((line) => line.includes('delivery-profile.json')), '模板不得自行白名单 delivery-profile（tracked 半句归 内部未决-195 裁决）');
+    assert.ok(!active.some((line) => line.includes('delivery-profile.json')), '模板不得自行白名单 delivery-profile（tracked 半句归 OPEN-195 裁决）');
   });
 
-  test('init 命令接线步在位：commands/init.md 含 apply-gitignore 调用（内部规则-17③ 机械背书——三维评审 C3）', () => {
+  test('init 命令接线步在位：commands/init.md 含 apply-gitignore 调用（R-M7-17③ 机械背书——三维评审 C3）', () => {
     const initMd = readFileSync(
       fileURLToPath(new URL('../../commands/init.md', import.meta.url)),
       'utf8',
@@ -202,15 +202,15 @@ describe('CLI 端到端（tmp 夹具）', () => {
     assert.equal(readFileSync(join(p, '.gitignore'), 'utf8'), before, '冲突时零写入');
   });
 
-  test('否定行顺序反转：目标已含 !/内部工作流状态 而缺排除行 → 退 1 零写入（防静默吞否定行，内部未决-17 同族）', () => {
+  test('否定行顺序反转：目标已含 !/.workflow/domains.json 而缺排除行 → 退 1 零写入（防静默吞否定行，OPEN-17 同族）', () => {
     const p = mkProject(true);
-    const before = '!/内部工作流状态\nmy-own\n';
+    const before = '!/.workflow/domains.json\nmy-own\n';
     writeFileSync(join(p, '.gitignore'), before, 'utf8');
     const r = runJson(p);
     assert.equal(r.status, 1);
     assert.equal(r.report.action, 'conflict');
     assert.deepEqual(r.report.conflicts, [
-      { templateLine: '/.workflow/*', targetLine: '!/内部工作流状态' },
+      { templateLine: '/.workflow/*', targetLine: '!/.workflow/domains.json' },
     ]);
     assert.equal(readFileSync(join(p, '.gitignore'), 'utf8'), before, '冲突时零写入');
   });
@@ -235,7 +235,7 @@ describe('CLI 端到端（tmp 夹具）', () => {
     const r = run(['--project', p]);
     assert.equal(r.status, 0);
     assert.ok(r.stdout.includes('apply-gitignore: create'));
-    assert.ok(r.stdout.includes('docs/*'), 'text 报告含可选 docs 段提示（内部未决-17 教训传导面）');
+    assert.ok(r.stdout.includes('docs/*'), 'text 报告含可选 docs 段提示（OPEN-17 教训传导面）');
   });
 
   test('坏参数与坏目标：--format xml／未知旗标／--project 缺值／--format 缺值／不存在目录均退 2', () => {
@@ -247,7 +247,7 @@ describe('CLI 端到端（tmp 夹具）', () => {
     assert.equal(run(['--project', join(p, 'no-such-dir')]).status, 2);
   });
 
-  test('S06/E09（内部任务-241）：目标 .gitignore 为符号链接 → 退 2 且目标文件零改动', (t) => {    const p = mkProject(true);
+  test('S06/E09（DEV-241）：目标 .gitignore 为符号链接 → 退 2 且目标文件零改动', (t) => {    const p = mkProject(true);
     const outside = join(p, 'outside-target.txt');
     writeFileSync(outside, 'do-not-touch\n', 'utf8');
     try {
@@ -262,7 +262,7 @@ describe('CLI 端到端（tmp 夹具）', () => {
     assert.equal(readFileSync(outside, 'utf8'), 'do-not-touch\n', '链接目标不得被写入');
   });
 
-  test('内部缝（内部任务-241 覆盖率）：原子写失败清理临时件＋入口判定异常可见', () => {
+  test('内部缝（DEV-241 覆盖率）：原子写失败清理临时件＋入口判定异常可见', () => {
     const dir = mkProject(true);
     // 目标父目录不存在 → writeFileSync 抛 ENOENT，catch 清理临时件后原样上抛
     assert.throws(() => _testInternals.atomicWriteFile(join(dir, 'no-such-sub', 'x'), 'y'), /ENOENT|no such file/i);
@@ -279,7 +279,7 @@ describe('CLI 端到端（tmp 夹具）', () => {
     }
   });
 
-  test('内部缝（内部任务-242 §四-4）：parseArgs 分支矩阵', () => {
+  test('内部缝（DEV-242 §四-4）：parseArgs 分支矩阵', () => {
     assert.deepEqual(
       _testInternals.parseArgs(['--project', 'p', '--dry-run', '--format', 'json']),
       { project: 'p', dryRun: true, format: 'json' },
@@ -291,7 +291,7 @@ describe('CLI 端到端（tmp 夹具）', () => {
     assert.throws(() => _testInternals.parseArgs(['--format', 'xml']), /--format 仅支持/);
   });
 
-  test('内部缝（内部任务-242 §四-4）：guardTargetSymlink 拒绝链接＋safeRun 兜底可见', (t) => {
+  test('内部缝（DEV-242 §四-4）：guardTargetSymlink 拒绝链接＋safeRun 兜底可见', (t) => {
     const dir = mkProject(true);
     const plain = join(dir, '.gitignore');
     writeFileSync(plain, 'x', 'utf8');

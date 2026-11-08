@@ -78,7 +78,7 @@ function runFileCount(root) {
 }
 
 /** 写一份合法 contexts 清单文件（check 的 --contexts-file 输入）；返回路径。 */
-function writeContexts(root, contexts = [{ source: 'repo:仓库维护说明', trust: 'repository' }]) {
+function writeContexts(root, contexts = [{ source: 'repo:AGENTS.md', trust: 'repository' }]) {
   const p = join(root, `contexts-${Math.random().toString(16).slice(2, 8)}.json`);
   writeFileSync(p, JSON.stringify(contexts), 'utf8');
   return p;
@@ -118,7 +118,7 @@ test('init：播种内联默认政策；二次 init 幂等不覆写', () => {
     const cfg = readConfig(root);
     assert.ok(cfg.policy && typeof cfg.policy === 'object', '新 init 播种内联 policy（config.policy 为权威源）');
     assert.equal(cfg.policy.enforcement, 'relaxed');
-    assert.deepEqual(cfg.policy.allowedModels, DEFAULT_ALLOWED_MODELS, '播种 allowedModels 四宿主（与归一常量同源，内部任务-2）');
+    assert.deepEqual(cfg.policy.allowedModels, DEFAULT_ALLOWED_MODELS, '播种 allowedModels 四宿主（与归一常量同源，DEV-2）');
     assert.deepEqual(cfg.requiredDomains ?? [], [], 'requiredDomains 有默认空位');
     const bytes = readFileSync(join(root, '.ai-governance', 'config.json'), 'utf8');
     const second = cli(root, 'init');
@@ -851,14 +851,14 @@ test('gate：结构节含秘密拒绝写报告（fail-closed）', () => {
 test('run-begin --host：合法值透传 client.host；非法值/旗标当值退 2 且不落 run', () => {
   const root = initProj();
   try {
-    const ok = cli(root, 'run-begin', '--task-id', '内部任务-HOST-1', '--host', 'mcode');
+    const ok = cli(root, 'run-begin', '--task-id', 'TASK-HOST-1', '--host', 'mcode');
     assert.equal(ok.status, 0, `run-begin --host mcode 应成功：${ok.stderr}`);
     const runFile = readFileSync(join(root, '.ai-governance', 'runtime', 'runs', `${ok.json.runId}.json`), 'utf8');
     assert.equal(JSON.parse(runFile).client.host, 'mcode', '--host 透传 manifest client.host');
-    const bare = cli(root, 'run-begin', '--task-id', '内部任务-HOST-3', '--host');
+    const bare = cli(root, 'run-begin', '--task-id', 'TASK-HOST-3', '--host');
     assert.equal(bare.status, 2, '裸 --host（无值）应参数错退 2');
     for (const bad of ['bogus', '--task-id', '']) {
-      const r = cli(root, 'run-begin', '--task-id', '内部任务-HOST-2', '--host', bad);
+      const r = cli(root, 'run-begin', '--task-id', 'TASK-HOST-2', '--host', bad);
       assert.equal(r.status, 2, `--host ${JSON.stringify(bad)} 应参数错退 2（实得 ${r.status}）`);
     }
   } finally { rmSync(root, { recursive: true, force: true }); }
@@ -868,7 +868,7 @@ test('run-begin --host：合法值透传 client.host；非法值/旗标当值退
 test('run-finalize：incident 源不可读显式警告（unavailable）', () => {
   const root = initProj();
   try {
-    const begin = cli(root, 'run-begin', '--task-id', '内部任务-INCIDENT-1');
+    const begin = cli(root, 'run-begin', '--task-id', 'TASK-INCIDENT-1');
     assert.equal(begin.status, 0, begin.stderr);
     const runId = begin.json.runId;
     const openHash = begin.json.openHash;

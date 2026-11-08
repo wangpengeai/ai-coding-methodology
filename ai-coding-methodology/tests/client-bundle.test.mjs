@@ -79,7 +79,7 @@ test('① bundle 与打包契约：ModuleLoader id 为包名、factory 为函数
   // 打包契约（本批新增发布面）：宿主按 package.json 发现客户端半侧；漏项会静默不挂 bundle。
   const pkg = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8'));
   assert.equal(pkg.dsh?.client?.platform, 'web', 'dsh.client.platform 应为 web');
-  assert.equal('inject' in (pkg.dsh?.client ?? {}), false, 'dsh.client 应省略 inject（省略＝空集；内部任务-236/O2 单调锁）');
+  assert.equal('inject' in (pkg.dsh?.client ?? {}), false, 'dsh.client 应省略 inject（省略＝空集；DEV-236/O2 单调锁）');
   const clientExport = pkg.exports?.['./client'];
   assert.equal(typeof clientExport, 'string', 'exports 应声明 ./client');
   assert.ok(existsSync(join(import.meta.dirname, '..', clientExport.replace(/^\.\//, ''))), './client 应解析到存在的文件');
@@ -143,7 +143,7 @@ test('⑥ 保存路径：saveDraft 传 ops+revision；失败保草稿并分类�
     { ok: brokenResult.ok, reason: brokenResult.reason, keepDraft: brokenResult.keepDraft },
     { ok: false, reason: 'error', keepDraft: true },
   );
-  assert.equal(brokenResult.message, 'boom', '内部任务-273 M-07：错误原文不得吞掉');
+  assert.equal(brokenResult.message, 'boom', 'DEV-273 M-07：错误原文不得吞掉');
   const warns = [];
   await exports.saveDraft(broken, true, 9, { warn: (m) => warns.push(m) });
   assert.equal(warns.length, 1, '注入 logger 时记一条 warn（生产不注入，测试注入 fake）');
@@ -172,7 +172,7 @@ test('⑦ 保存成功后 revision 采纳：连续两次保存不假冲突（装
   assert.deepEqual(calls.map((c) => c.revision), [7, 8], '两次 mutate 分别使用 7、8');
 });
 
-test('内部任务-273 M-06：performSave 读取校验失败——单次重读成功采纳 revision；两次失败→verify-failed 且 revision 不前进', async () => {
+test('DEV-273 M-06：performSave 读取校验失败——单次重读成功采纳 revision；两次失败→verify-failed 且 revision 不前进', async () => {
   const { exports } = loadBundle();
   let calls = 0;
   const formRetry = {
@@ -194,7 +194,7 @@ test('内部任务-273 M-06：performSave 读取校验失败——单次重读�
   assert.ok(String(bad.message).includes('nope'), '错误原文透出供诊断');
 });
 
-test('内部任务-268 分组列表卡片多字段保存', async () => {
+test('DEV-268 分组列表卡片多字段保存', async () => {
   const { exports } = loadBundle();
   assert.equal(exports.PLUGIN_ROWS.length, 6, '插件开关六行');
   assert.equal(exports.FIELD_ORDER.length, 8, '八字段（六插件＋桥接＋OS）');
@@ -234,7 +234,7 @@ test('内部任务-268 分组列表卡片多字段保存', async () => {
 
 
 // ===== 内部任务-272 内部未决-237：客户端六插件行 i18n（A-da-13/A-da-17 唯一锁定用例） =====
-test('内部任务-272 配置卡英文 locale 渲染六插件行：zh 六行中文', () => {
+test('DEV-272 配置卡英文 locale 渲染六插件行：zh 六行中文', () => {
   const { exports } = loadBundle();
   const zh = exports.localeDict('zh');
   const labels = exports.PLUGIN_ROWS.map((r) => zh['plugin.' + r.field + '.label']);
@@ -242,7 +242,7 @@ test('内部任务-272 配置卡英文 locale 渲染六插件行：zh 六行中�
   for (const s of labels) assert.match(s, /[\u4e00-\u9fff]/u, 'zh 六行含汉字：' + s);
 });
 
-test('内部任务-272 配置卡英文 locale 渲染六插件行：en 六行英文零汉字', () => {
+test('DEV-272 配置卡英文 locale 渲染六插件行：en 六行英文零汉字', () => {
   const { exports } = loadBundle();
   const en = exports.localeDict('en');
   for (const r of exports.PLUGIN_ROWS) {
@@ -254,7 +254,7 @@ test('内部任务-272 配置卡英文 locale 渲染六插件行：en 六行英�
   }
 });
 
-test('内部任务-272 配置卡英文 locale 渲染六插件行：双语键齐备', () => {
+test('DEV-272 配置卡英文 locale 渲染六插件行：双语键齐备', () => {
   const { exports } = loadBundle();
   const zh = exports.localeDict('zh');
   const en = exports.localeDict('en');
@@ -267,7 +267,7 @@ test('内部任务-272 配置卡英文 locale 渲染六插件行：双语键齐�
   }
 });
 
-test('内部任务-272 配置卡英文 locale 渲染六插件行：DEFAULTS 跨源对拍', async () => {
+test('DEV-272 配置卡英文 locale 渲染六插件行：DEFAULTS 跨源对拍', async () => {
   const { exports } = loadBundle();
   const { Config } = await import('../src/index.mjs');
   const cfg = Config({});
@@ -279,7 +279,7 @@ test('内部任务-272 配置卡英文 locale 渲染六插件行：DEFAULTS 跨�
 
 
 // ===== 内部任务-272 B3：渲染级 i18n 回归锁（en 视图六插件行零汉字） =====
-test('内部任务-272 配置卡英文 locale 渲染六插件行：en 渲染零汉字（渲染级）', () => {
+test('DEV-272 配置卡英文 locale 渲染六插件行：en 渲染零汉字（渲染级）', () => {
   const { ctx, registrations, dicts } = makeClientCtx({ language: 'en' });
   const { exports } = loadBundle();
   exports.apply(ctx);

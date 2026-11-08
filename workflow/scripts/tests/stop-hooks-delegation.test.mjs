@@ -54,7 +54,7 @@ function seedPending(root, session, id, kind = 'tool-failure') {
   });
 }
 
-test('内部任务-20 A1/F4：委派会话 Stop 静默（无注入、退 0）', () => {
+test('DEV-20 A1/F4：委派会话 Stop 静默（无注入、退 0）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'recap-deleg-'));
   try {
     seedPending(dir, 's-deleg', 'ri-recap-deleg-1');
@@ -66,7 +66,7 @@ test('内部任务-20 A1/F4：委派会话 Stop 静默（无注入、退 0）', 
   }
 });
 
-test('内部任务-20 A1/F4+F5：顶层会话照常注入，且 CLI 命令为插件根绝对路径', () => {
+test('DEV-20 A1/F4+F5：顶层会话照常注入，且 CLI 命令为插件根绝对路径', () => {
   const dir = mkdtempSync(join(tmpdir(), 'recap-top-'));
   try {
     seedPending(dir, 's-top', 'ri-recap-top-1');
@@ -83,7 +83,7 @@ test('内部任务-20 A1/F4+F5：顶层会话照常注入，且 CLI 命令为插
   }
 });
 
-test('内部任务-20 A1/A2(b)：委派会话仍注入 lease-loop 行（内部规则-3 无条件兑现）', () => {
+test('DEV-20 A1/A2(b)：委派会话仍注入 lease-loop 行（R-M15-3 无条件兑现）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'recap-deleg-loop-'));
   try {
     seedPending(dir, 's-deleg-loop', 'ri-recap-loop-1', 'lease-loop');
@@ -96,7 +96,7 @@ test('内部任务-20 A1/A2(b)：委派会话仍注入 lease-loop 行（内部�
   }
 });
 
-test('内部任务-20 A1/F4：委派会话不消费项目键控的 learnings 提醒（CEO 出口风险 4）', () => {
+test('DEV-20 A1/F4：委派会话不消费项目键控的 learnings 提醒（CEO 出口风险 4）', () => {
   // 夹具照抄该钩 selftest 的态2 配方（内部治理状态 一个 complete 任务 + 经验记录 无该任务号
   // ⇒ 首跑落册 reminded）：**带对照组**才有鉴别力——只测"委派不落 state"在夹具够不到 state 写入点时恒真。
   const home = mkdtempSync(join(tmpdir(), 'recap-learn-home-'));
@@ -112,10 +112,10 @@ test('内部任务-20 A1/F4：委派会话不消费项目键控的 learnings 提
     writeFileSync(
       join(home, '.sdd', 'ledger.json'),
       JSON.stringify({
-        tasks: [{ id: 'T1', title: 'T1', createdAt: '2026-10-08T00:00:00+08:00', status: 'converged', finalStatus: 'complete', gateReportRef: '内部治理状态' }],
+        tasks: [{ id: 'T1', title: 'T1', createdAt: '2026-10-08T00:00:00+08:00', status: 'converged', finalStatus: 'complete', gateReportRef: '.sdd/reports/T1/delivery-final.json' }],
       }),
     );
-    writeFileSync(join(home, '经验记录'), '- 2026-10-08 | 场景 | 无关条目 | 无\n');
+    writeFileSync(join(home, 'learnings.md'), '- 2026-10-08 | 场景 | 无关条目 | 无\n');
 
     assert.equal(runLearnings({ delegation_depth: 1 }).status, 0);
     assert.ok(!existsSync(learnState) || readdirSync(learnState).length === 0, '委派会话不得落 state（落册＝消费掉提醒，用户会话再也收不到）');

@@ -104,7 +104,7 @@ test('采集器：合成变体——IPv6 方括号+zone 剥离/含空格 COMMAND
     const v6 = samples.find((s) => s.ip === '2001:db8::2');
     assert.ok(v6 && v6.port === 443 && v6.processName === 'Good Helper', 'zone 剥离+方括号剥离+空格命令归因');
     const zoned = samples.find((s) => s.ip === 'fe80::9');
-    assert.ok(zoned && zoned.port === 443 && zoned.processName === 'Rsync', '远端 %zone 后缀剥离（内部验收-19 子项）');
+    assert.ok(zoned && zoned.port === 443 && zoned.processName === 'Rsync', '远端 %zone 后缀剥离（A-M14-19 子项）');
     assert.ok(samples.some((s) => s.ip === '140.207.55.20' && s.processName === 'WeType'));
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
@@ -136,7 +136,7 @@ test('采集器：fail-open 两形态——lsof 二进制缺失/输出替身文�
 
 // ── 任务面 darwin 分支组（spawnFn 桩 + platform 显式注入；内部验收-19/23，内部任务-66 launchd 载体）──
 
-test('install(darwin)：LaunchAgent 注册——plist 形态（Label/StartInterval×60/ProgramArguments 绝对路径/RunAtLoad）+bootstrap；白名单 1..1439（内部验收-23）', () => {
+test('install(darwin)：LaunchAgent 注册——plist 形态（Label/StartInterval×60/ProgramArguments 绝对路径/RunAtLoad）+bootstrap；白名单 1..1439（A-M14-23）', () => {
   const home = tmpHome('os-observe-darwin-');
   const agents = tmpAgents();
   try {
@@ -228,7 +228,7 @@ test('uninstall(darwin)：bootout+删 plist=停采；bin/findings/config/raw 保
   }
 });
 
-test('taskQuery(darwin)：在册判定=launchctl print（gui 域任务标签）；部署面在场不再充数（内部验收-23）', () => {
+test('taskQuery(darwin)：在册判定=launchctl print（gui 域任务标签）；部署面在场不再充数（A-M14-23）', () => {
   let code = 1;
   const spawnFn = (cmd, args) => {
     assert.equal(cmd, 'launchctl');

@@ -40,7 +40,7 @@ test('note 非字符串 → 退 2；合法 note/exemptions → 退 0', () => {
   let r = run(tmp(), { note: 3 });
   assert.equal(r.status, 2);
   assert.ok(JSON.parse(r.stdout).error.includes('documents[0].note 须为字符串'));
-  r = run(tmp(), { note: '示例条目：为何 draft 模式', exemptions: [{ path: 'docs/legacy.md', reason: '收窄裁决：历史文档不可改', ref: '内部未决-1' }] });
+  r = run(tmp(), { note: '示例条目：为何 draft 模式', exemptions: [{ path: 'docs/legacy.md', reason: '收窄裁决：历史文档不可改', ref: 'OPEN-1' }] });
   assert.equal(r.status, 0, r.stdout);
 });
 
@@ -76,7 +76,7 @@ test('F-11：manifest 相对 suiteRoot 解析（跨 cwd 调用）', () => {
   const config = {
     schemaVersion: '1.0.0', suiteRoot: '..', validationRoots: ['docs'],
     documents: [{ path: 'docs/spec.md', documentType: 'glossary', validationMode: 'baseline' }],
-    manifest: '内部治理状态', allowedPublicAssets: [],
+    manifest: '.sdd/manifest.json', allowedPublicAssets: [],
   };
   const path = join(sdd, 'suite.json');
   writeFileSync(path, JSON.stringify(config));

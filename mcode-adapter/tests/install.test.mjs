@@ -133,11 +133,11 @@ describe('安装与核对', () => {
       // 内部任务-291：源 agents/*.md 是 ZCode 形态（含 skills:/features:），MCode 包内子代理走另一套契约，
       // 照搬只会留下宿主不认的死文件 ⇒ 排除面须显式钉住（本用例与「零改动不变量」都走 listSourceFiles，
       // 排除后它们会自然不再断言这三个文件；不显式钉住就会「排除写错但测试同步变绿」）。
-      assert.ok(!existsSync(join(root, 'agents')), `${plugin} 包内不得含 agents/（内部任务-291）`);
+      assert.ok(!existsSync(join(root, 'agents')), `${plugin} 包内不得含 agents/（DEV-291）`);
     }
   });
 
-  it('内部任务-291：listSourceFiles 不含 agents 前缀（排除面单源校验）', () => {
+  it('DEV-291：listSourceFiles 不含 agents 前缀（排除面单源校验）', () => {
     const rels = listSourceFiles(join(REPO_ROOT, 'workflow')).map((f) => f.rel);
     assert.ok(rels.length > 0, 'workflow 源资产非空');
     assert.ok(!rels.some((rel) => rel.startsWith('agents/')), `源枚举不得含 agents/，实际样本：${rels.slice(0, 3).join(',')}`);
@@ -181,7 +181,7 @@ describe('安装与核对', () => {
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   });
 
-  it('内部任务-320 缺源预检：install 退 2（phase=precheck、零写入）／verify 退 1；report 含 problems 且 ok:false', () => {
+  it('DEV-320 缺源预检：install 退 2（phase=precheck、零写入）／verify 退 1；report 含 problems 且 ok:false', () => {
     // 内部未决-270：--repo-root 指向缺失仓库时不得抛顶层 ENOENT（退回「安装器异常」退 2 且无 report）。
     const missing = join(tempRoot('install-missing'), 'no-such-repo');
     const inst = runCli(['install', '--dry-run', '--data-dir', tempRoot('install-missing-data'), '--repo-root', missing, '--json']);
@@ -388,7 +388,7 @@ describe('计划面（不落盘）', () => {
 // 基线证据：内部证据
 //
 // 判别力：把 `isLocalArtifact` 短路为恒 `false` 时本用例必红（三种形态在一例内全覆盖）。
-describe('内部任务-55 步骤 2.7：物化面排除本地产物', () => {
+describe('DEV-55 步骤 2.7：物化面排除本地产物', () => {
   it('__pycache__ 段、.mimosa 段与 *.pyc 末段一律不进物化计划，正常文件不受影响', () => {
     const dir = tempRoot('install-localartifact');
     try {
@@ -438,7 +438,7 @@ describe('内部任务-55 步骤 2.7：物化面排除本地产物', () => {
 
 // ── 内部决策-048/内部任务-11：宿主应用在位探测输出（与 assurance 探针同库两独立读取者）──
 
-describe('宿主应用在位行（内部决策-048）', () => {
+describe('宿主应用在位行（ADR-048）', () => {
   test('MINIMAX_APP_ROOT 指向真目录 → 输出在位行（含命中路径）', () => {
     const dir = tempRoot('mcode-host-present');
     try {
@@ -476,7 +476,7 @@ function backupRootCleared(dataDir) {
   return !existsSync(root) || readdirSync(root).length === 0;
 }
 
-describe('安装写后即验与 copy 式备份（内部决策-054 G-01）', () => {
+describe('安装写后即验与 copy 式备份（ADR-054 G-01）', () => {
   it('正常 install：写后即验通过且备份根清理', () => {
     const dir = tempRoot('install-verify-ok');
     try {
@@ -554,7 +554,7 @@ describe('安装写后即验与 copy 式备份（内部决策-054 G-01）', () =
   });
 });
 
-describe('verify 零写与 agents 面（内部决策-054 G-02/G-03）', () => {
+describe('verify 零写与 agents 面（ADR-054 G-02/G-03）', () => {
   it('verify --with-agents 不产生写副作用（agents 目录不创建、数据目录指纹不变）', () => {
     const dir = tempRoot('install-verify-readonly');
     try {

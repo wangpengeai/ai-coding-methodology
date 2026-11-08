@@ -43,7 +43,7 @@ function lastAudit(state) {
   return lines.length === 0 ? null : JSON.parse(lines[lines.length - 1]);
 }
 
-test('内部任务-261 证据生成 dry-run 与 schema：dry-run 默认零写、坏 schema 退 1', () => {
+test('DEV-261 证据生成 dry-run 与 schema：dry-run 默认零写、坏 schema 退 1', () => {
   const { root, state } = makeProject();
   try {
     writeFileSync(join(root, 'a.txt'), 'alpha\n');

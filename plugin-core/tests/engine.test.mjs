@@ -58,7 +58,7 @@ test('fail-closed：未知 ruleId 抛错且消息含 id', () => {
 
 test('fail-closed：trigger.capability 不在矩阵键集抛错且消息含键名', () => {
   const engine = createEngine({
-    rules: { rulesVersion: 2, rules: [{ id: 'x', title: 'x', trigger: { capability: 'ghost.key', gap: false }, strategy: 'map', params: { dsh: { table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['内部决策-001'] }] },
+    rules: { rulesVersion: 2, rules: [{ id: 'x', title: 'x', trigger: { capability: 'ghost.key', gap: false }, strategy: 'map', params: { dsh: { table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['ADR-001'] }] },
     matrix: { hosts: ['zcode', 'dsh', 'mcode'], capabilities: {} },
   });
   assert.throws(() => engine.applyRule('x', 'dsh', {}, {}), /ghost\.key/);
@@ -277,7 +277,7 @@ test('stop-pending-relay：容量淘汰计数提醒（淘汰不静默吞，对�
   assert.ok(texts.includes('t20'), '最新帧在场');
   assert.ok(!texts.includes('t0'), '最旧帧被容量淘汰');
   assert.ok(texts.some((t) => t.includes('容量上限') && t.includes('1 条')), '投递附淘汰计数提醒');
-  assert.equal(ports.get().droppedBySession['s:s1'], undefined, '提醒后计数清零（内部任务-347 分账键删除）');
+  assert.equal(ports.get().droppedBySession['s:s1'], undefined, '提醒后计数清零（DEV-347 分账键删除）');
 });
 
 test('stop-pending-relay：阻断未超上限不入队（对齐既有 shim 门控）', () => {
@@ -339,7 +339,7 @@ test('stop-pending-relay：deliverOn 按会话重置连击预算', () => {
   const call = (ctx) => engine.applyRule('stop-pending-relay', 'mcode', { sessionKey: 'sd', ...ctx }, ports);
   call({ event: 'Stop', text: 'b1', blocked: true });
   call({ event: 'Stop', text: 'b2', blocked: true });
-  assert.equal(ports.get().streaks['s:sd'], 2, '阻断调用推进连击（内部任务-347 字典形态）');
+  assert.equal(ports.get().streaks['s:sd'], 2, '阻断调用推进连击（DEV-347 字典形态）');
   call({ event: 'UserPromptSubmit' });
   assert.equal(ports.get().streaks['s:sd'], undefined, '用户提示后连击预算归零（删键）');
   const after = call({ event: 'Stop', text: 'b3', blocked: true });
@@ -372,14 +372,14 @@ test('stop-pending-relay：连续阻断超上限降级，且降级帧保留原�
   assert.equal(fourth.result.frame.text.includes('连击上限'), true, '降级帧须带上限注记');
 });
 
-test('stop-pending-relay：原型成员名作会话键不得静默失效（门 B 终审 内部模块-2 回归）', () => {
+test('stop-pending-relay：原型成员名作会话键不得静默失效（门 B 终审 M2 回归）', () => {
   const engine = realEngine();
   const ports = memPorts();
   const call = () => engine.applyRule('stop-pending-relay', 'mcode', { event: 'Stop', text: 't', sessionKey: '__proto__', blocked: true }, ports);
   const results = [call(), call(), call(), call()].map((o) => o.result);
   assert.deepEqual(results.map((r) => r.streak), [1, 2, 3, 4], '__proto__ 会话键须正常计数');
   assert.equal(results[3].degraded, true, '第 4 次超上限降级（防护不得对特定键失效）');
-  assert.equal(ports.get().streaks['s:__proto__'], 4, '内部任务-347 s: 前缀字典形态');
+  assert.equal(ports.get().streaks['s:__proto__'], 4, 'DEV-347 s: 前缀字典形态');
   assert.equal(Object.hasOwn(ports.get().streaks, '__proto__'), false, '不得出现裸 __proto__ 自有键形态歧义');
 });
 
@@ -448,7 +448,7 @@ test('stop-pending-relay：sessionKey 缺失即抛（不设缺省）', () => {
   assert.throws(() => engine.applyRule('stop-pending-relay', 'mcode', { event: 'Stop', text: 't' }, memPorts()), /sessionKey/);
 });
 
-test('stop-pending-relay：kimi $ 存储路径模板过 store 门禁（内部决策-038；relayEvents 消费语义归实施批接线）', () => {
+test('stop-pending-relay：kimi $ 存储路径模板过 store 门禁（ADR-038；relayEvents 消费语义归实施批接线）', () => {
   const engine = realEngine();
   const ports = memPorts();
   // kimi hp 无 triggerEvent（以 relayEvents 声明被中继事件集）：当前执行器门控后按 event-not-relayed 放行，
@@ -472,7 +472,7 @@ test('agent-default-off-fail-closed：交集过滤 + 目录不可得/空交集�
 
 // ---- 步骤 9：全组合分派（A-pc-8） + 执行器覆盖清账 ----
 
-test('全组合：10 规则 × 4 宿主 applied 形态（A-pc-8；内部决策-038 批 kimi 列加入分派）', () => {
+test('全组合：10 规则 × 4 宿主 applied 形态（A-pc-8；ADR-038 批 kimi 列加入分派）', () => {
   const engine = realEngine();
   const { rules } = loadJson('degradation-rules.json');
   const HOSTS = ['zcode', 'dsh', 'mcode', 'kimi'];
@@ -514,7 +514,7 @@ test('执行器覆盖清账：十条规则全部登记执行器（按规则最�
   }
 });
 
-test('params schema 负例逐族：六族各一坏值均被 validateRules 拒且错误含规则 id（A-pc-9 闭口，内部未决-199）', () => {
+test('params schema 负例逐族：六族各一坏值均被 validateRules 拒且错误含规则 id（A-pc-9 闭口，OPEN-199）', () => {
   const matrix = loadJson('capability-matrix.json');
   const base = loadJson('degradation-rules.json');
   const byStrategy = new Map();
@@ -595,7 +595,7 @@ test('fail-closed：未知宿主 / 未登记执行器消息含 ruleId 与 host',
   let msg = '';
   try { engine.applyRule('tool-vocab-map', 'typo-host', { matcher: 'Bash' }, {}); } catch (e) { msg = e.message; }
   assert.ok(msg.includes('ruleId=tool-vocab-map') && msg.includes('host=typo-host'), `未知宿主消息须双标识：${msg}`);
-  const ghost = { rulesVersion: 2, rules: [{ id: 'ghost-rule', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: { dsh: { note: 'x' } }, fidelity: 'lossy', sourceRef: ['内部决策-001'] }] };
+  const ghost = { rulesVersion: 2, rules: [{ id: 'ghost-rule', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: { dsh: { note: 'x' } }, fidelity: 'lossy', sourceRef: ['ADR-001'] }] };
   const ghostEngine = createEngine({ rules: ghost, matrix: loadJson('capability-matrix.json') });
   try { ghostEngine.applyRule('ghost-rule', 'dsh', {}, {}); } catch (e) { msg = e.message; }
   assert.ok(msg.includes('ruleId=ghost-rule') && msg.includes('host=dsh') && /未登记执行器/.test(msg), `未登记执行器消息须双标识：${msg}`);
@@ -657,7 +657,7 @@ test('fail-closed：timeout-cap-fail-open 矩阵上限不可得 → 拒分派（
     engine.applyRule('timeout-cap-fail-open', 'mcode', { declaredTimeoutMs: 60000 }, {});
   } catch (e) { message = e.message; }
   assert.match(message, /hook\.timeout\.maxSeconds/);
-  assert.ok(message.includes('ruleId=timeout-cap-fail-open') && message.includes('host=mcode'), `执行器异常须带引擎前缀（内部接口-1 §4）：${message}`);
+  assert.ok(message.includes('ruleId=timeout-cap-fail-open') && message.includes('host=mcode'), `执行器异常须带引擎前缀（IF-CORE-1 §4）：${message}`);
 });
 
 test('hasRule：只读查询登记态（消费方装载期漂移闸用）', () => {
@@ -668,7 +668,7 @@ test('hasRule：只读查询登记态（消费方装载期漂移闸用）', () =
   assert.equal(engine.hasRule(42), false);
 });
 
-test('内部接口-1 §4 兼容判别串：逐串在真实错误消息中命中', () => {
+test('IF-CORE-1 §4 兼容判别串：逐串在真实错误消息中命中', () => {
   const matrix = loadJson('capability-matrix.json');
   const engine = realEngine();
   const messageOf = (fn) => {
@@ -679,31 +679,31 @@ test('内部接口-1 §4 兼容判别串：逐串在真实错误消息中命中'
     messageOf(() => engine.applyRule('no-such-rule', 'dsh', {}, {})),
     messageOf(() => engine.applyRule('tool-vocab-map', 'typo-host', { matcher: 'Bash' }, {})),
     messageOf(() => createEngine({
-      rules: { rulesVersion: 2, rules: [{ id: 'ghost-cap', title: 'x', trigger: { capability: 'ghost.key', gap: false }, strategy: 'map', params: { dsh: { table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['内部决策-001'] }] },
+      rules: { rulesVersion: 2, rules: [{ id: 'ghost-cap', title: 'x', trigger: { capability: 'ghost.key', gap: false }, strategy: 'map', params: { dsh: { table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['ADR-001'] }] },
       matrix,
     }).applyRule('ghost-cap', 'dsh', {}, {})),
     messageOf(() => createEngine({
-      rules: { rulesVersion: 2, rules: [{ id: 'ghost-params', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: {}, fidelity: 'lossy', sourceRef: ['内部决策-001'] }] },
+      rules: { rulesVersion: 2, rules: [{ id: 'ghost-params', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: {}, fidelity: 'lossy', sourceRef: ['ADR-001'] }] },
       matrix,
     }).applyRule('ghost-params', 'dsh', {}, {})),
     messageOf(() => createEngine({
-      rules: { rulesVersion: 2, rules: [{ id: 'ghost-empty', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: { dsh: {} }, fidelity: 'lossy', sourceRef: ['内部决策-001'] }] },
+      rules: { rulesVersion: 2, rules: [{ id: 'ghost-empty', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: { dsh: {} }, fidelity: 'lossy', sourceRef: ['ADR-001'] }] },
       matrix,
     }).applyRule('ghost-empty', 'dsh', {}, {})),
     messageOf(() => engine.applyRule('followup-expansion', 'dsh', { body: 'b' }, {})),
     messageOf(() => createEngine({
-      rules: { rulesVersion: 2, rules: [{ id: 'ghost-exec', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: { dsh: { direction: 'widen', table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['内部决策-001'] }] },
+      rules: { rulesVersion: 2, rules: [{ id: 'ghost-exec', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: false }, strategy: 'map', params: { dsh: { direction: 'widen', table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['ADR-001'] }] },
       matrix,
     }).applyRule('ghost-exec', 'dsh', {}, {})),
   ].join('\n');
   for (const s of ['未知规则（规则未登记）', '未知宿主（矩阵 hosts', '矩阵键集', 'params 不合契约', 'params 条目须为非空对象', '缺端口', '未登记执行器']) {
-    assert.ok(messages.includes(s), `内部接口-1 §4 判别串须在实现消息中逐字命中：${s}`);
+    assert.ok(messages.includes(s), `IF-CORE-1 §4 判别串须在实现消息中逐字命中：${s}`);
   }
 });
 
 // ── 内部任务-347 批 C（内部未决-274/277②）：淘汰分账＋多会话连击 ──
 
-test('内部未决-277② 多会话连击：A 阻断 2 次→B 触发不清零 A→A 再阻断计 3 达 burstCap（s: 键前缀防原型键）', () => {
+test('OPEN-277② 多会话连击：A 阻断 2 次→B 触发不清零 A→A 再阻断计 3 达 burstCap（s: 键前缀防原型键）', () => {
   const engine = realEngine();
   const ports = memPorts();
   const call = (sk, ctx) => engine.applyRule('stop-pending-relay', 'mcode', { sessionKey: sk, ...ctx }, ports);
@@ -724,7 +724,7 @@ test('内部未决-277② 多会话连击：A 阻断 2 次→B 触发不清零 A
   assert.equal(a5.streak, 5, 'B 投递归零不影响 A（按会话分键）');
 });
 
-test('内部未决-277② 原型键会话名不静默失效（__proto__/constructor 不得命中继承键）', () => {
+test('OPEN-277② 原型键会话名不静默失效（__proto__/constructor 不得命中继承键）', () => {
   const engine = realEngine();
   const ports = memPorts();
   const call = (sk, blocked) => engine.applyRule('stop-pending-relay', 'mcode', { event: 'Stop', text: `t-${sk}`, sessionKey: sk, blocked }, ports);
@@ -736,7 +736,7 @@ test('内部未决-277② 原型键会话名不静默失效（__proto__/construc
   assert.ok(Object.hasOwn(state.streaks, 's:__proto__'), 's: 前缀键在案');
 });
 
-test('内部未决-274 淘汰分账：A 帧被挤出→B 投递只报 B 自己的淘汰数（A 的不被吞）', () => {
+test('OPEN-274 淘汰分账：A 帧被挤出→B 投递只报 B 自己的淘汰数（A 的不被吞）', () => {
   const engine = realEngine();
   // 先只放 A 的帧挤满容量（pendingLimit 实测取规则值）
   const rules = loadJson('degradation-rules.json');
@@ -759,7 +759,7 @@ test('内部未决-274 淘汰分账：A 帧被挤出→B 投递只报 B 自己�
   assert.equal(evictionNoteA.length, 1, 'A 投递收到自己的淘汰提醒（计数不静默）');
 });
 
-test('内部未决-277② 兼容：旧单键对状态首读迁移（streakKey/streakCount → streaks 字典）', () => {
+test('OPEN-277② 兼容：旧单键对状态首读迁移（streakKey/streakCount → streaks 字典）', () => {
   const engine = realEngine();
   const ports = memPorts({ frames: [], streakKey: 'old-sess', streakCount: 2, droppedByLimit: 1 });
   const out = engine.applyRule('stop-pending-relay', 'mcode', { event: 'Stop', text: 'next', sessionKey: 'old-sess', blocked: true }, ports);

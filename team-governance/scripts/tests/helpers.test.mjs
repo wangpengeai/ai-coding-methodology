@@ -46,7 +46,7 @@ test('helpers：enterEnv 注入/还原（undefined 键删除、有值键还原�
   delete process.env[k];
 });
 
-test('helpers：两份 /proc 替身树形态锁定（全量 vs 精简，内部未决-223）', () => {
+test('helpers：两份 /proc 替身树形态锁定（全量 vs 精简，OPEN-223）', () => {
   const full = tmpHome('tg-helper-full-');
   const mini = tmpHome('tg-helper-mini-');
   try {

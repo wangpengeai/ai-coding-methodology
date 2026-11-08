@@ -74,13 +74,13 @@ test('读取：非 JSON / 缺字段 / 未知 schemaVersion / 非法 mode 枚举 
   writeMode(root1, 'not-json');
   assert.equal(readStatus(root1).reason, 'corrupt');
   const root2 = tempProject();
-  writeMode(root2, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: '内部任务-5' });
+  writeMode(root2, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: 'TASK-5' });
   assert.equal(readStatus(root2).reason, 'corrupt');
   const root3 = tempProject();
-  writeMode(root3, { schemaVersion: 99, mode: 'explore', expiry: future(14), taskId: '内部任务-5', transactionId: 't' });
+  writeMode(root3, { schemaVersion: 99, mode: 'explore', expiry: future(14), taskId: 'TASK-5', transactionId: 't' });
   assert.equal(readStatus(root3).reason, 'corrupt');
   const root4 = tempProject();
-  writeMode(root4, { schemaVersion: 3, mode: 'bogus', expiry: future(14), taskId: '内部任务-5', transactionId: 't' });
+  writeMode(root4, { schemaVersion: 3, mode: 'bogus', expiry: future(14), taskId: 'TASK-5', transactionId: 't' });
   assert.equal(readStatus(root4).reason, 'corrupt');
 });
 
@@ -94,25 +94,25 @@ test('读取：v1 两字段声明 → reason=legacy', () => {
 
 test('读取：合法未过期 v2 → reason=migratable-v2（参数保留、提示迁移）', () => {
   const root = tempProject();
-  writeMode(root, { schemaVersion: 2, mode: 'disposable', expiry: future(30), taskId: '内部任务-V2', transactionId: 'oldtx' });
+  writeMode(root, { schemaVersion: 2, mode: 'disposable', expiry: future(30), taskId: 'TASK-V2', transactionId: 'oldtx' });
   const s = readStatus(root);
   assert.equal(s.valid, false);
   assert.equal(s.reason, 'migratable-v2');
   assert.equal(s.mode, 'disposable');
   assert.equal(s.expiry, future(30), '保留可解析值供 SessionStart 提示文案');
-  assert.equal(s.taskId, '内部任务-V2');
+  assert.equal(s.taskId, 'TASK-V2');
 });
 
 test('读取：v2 与 v3 过期 → reason=expired 且 overdue=true（mode/expiry 保留供提醒分叉）', () => {
   const root2 = tempProject();
-  writeMode(root2, { schemaVersion: 2, mode: 'explore', expiry: past(1), taskId: '内部任务-V2', transactionId: 't' });
+  writeMode(root2, { schemaVersion: 2, mode: 'explore', expiry: past(1), taskId: 'TASK-V2', transactionId: 't' });
   const s2 = readStatus(root2);
   assert.equal(s2.valid, false);
   assert.equal(s2.overdue, true);
   assert.equal(s2.reason, 'expired');
   assert.equal(s2.mode, 'explore');
   const root3 = tempProject();
-  writeMode(root3, { schemaVersion: 3, mode: 'explore', expiry: past(1), taskId: '内部任务-3', transactionId: 't' });
+  writeMode(root3, { schemaVersion: 3, mode: 'explore', expiry: past(1), taskId: 'TASK-3', transactionId: 't' });
   const s3 = readStatus(root3);
   assert.equal(s3.valid, false);
   assert.equal(s3.overdue, true);
@@ -121,12 +121,12 @@ test('读取：v2 与 v3 过期 → reason=expired 且 overdue=true（mode/expir
 
 test('读取：合法 v3 → valid=true，契约字段齐（含 bridgeAvailable 与 transactionId）', () => {
   const root = tempProject();
-  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: '内部任务-5', transactionId: 'tx-9' });
+  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: 'TASK-5', transactionId: 'tx-9' });
   const s = readStatus(root);
   assert.equal(s.valid, true);
   assert.equal(s.mode, 'explore');
   assert.equal(s.expiry, future(14));
-  assert.equal(s.taskId, '内部任务-5');
+  assert.equal(s.taskId, 'TASK-5');
   assert.equal(s.transactionId, 'tx-9');
   assert.equal(typeof s.bridgeAvailable, 'boolean');
   assert.equal(MODES.includes(s.mode), true);
@@ -134,7 +134,7 @@ test('读取：合法 v3 → valid=true，契约字段齐（含 bridgeAvailable 
 
 test('读取：journal 残留 → pendingRecovery=true 且恢复前按无模式（reason=pending-recovery）', () => {
   const root = tempProject();
-  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: '内部任务-5', transactionId: 'tx' });
+  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: 'TASK-5', transactionId: 'tx' });
   mkdirSync(join(root, '.scout', 'transactions'), { recursive: true });
   writeFileSync(join(root, '.scout', 'transactions', 'journal.json'), '{"state":"prepared"}');
   const s = readStatus(root);
@@ -146,7 +146,7 @@ test('读取：journal 残留 → pendingRecovery=true 且恢复前按无模式�
 
 test('读取零 spawn：SCOUT_TX_PROVIDER 指向不存在路径时本地判定照常（读取不经提供方）', () => {
   const root = tempProject();
-  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: '内部任务-5', transactionId: 'tx' });
+  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: 'TASK-5', transactionId: 'tx' });
   const prev = process.env.SCOUT_TX_PROVIDER;
   process.env.SCOUT_TX_PROVIDER = '/nonexistent/scout-tx.mjs';
   try {
@@ -168,7 +168,7 @@ test('同仓布局：仓库内 providerCli 可定位 → bridgeAvailable=true（
 
 test('发现层副本随 1b 删除：mode-state 不再导出 pythonBin', async () => {
   const mod = await import('../mode-state.mjs');
-  assert.equal(mod.pythonBin, undefined, '内部决策-051 D1 原文：pythonBin()/PY_CANDIDATES 随删');
+  assert.equal(mod.pythonBin, undefined, 'ADR-051 D1 原文：pythonBin()/PY_CANDIDATES 随删');
 });
 
 test('装机树：同版本目录优先命中', async () => {
@@ -178,7 +178,7 @@ test('装机树：同版本目录优先命中', async () => {
   assert.ok(cli && cli.includes(join('spec-gate', '9.9.9')), `同版本优先，实际：${cli}`);
 });
 
-test('装机树：无同版本时最高版本目录兜底命中（内部决策-031 决策 3，不限版本）', async () => {
+test('装机树：无同版本时最高版本目录兜底命中（ADR-031 决策 3，不限版本）', async () => {
   const tree = makeInstalledTree('9.9.9', ['1.0.0', '0.9.9']);
   const mod = await tree.importMod();
   const cli = mod.providerCli();
@@ -225,7 +225,7 @@ test('版本目录正则：X.Y.Z 与预发布后缀命中、非版本名不命�
 test('装机树副本 readStatus：本地判定生效（fixture v3 → valid，全程零 spawn）', async () => {
   const tree = makeInstalledTree('9.9.9', ['9.9.9']);
   const root = tempProject();
-  writeMode(root, { schemaVersion: 3, mode: 'disposable', expiry: future(14), taskId: '内部任务-7', transactionId: 'tx' });
+  writeMode(root, { schemaVersion: 3, mode: 'disposable', expiry: future(14), taskId: 'TASK-7', transactionId: 'tx' });
   const mod = await tree.importMod();
   const s = mod.readStatus(root);
   assert.equal(s.valid, true);
@@ -237,7 +237,7 @@ test('装机树副本 readStatus：本地判定生效（fixture v3 → valid，�
 
 test('T15 严格日历日：2027-02-30 → corrupt（不接受 Date.parse 滚日）', () => {
   const root = tempProject();
-  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: '2027-02-30', taskId: '内部任务-T15-1', transactionId: 'tx' });
+  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: '2027-02-30', taskId: 'TASK-T15-1', transactionId: 'tx' });
   assert.equal(readStatus(root).reason, 'corrupt');
   assert.equal(isValidExpiry('2027-02-30'), false);
   assert.equal(isValidExpiry('2027-02-28'), true);
@@ -249,13 +249,13 @@ test('T15 id 类型：taskId / transactionId 非字符串 → corrupt', () => {
   writeMode(root1, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: 123, transactionId: 'tx' });
   assert.equal(readStatus(root1).reason, 'corrupt');
   const root2 = tempProject();
-  writeMode(root2, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: '内部任务-5', transactionId: {} });
+  writeMode(root2, { schemaVersion: 3, mode: 'explore', expiry: future(14), taskId: 'TASK-5', transactionId: {} });
   assert.equal(readStatus(root2).reason, 'corrupt');
 });
 
 test('T15 当天 expiry：v3 valid 且 overdue=false（严格日历日口径）', () => {
   const root = tempProject();
-  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: todayIso(), taskId: '内部任务-5', transactionId: 'tx' });
+  writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: todayIso(), taskId: 'TASK-5', transactionId: 'tx' });
   const s = readStatus(root);
   assert.equal(s.valid, true, JSON.stringify(s));
   assert.equal(s.overdue, false);
@@ -264,7 +264,7 @@ test('T15 当天 expiry：v3 valid 且 overdue=false（严格日历日口径）'
 test('T15 v2 当天 expiry：migratable-v2 且 migrate 当天可迁', async () => {
   const { migrateV2 } = await import('../mode-lifecycle.mjs');
   const root = tempProject();
-  writeMode(root, { schemaVersion: 2, mode: 'explore', expiry: todayIso(), taskId: '内部任务-5', transactionId: 'tx' });
+  writeMode(root, { schemaVersion: 2, mode: 'explore', expiry: todayIso(), taskId: 'TASK-5', transactionId: 'tx' });
   assert.equal(readStatus(root).reason, 'migratable-v2');
   const r = migrateV2(root);
   assert.equal(r.ok, true, JSON.stringify(r));

@@ -32,8 +32,8 @@ test('open_items fixture ≥4 且 oracle 在位', () => {
   for (const c of cases) assert.ok(existsSync(join(root, c.name, 'oracle.json')), `缺 oracle: ${c.name}`);
 });
 
-test('F-16：OPEN 非对象/坏条目产 RULE-内部未决-001 而非抛错', () => {
-  assert.equal(checkOpenItems(null, 'x.json', 'baseline')[0].ruleId, 'RULE-内部未决-001');
+test('F-16：OPEN 非对象/坏条目产 RULE-OPEN-001 而非抛错', () => {
+  assert.equal(checkOpenItems(null, 'x.json', 'baseline')[0].ruleId, 'RULE-OPEN-001');
   const ds = checkOpenItems({ items: [null] }, 'x.json', 'baseline');
-  assert.equal(ds[0].ruleId, 'RULE-内部未决-001');
+  assert.equal(ds[0].ruleId, 'RULE-OPEN-001');
 });

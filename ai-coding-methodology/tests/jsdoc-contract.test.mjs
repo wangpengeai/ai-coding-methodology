@@ -413,7 +413,7 @@ test('本层全树无 BOM（含 README/patch 等**非源码**文件；仓库 lin
   assert.ok(withBom[0] === 0xef && withBom[1] === 0xbb && withBom[2] === 0xbf, 'BOM 判据应对已知 BOM 成立');
 });
 
-test('打包契约：files 白名单**有意不含** plugin-core（引擎随仓不随包，内部决策-037 裁决 A）', () => {
+test('打包契约：files 白名单**有意不含** plugin-core（引擎随仓不随包，ADR-037 裁决 A）', () => {
   // 为什么要有：批 2 起装载面在 `apply()` 首步经相对路径读取 `<仓库根>/plugin-core`，且
   // **不可得即拒载**（响亮失败、四面不注册）。把 plugin-core 排除在 `files` 之外是**有意的
   // 支持面声明**（README 安装节：只支持 plugin-core 随仓/profile 可用的装法）；若无本断言，

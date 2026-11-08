@@ -30,9 +30,9 @@ test('oracle 判别力：多一条/错一条诊断都必须被抓住', () => {
   const dir = join(FIXTURES, 'adr/adr-duplicate-id');
   const { diagnostics, exitCode, meta } = runFixture(dir);
   assert.deepEqual(compareWithOracle(dir, diagnostics, exitCode, meta), []);
-  const extra = [...diagnostics, diagnostic('RULE-内部决策-001', 'warning', 'wrong', 9, 'x')];
+  const extra = [...diagnostics, diagnostic('RULE-ADR-001', 'warning', 'wrong', 9, 'x')];
   assert.ok(compareWithOracle(dir, extra, exitCode, meta).length > 0, '额外诊断必须判红');
-  const wrong = [diagnostic('RULE-内部决策-999', 'blocking', diagnostics[0].file, diagnostics[0].line, diagnostics[0].fixHint)];
+  const wrong = [diagnostic('RULE-ADR-999', 'blocking', diagnostics[0].file, diagnostics[0].line, diagnostics[0].fixHint)];
   assert.ok(compareWithOracle(dir, wrong, exitCode, meta).length > 0, '错误 ruleId 必须判红');
 });
 
@@ -49,12 +49,12 @@ test('F-7：opt_out 五例由 runFixture 执行并与 oracle 逐键一致', () =
   assert.deepEqual(expired.diagnostics, []);
 });
 
-test('围栏内禁词不计（内部未决-152③）', () => {
+test('围栏内禁词不计（OPEN-152③）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'dev237-fixture-'));
   const out = join(dir, 'document.md');
   writeFileSync(out, '# 文档\n\n```text\nTODO: 示例，不参与检查\n```\n');
   assert.deepEqual(runMarkdownFixture(out, 'x.md'), { diagnostics: [], exitCode: 0, meta: null });
   writeFileSync(out, '# 文档\n\nTODO: 裸写，应命中\n');
   const bare = runMarkdownFixture(out, 'x.md');
-  assert.ok(bare.diagnostics.some((d) => d.ruleId === 'RULE-内部未决-001'));
+  assert.ok(bare.diagnostics.some((d) => d.ruleId === 'RULE-OPEN-001'));
 });

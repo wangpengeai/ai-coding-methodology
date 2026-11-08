@@ -240,7 +240,7 @@ function baseRules() {
     rulesVersion: 2,
     rules: [
       { id: 'tool-vocab-map', title: '工具名词表映射', trigger: { capability: 'toolName.vocabulary', gap: 'differs' },
-        strategy: 'map', params: { dsh: { direction: 'widen', table: { Bash: ['bash'] } } }, fidelity: 'lossy', sourceRef: ['内部决策-032'] },
+        strategy: 'map', params: { dsh: { direction: 'widen', table: { Bash: ['bash'] } } }, fidelity: 'lossy', sourceRef: ['ADR-032'] },
     ],
   };
 }
@@ -274,11 +274,11 @@ test('validateRules 负例：字段值越枚举/类型错', () => {
   const bad1 = baseRules(); bad1.rules[0].params.dsh.direction = 'sideways';
   assert.ok(validateRules(bad1, MINI_MATRIX).errors.some((e) => e.includes('direction')));
   const relay = { id: 'stop-pending-relay', title: '中继', trigger: { capability: 'toolName.vocabulary', gap: 'none' },
-    strategy: 'relay', params: { mcode: { store: 'PLUGIN_DATA', deliverOn: 'UserPromptSubmit', burstCap: 0 } }, fidelity: 'degraded', sourceRef: ['内部决策-034'] };
+    strategy: 'relay', params: { mcode: { store: 'PLUGIN_DATA', deliverOn: 'UserPromptSubmit', burstCap: 0 } }, fidelity: 'degraded', sourceRef: ['ADR-034'] };
   const bad2 = { rulesVersion: 2, rules: [relay] };
   assert.ok(validateRules(bad2, MINI_MATRIX).errors.some((e) => e.includes('burstCap')));
   const disable = { id: 'agent-default-off-fail-closed', title: '关门', trigger: { capability: 'toolName.vocabulary', gap: 'optional' },
-    strategy: 'disable', params: { dsh: { defaultMount: 'no', unknownTool: 'reject' } }, fidelity: 'degraded', sourceRef: ['内部决策-032'] };
+    strategy: 'disable', params: { dsh: { defaultMount: 'no', unknownTool: 'reject' } }, fidelity: 'degraded', sourceRef: ['ADR-032'] };
   assert.ok(validateRules({ rulesVersion: 2, rules: [disable] }, MINI_MATRIX).errors.some((e) => e.includes('defaultMount')));
 });
 
@@ -308,7 +308,7 @@ test('validateRules 错误一次列全：多类错误并存 errors.length ≥ 3'
 test('validateRules：原型成员名作键不得绕过校验或抛错（门 A/终审回归）', () => {
   const mkRule = (id, params, capability = 'toolName.vocabulary') => ({
     rulesVersion: 2,
-    rules: [{ id, title: 'x', trigger: { capability, gap: 'differs' }, strategy: 'map', params, fidelity: 'lossy', sourceRef: ['内部决策-032'] }],
+    rules: [{ id, title: 'x', trigger: { capability, gap: 'differs' }, strategy: 'map', params, fidelity: 'lossy', sourceRef: ['ADR-032'] }],
   });
   const okParams = { dsh: { direction: 'widen', table: { Bash: ['bash'] } } };
   // 判别性断言（修复前会假通过的两例）
@@ -337,7 +337,7 @@ test('validateRules：anyOf/allOf 型规则缺形态须判拒（门 A/终审假�
     { id: 'message-slot-migration', params: { dsh: { note: 'x' } } },
   ];
   for (const c of anyOfCases) {
-    const r = validateRules({ rulesVersion: 2, rules: [{ ...c, strategy: 'emulate', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: 'none' }, fidelity: 'lossy', sourceRef: ['内部决策-032'] }] }, MINI_MATRIX);
+    const r = validateRules({ rulesVersion: 2, rules: [{ ...c, strategy: 'emulate', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: 'none' }, fidelity: 'lossy', sourceRef: ['ADR-032'] }] }, MINI_MATRIX);
     assert.equal(r.ok, false, `${c.id} 全缺形态应判拒`);
     assert.ok(r.errors.some((e) => e.includes('至少需含')), `${c.id} 应报 anyOf 违例：${JSON.stringify(r.errors)}`);
   }
@@ -348,14 +348,14 @@ test('validateRules：anyOf/allOf 型规则缺形态须判拒（门 A/终审假�
     ['stop-pending-relay', 'relay', { mcode: { store: 'PLUGIN_DATA', deliverOn: 'UserPromptSubmit', triggerEvent: 'Stop', burstCap: 3, pendingLimit: 20 } }, 'capNote'],
   ];
   for (const [id, strategy, params, missing] of allOfCases) {
-    const r = validateRules({ rulesVersion: 2, rules: [{ id, strategy, title: 'x', trigger: { capability: 'toolName.vocabulary', gap: 'none' }, params, fidelity: 'lossy', sourceRef: ['内部决策-032'] }] }, MINI_MATRIX);
+    const r = validateRules({ rulesVersion: 2, rules: [{ id, strategy, title: 'x', trigger: { capability: 'toolName.vocabulary', gap: 'none' }, params, fidelity: 'lossy', sourceRef: ['ADR-032'] }] }, MINI_MATRIX);
     assert.equal(r.ok, false, `${id} 缺 ${missing} 应判拒`);
     assert.ok(r.errors.some((e) => e.includes(`缺必需字段 ${missing}`)), `${id} 应报缺字段 ${missing}：${JSON.stringify(r.errors)}`);
   }
 });
 
-test('validateRules：stop-pending-relay anyOf 扩 relayEvents（内部决策-038 kimi 列契约）', () => {
-  const mk = (params) => ({ rulesVersion: 2, rules: [{ id: 'stop-pending-relay', title: '中继', trigger: { capability: 'toolName.vocabulary', gap: 'none' }, strategy: 'relay', params, fidelity: 'degraded', sourceRef: ['内部决策-038'] }] });
+test('validateRules：stop-pending-relay anyOf 扩 relayEvents（ADR-038 kimi 列契约）', () => {
+  const mk = (params) => ({ rulesVersion: 2, rules: [{ id: 'stop-pending-relay', title: '中继', trigger: { capability: 'toolName.vocabulary', gap: 'none' }, strategy: 'relay', params, fidelity: 'degraded', sourceRef: ['ADR-038'] }] });
   const KIMI_WIDE = { hosts: ['zcode', 'dsh', 'mcode', 'kimi'], capabilities: MINI_MATRIX.capabilities };
   // 正例：kimi 形态（store 为 $ 路径模板、relayEvents 替代 triggerEvent）过校验
   const kimiOk = mk({ kimi: { store: '$KIMI_CODE_HOME/plugin-data/<id>', deliverOn: 'UserPromptSubmit', relayEvents: ['Stop', 'SessionStart', 'PostToolUse', 'PostToolUseFailure'], burstCap: 3, pendingLimit: 20, capNote: '（上限降级）' } });
@@ -382,7 +382,7 @@ test('validateRules：早返回路径（顶层非对象 / rule 非对象 / trigg
   assert.equal(validateRules(null, MINI_MATRIX).ok, false);
   const badRule = { rulesVersion: 2, rules: [null] };
   assert.equal(validateRules(badRule, MINI_MATRIX).ok, false);
-  const noTrigger = { rulesVersion: 2, rules: [{ id: 'tool-vocab-map', strategy: 'map', params: { dsh: { direction: 'widen', table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['内部决策-032'] }] };
+  const noTrigger = { rulesVersion: 2, rules: [{ id: 'tool-vocab-map', strategy: 'map', params: { dsh: { direction: 'widen', table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['ADR-032'] }] };
   const r = validateRules(noTrigger, MINI_MATRIX);
   assert.equal(r.ok, false);
   assert.ok(r.errors.some((e) => e.includes('trigger.capability')));
@@ -391,7 +391,7 @@ test('validateRules：早返回路径（顶层非对象 / rule 非对象 / trigg
 test('validateRules：fidelity 越枚举 / onTimeout 非枚举须判拒', () => {
   const bad = baseRules(); bad.rules[0].fidelity = 'perfect';
   assert.ok(validateRules(bad, MINI_MATRIX).errors.some((e) => e.includes('fidelity')));
-  const degrade = { rulesVersion: 2, rules: [{ id: 'timeout-cap-fail-open', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: 'below-declared' }, strategy: 'degrade', params: { mcode: { cap: 'host-max', onTimeout: 'ignore' } }, fidelity: 'degraded', sourceRef: ['内部决策-034'] }] };
+  const degrade = { rulesVersion: 2, rules: [{ id: 'timeout-cap-fail-open', title: 'x', trigger: { capability: 'toolName.vocabulary', gap: 'below-declared' }, strategy: 'degrade', params: { mcode: { cap: 'host-max', onTimeout: 'ignore' } }, fidelity: 'degraded', sourceRef: ['ADR-034'] }] };
   assert.ok(validateRules(degrade, MINI_MATRIX).errors.some((e) => e.includes('onTimeout')));
 });
 

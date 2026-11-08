@@ -28,7 +28,7 @@ function run(script, args, opts = {}) {
   return spawnSync(process.execPath, [script, ...args], { encoding: 'utf8', ...opts });
 }
 
-function writeMode(root, { taskId = '内部任务-7', expiry = TS } = {}) {
+function writeMode(root, { taskId = 'DEV-7', expiry = TS } = {}) {
   mkdirSync(join(root, '.scout'), { recursive: true });
   writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 3, mode: 'explore', expiry, taskId, transactionId: 'tx-1' }));
 }
@@ -56,7 +56,7 @@ test('T13：未知旗标 / 缺值 / 空值 / --dry-run / 布尔 = 值 → 退 2'
 test('T13：--flag=value 受理 + --project-root 前置/后置两形态成功', () => {
   const root = tmp('dev259-t13eq-');
   try {
-    const before = run(ML, ['--project-root', root, 'open', '--mode=explore', `--expiry=${TS}`, '--task-id=内部任务-7']);
+    const before = run(ML, ['--project-root', root, 'open', '--mode=explore', `--expiry=${TS}`, '--task-id=DEV-7']);
     assert.equal(before.status, 0, before.stderr || before.stdout);
     assert.equal(JSON.parse(before.stdout.trim()).ok, true);
     const post = run(ML, ['status', '--project-root', root]);
@@ -72,7 +72,7 @@ test('T14：fs 工具错误（.scout 为普通文件 → ENOTDIR）→ stdout JS
   const root = tmp('dev259-t14-');
   try {
     writeFileSync(join(root, '.scout'), 'not-a-dir'); // 跨平台确定性：ENOTDIR，不依赖 chmod/root 语义
-    const r = run(ML, ['--project-root', root, 'open', '--mode', 'explore', '--expiry', TS, '--task-id', '内部任务-7']);
+    const r = run(ML, ['--project-root', root, 'open', '--mode', 'explore', '--expiry', TS, '--task-id', 'DEV-7']);
     assert.equal(r.status, 2, r.stderr || r.stdout);
     const body = JSON.parse(r.stdout.trim());
     assert.equal(body.ok, false);
@@ -87,8 +87,8 @@ test('T14：fs 工具错误（.scout 为普通文件 → ENOTDIR）→ stdout JS
 test('T14：大 stdout 子进程完整（lint 多违例输出不截断）', () => {
   const root = tmp('dev259-largeout-');
   try {
-    writeMode(root, { taskId: '内部任务-7' });
-    writeFileSync(join(root, '.scout', 'ledger.jsonl'), JSON.stringify({ event: 'open', mode: 'explore', expiry: TS, taskId: '内部任务-7', transactionId: 'tx-1' }) + '\n');
+    writeMode(root, { taskId: 'DEV-7' });
+    writeFileSync(join(root, '.scout', 'ledger.jsonl'), JSON.stringify({ event: 'open', mode: 'explore', expiry: TS, taskId: 'DEV-7', transactionId: 'tx-1' }) + '\n');
     const tasks = [];
     for (let i = 0; i < 300; i += 1) {
       tasks.push({ id: `TASK-STALE-${i}`, status: 'active', taskType: 'scout-mode', mode: 'explore', deadline: '2030-01-01', transactionId: `tx-${i}` });
@@ -98,7 +98,7 @@ test('T14：大 stdout 子进程完整（lint 多违例输出不截断）', () =
     assert.equal(r.status, 1, '多违例须退 1');
     assert.ok(r.stdout.length > 50_000, `stdout 须完整（实际 ${r.stdout.length}）`);
     assert.ok(r.stdout.endsWith('\n'), 'stdout 须以换行收尾（无截断）');
-    assert.match(r.stdout, /内部任务-STALE-299/, '末尾条目须完整输出');
+    assert.match(r.stdout, /TASK-STALE-299/, '末尾条目须完整输出');
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
@@ -106,12 +106,12 @@ test('T20：status pendingSync 计数与 centralSync 三态（unknown/missing/pr
   const root = tmp('dev259-t20-');
   const env = { ...process.env, SCOUT_TX_PROVIDER: BRIDGE }; // pin 桥在场（与仓布局解耦，S-15）
   try {
-    writeMode(root, { taskId: '内部任务-7' });
+    writeMode(root, { taskId: 'DEV-7' });
     // pendingSync 2 + 无 .sdd → unknown
     writeFileSync(join(root, '.scout', 'ledger.jsonl'), [
-      JSON.stringify({ event: 'open', mode: 'explore', expiry: TS, taskId: '内部任务-7', transactionId: 'tx-1' }),
-      JSON.stringify({ event: 'pendingSync', op: 'open', taskId: '内部任务-7' }),
-      JSON.stringify({ event: 'pendingSync', op: 'renew', taskId: '内部任务-7' }),
+      JSON.stringify({ event: 'open', mode: 'explore', expiry: TS, taskId: 'DEV-7', transactionId: 'tx-1' }),
+      JSON.stringify({ event: 'pendingSync', op: 'open', taskId: 'DEV-7' }),
+      JSON.stringify({ event: 'pendingSync', op: 'renew', taskId: 'DEV-7' }),
     ].join('\n') + '\n');
     const unknown = JSON.parse(run(ML, ['--project-root', root, 'status'], { env }).stdout.trim());
     assert.equal(unknown.pendingSync, 2, JSON.stringify(unknown));
@@ -121,7 +121,7 @@ test('T20：status pendingSync 计数与 centralSync 三态（unknown/missing/pr
     const missing = JSON.parse(run(ML, ['--project-root', root, 'status'], { env }).stdout.trim());
     assert.equal(missing.centralSync, 'missing', JSON.stringify(missing));
     // 中央有条目 → present
-    writeCentral(root, [{ id: '内部任务-7', status: 'active', taskType: 'scout-mode', mode: 'explore', deadline: TS, transactionId: 'tx-1' }]);
+    writeCentral(root, [{ id: 'DEV-7', status: 'active', taskType: 'scout-mode', mode: 'explore', deadline: TS, transactionId: 'tx-1' }]);
     const present = JSON.parse(run(ML, ['--project-root', root, 'status'], { env }).stdout.trim());
     assert.equal(present.centralSync, 'present', JSON.stringify(present));
     // 损坏台账（tasks 非数组）→ unknown（C-5 分态）
@@ -147,7 +147,7 @@ test('T13：check-consistency --project-root= 与空格形态等价；root 不�
 test('T15/T14：abandon 拒绝文案含 taskId 与下一步（本地/中央未变更）', () => {
   const root = tmp('dev259-abandon-rej-');
   try {
-    writeMode(root, { taskId: '内部任务-7' });
+    writeMode(root, { taskId: 'DEV-7' });
     const r = run(ML, ['--project-root', root, 'abandon', '--task-id', 'DEV-OTHER', '--disposition', '归档']);
     assert.equal(r.status, 1, r.stderr || r.stdout);
     const body = JSON.parse(r.stdout.trim());

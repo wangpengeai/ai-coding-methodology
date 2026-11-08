@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "id": "内部未决-2",
+      "id": "OPEN-2",
       "status": "accepted-risk",
       "owner": "dev",
       "impact": "低频竞态",

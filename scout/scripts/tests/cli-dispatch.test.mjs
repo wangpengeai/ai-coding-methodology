@@ -17,7 +17,7 @@ const SCRIPTS = resolve(HERE, '..');
 test('mode-lifecycle CLI：open 子命令分发成功并输出 JSON 回执（emit/runCli 分支）', async () => {
   const root = mkdtempSync(join(tmpdir(), 'dev209-scout-cli-'));
   try {
-    const r = await runAsMain(join(SCRIPTS, 'mode-lifecycle.mjs'), ['open', '--project-root', root, '--mode', 'explore', '--expiry', '2999-01-01', '--task-id', '内部任务-1']);
+    const r = await runAsMain(join(SCRIPTS, 'mode-lifecycle.mjs'), ['open', '--project-root', root, '--mode', 'explore', '--expiry', '2999-01-01', '--task-id', 'DEV-1']);
     const out = r.logs.join('');
     assert.equal(r.code, 0, out);
     const line = out.split('\n').find((l) => l.trim().startsWith('{'));

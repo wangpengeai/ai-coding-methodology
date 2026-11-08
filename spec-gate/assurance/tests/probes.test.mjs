@@ -284,7 +284,7 @@ test('runProbes：host-app-present expect 嵌套/env 覆盖/win32 空列与非�
     r = runProbes('/', [C({ type: 'host-app-present', expect: { host: 42, presence: 'present' } })], hostOpts);
     assert.equal(r.diagnostics[0].ruleId, 'RULE-GATE-OPASSERT-CONFIG', '不可哈希 host→CONFIG（isinstance 前置守卫语义）');
     r = runProbes('/', [C({ type: 'host-app-present', expect: { host: 'zcode', presence: 'present' } })], { ...hostOpts, platform: 'win32' });
-    assert.equal(r.diagnostics[0].ruleId, 'RULE-GATE-OPASSERT-CONFIG', 'win32 空列 fail-loud（内部未决-129）');
+    assert.equal(r.diagnostics[0].ruleId, 'RULE-GATE-OPASSERT-CONFIG', 'win32 空列 fail-loud（OPEN-129）');
   } finally {
     rmSync(sigDir, { recursive: true, force: true });
   }
@@ -375,12 +375,12 @@ test('loadHostSignatures：坏 JSON/缺 hosts 键 fail-loud＋按路径缓存', 
   }
 });
 
-test('真值签名库形态契约：四宿主键齐/win32 三宿主非空含身份锚/DSH 行在场/darwin DSH 已取证含身份锚（内部任务-222）', () => {
+test('真值签名库形态契约：四宿主键齐/win32 三宿主非空含身份锚/DSH 行在场/darwin DSH 已取证含身份锚（DEV-222）', () => {
   const lib = loadHostSignatures();
   assert.deepEqual(Object.keys(lib.hosts).sort(), ['dsh', 'kimi', 'mcode', 'zcode']);
   for (const h of ['zcode', 'mcode', 'kimi']) {
     assert.ok(Array.isArray(lib.hosts[h].darwin) && lib.hosts[h].darwin.length > 0, `${h}.darwin 非空`);
-    assert.ok(Array.isArray(lib.hosts[h].win32) && lib.hosts[h].win32.length > 0, `${h}.win32 非空（2026-10-21 内部任务-188 回填）`);
+    assert.ok(Array.isArray(lib.hosts[h].win32) && lib.hosts[h].win32.length > 0, `${h}.win32 非空（2026-10-21 DEV-188 回填）`);
     for (const p of lib.hosts[h].win32) assert.ok(p.startsWith('~/'), `${h}.win32 候选以 ~/ 展开形态登记`);
   }
   assert.ok(lib.hosts.zcode.win32.some((p) => p.includes('ZCode')), 'zcode win32 候选含 ZCode 安装位');
@@ -388,8 +388,8 @@ test('真值签名库形态契约：四宿主键齐/win32 三宿主非空含身�
   assert.ok(lib.hosts.kimi.win32.some((p) => p.includes('Kimi Code')), 'kimi win32 候选含 Kimi Code 安装位');
   assert.ok(lib.hosts.kimi.darwin.some((p) => p.includes('Kimi Code')), 'kimi 候选须含 "Kimi Code"');
   assert.ok(lib.hosts.dsh.win32.some((p) => p.includes('DeepSeek Harness')), 'dsh win32 候选含 DeepSeek Harness 安装位');
-  assert.ok(Array.isArray(lib.hosts.dsh.darwin) && lib.hosts.dsh.darwin.length > 0, 'dsh.darwin 非空（2026-10-25 内部任务-222 取证回填）');
-  assert.ok(lib.hosts.dsh.darwin.some((p) => p.includes('DeepSeek Harness')), 'dsh darwin 候选含 "DeepSeek Harness"（身份锚，内部未决-129 取证纪律）');
+  assert.ok(Array.isArray(lib.hosts.dsh.darwin) && lib.hosts.dsh.darwin.length > 0, 'dsh.darwin 非空（2026-10-25 DEV-222 取证回填）');
+  assert.ok(lib.hosts.dsh.darwin.some((p) => p.includes('DeepSeek Harness')), 'dsh darwin 候选含 "DeepSeek Harness"（身份锚，OPEN-129 取证纪律）');
   // linux：zcode 已取证回填（2026-11-02 内部任务-281，内部未决-208）——身份锚=宿主自管 release 树；
   // mcode/kimi/dsh 空数组占位（宿主不在位无安装位证据，fail-loud 语义，内部未决-129 先例）
   for (const h of ['zcode', 'mcode', 'kimi', 'dsh']) {
@@ -407,7 +407,7 @@ test('源码扫描守卫：spawn 收敛单点＋判据键无自由命令位＋�
   assert.ok(!src.includes('execSync') && !src.includes('exec('), '无 exec 形态');
   assert.ok(!/"command"\s*:|"shell"\s*:/.test(src), '判据键无自由命令位');
   assert.ok(src.includes('function spawnTemplate'), 'spawn 单点在位');
-  assert.ok(src.includes('未实现分派'), '分派闭环尾块在位（内部未决-102②——白名单与分支集脱节时显式拒绝，删除即本锚红）');
+  assert.ok(src.includes('未实现分派'), '分派闭环尾块在位（OPEN-102②——白名单与分支集脱节时显式拒绝，删除即本锚红）');
 });
 
 test('门①行为锁定：嵌套 null 期望/原型链键/词法坏→CONFIG/无效 UTF-8→ASSERT/probe 非对象崩溃对齐', () => {
@@ -452,7 +452,7 @@ test('门①行为锁定：treeHash 断链 symlink 文件→外抛（不静默�
   }
 });
 
-test('S01（内部任务-241）：探针诊断不回显实际值（json-field-eq / jsonl-record-field-eq）', () => {
+test('S01（DEV-241）：探针诊断不回显实际值（json-field-eq / jsonl-record-field-eq）', () => {
   const root = tmpRoot('dev241-sec-');
   try {
     writeFileSync(join(root, 'secret.json'), JSON.stringify({ token: 'abc123secret' }), 'utf8');
@@ -471,7 +471,7 @@ test('S01（内部任务-241）：探针诊断不回显实际值（json-field-eq
   }
 });
 
-test('内部任务-242 正确性复审 C-1：jsonl 严格仅顶层类型，容器内按 Python == 宽松', () => {
+test('DEV-242 正确性复审 C-1：jsonl 严格仅顶层类型，容器内按 Python == 宽松', () => {
   const { looseJsonEq, strictJsonEq } = _jsonEqInternals;
   // json-field-eq：宽松（True==1 允许）
   assert.equal(looseJsonEq(true, 1), true);

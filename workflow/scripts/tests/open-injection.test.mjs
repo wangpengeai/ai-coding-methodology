@@ -49,22 +49,22 @@ function runUprompt(payload, opts = {}) {
   return { status: r.status, stdout: r.stdout ?? '' };
 }
 
-test('内部任务-57 预筛：命中注入一行（含编号与截断描述），哨位项只提示触发条件', () => {
+test('DEV-57 预筛：命中注入一行（含编号与截断描述），哨位项只提示触发条件', () => {
   const repo = fixtureRepo([
-    '| 内部未决-9001 | zcode-adapter install 备份无清理路径（.bak 累积） | 缺陷 | OPEN | 2026-10-14 | non-blocking |',
-    '| 内部未决-9002 | kimi 签名取证 | 机制设计 | OPEN | 2026-10-16 | non-blocking（延后——等触发条件） |',
-    '| 内部未决-9003 | 无关条目锚词 mismatchmark | 技术核实 | OPEN | 2026-10-17 | non-blocking |',
+    '| OPEN-9001 | zcode-adapter install 备份无清理路径（.bak 累积） | 缺陷 | OPEN | 2026-10-14 | non-blocking |',
+    '| OPEN-9002 | kimi 签名取证 | 机制设计 | OPEN | 2026-10-16 | non-blocking（延后——等触发条件） |',
+    '| OPEN-9003 | 无关条目锚词 mismatchmark | 技术核实 | OPEN | 2026-10-17 | non-blocking |',
   ]);
   const r = runUprompt(JSON.stringify({ session_id: 's-oinj1', cwd: repo, prompt: '处理 zcode-adapter 的备份清理和 kimi 签名' }));
   assert.equal(r.status, 0);
   assert.ok(r.stdout.includes('【OPEN 候选】'), '命中注入候选行');
-  assert.ok(r.stdout.includes('内部未决-9001'), '非哨位命中列编号');
-  assert.ok(r.stdout.includes('哨位项，触发条件见登记册'), '哨位项（内部未决-9002 延后）只提示不催办');
-  assert.ok(!r.stdout.includes('内部未决-9003'), '无关节未列入');
+  assert.ok(r.stdout.includes('OPEN-9001'), '非哨位命中列编号');
+  assert.ok(r.stdout.includes('哨位项，触发条件见登记册'), '哨位项（OPEN-9002 延后）只提示不催办');
+  assert.ok(!r.stdout.includes('OPEN-9003'), '无关节未列入');
 });
 
-test('内部任务-57 预筛节流：命中后会话内一次（第二条同消息不再注入）', () => {
-  const repo = fixtureRepo(['| 内部未决-9001 | zcode-adapter 备份清理 | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
+test('DEV-57 预筛节流：命中后会话内一次（第二条同消息不再注入）', () => {
+  const repo = fixtureRepo(['| OPEN-9001 | zcode-adapter 备份清理 | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
   const stateDir = mkdtempSync(join(tmpdir(), 'oinj-st-'));
   try {
     const p = JSON.stringify({ session_id: 's-oinj2', cwd: repo, prompt: 'zcode-adapter 备份' });
@@ -77,8 +77,8 @@ test('内部任务-57 预筛节流：命中后会话内一次（第二条同消�
   }
 });
 
-test('内部任务-244 P05 预筛：无命中亦置位（会话内一次性扫描）＋册 mtime 缓存＋坏册/缺册 fail-open', () => {
-  const repo = fixtureRepo(['| 内部未决-9001 | zcode-adapter 备份清理 | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
+test('DEV-244 P05 预筛：无命中亦置位（会话内一次性扫描）＋册 mtime 缓存＋坏册/缺册 fail-open', () => {
+  const repo = fixtureRepo(['| OPEN-9001 | zcode-adapter 备份清理 | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
   const stateDir = mkdtempSync(join(tmpdir(), 'oinj-st2-'));
   try {
     const miss = runUprompt(JSON.stringify({ session_id: 's-oinj3', cwd: repo, prompt: '完全不相关的消息锚词 nothinghere' }), { stateDir });
@@ -100,14 +100,14 @@ test('内部任务-244 P05 预筛：无命中亦置位（会话内一次性扫�
   }
 });
 
-test('内部任务-57 预筛：委派会话跳过（delegation_depth>1 形态）', () => {
-  const repo = fixtureRepo(['| 内部未决-9001 | zcode-adapter 备份清理 | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
+test('DEV-57 预筛：委派会话跳过（delegation_depth>1 形态）', () => {
+  const repo = fixtureRepo(['| OPEN-9001 | zcode-adapter 备份清理 | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
   const r = runUprompt(JSON.stringify({ session_id: 's-oinj5', cwd: repo, delegation_depth: 2, prompt: 'zcode-adapter 备份' }));
   assert.equal(r.status, 0);
   assert.ok(!r.stdout.includes('【OPEN 候选】'), '委派收窄面跳过注入');
 });
 
-test('内部任务-57 存量提醒：已关全文 >50 注入（帧序＝scout 后/warn 前）；真实仓（0）不注入', () => {
+test('DEV-57 存量提醒：已关全文 >50 注入（帧序＝scout 后/warn 前）；真实仓（0）不注入', () => {
   const over = fixtureRepo(
     Array.from({ length: 51 }, (_, i) => `| OPEN-${9100 + i} | 已关闭全文第 ${i} 条无指针 | 决策 | CLOSED | 2026-09-0${(i % 9) + 1} | 曾 non-blocking——已解除 |`),
   );
@@ -137,9 +137,9 @@ test('内部任务-57 存量提醒：已关全文 >50 注入（帧序＝scout �
 
 // ── 内部任务-244 S04：OPEN 候选注入行剥控制字符并限长（防控制序列/超长文本进模型上下文） ──
 
-test('内部任务-244 S04：OPEN 候选行剥控制字符并限长', () => {
+test('DEV-244 S04：OPEN 候选行剥控制字符并限长', () => {
   const repo = fixtureRepo([
-    `| 内部未决-9101 | adhoc\u001b[31m 关键注入词 mark9 ${'x'.repeat(80)} | 缺陷 | OPEN | 2026-10-14 | non-blocking |`,
+    `| OPEN-9101 | adhoc\u001b[31m 关键注入词 mark9 ${'x'.repeat(80)} | 缺陷 | OPEN | 2026-10-14 | non-blocking |`,
   ]);
   const r = runUprompt(JSON.stringify({ session_id: 's-oinj-s04', cwd: repo, prompt: '处理 adhoc 相关事项' }));
   assert.equal(r.status, 0);
@@ -150,21 +150,21 @@ test('内部任务-244 S04：OPEN 候选行剥控制字符并限长', () => {
 
 // ── 内部任务-244 遗留项①：册扫描缓存不得跨仓误用（路径键 + schema/形态校验） ──
 
-test('内部任务-244 遗留：同 mtime/size 跨仓册不得复用缓存（路径键生效）', () => {
+test('DEV-244 遗留：同 mtime/size 跨仓册不得复用缓存（路径键生效）', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'oinj-cache-x-'));
   try {
-    const repoA = fixtureRepo(['| 内部未决-9301 | alphaunique-token-x | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
-    const repoB = fixtureRepo(['| 内部未决-9402 | betaunique-token-y | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
+    const repoA = fixtureRepo(['| OPEN-9301 | alphaunique-token-x | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
+    const repoB = fixtureRepo(['| OPEN-9402 | betaunique-token-y | 缺陷 | OPEN | 2026-10-14 | non-blocking |']);
     const a = runUprompt(JSON.stringify({ session_id: 's-cache-a', cwd: repoA, prompt: '处理 alphaunique 事项' }), { stateDir });
-    assert.ok(a.stdout.includes('内部未决-9301'), 'A 仓候选注入');
+    assert.ok(a.stdout.includes('OPEN-9301'), 'A 仓候选注入');
     const cachePath = join(stateDir, 'wf-open-items-cache.json');
     assert.ok(existsSync(cachePath), '册扫描缓存落盘');
     // 把 B 册 mtime/size 与 A 对齐（同 stat 不同内容）：旧实现会复用 A 的解析结果
     const aStat = statSync(join(repoA, 'specs', 'open-items.md'));
     utimesSync(join(repoB, 'specs', 'open-items.md'), aStat.atime, aStat.mtime);
     const b = runUprompt(JSON.stringify({ session_id: 's-cache-b', cwd: repoB, prompt: '处理 betaunique 事项' }), { stateDir });
-    assert.ok(b.stdout.includes('内部未决-9402'), 'B 仓同 stat 册须重扫并注入自身条目（不得复用 A 缓存）');
-    assert.ok(!b.stdout.includes('内部未决-9301'), '不得把 A 仓条目注入 B 仓上下文');
+    assert.ok(b.stdout.includes('OPEN-9402'), 'B 仓同 stat 册须重扫并注入自身条目（不得复用 A 缓存）');
+    assert.ok(!b.stdout.includes('OPEN-9301'), '不得把 A 仓条目注入 B 仓上下文');
   } finally {
     rmSync(stateDir, { recursive: true, force: true });
   }

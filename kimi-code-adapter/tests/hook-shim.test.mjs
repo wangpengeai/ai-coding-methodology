@@ -103,7 +103,7 @@ describe('hook-lib 纯函数面', () => {
     assert.equal(unknown.exit_code, null);
     assert.equal(unknown.is_error, false);
     const httpLike = deriveToolResult({ status: 500, stdout: 'x' });
-    assert.equal(httpLike.exit_code, null, 'status 不得被当退出码（内部未决-46 纪律）');
+    assert.equal(httpLike.exit_code, null, 'status 不得被当退出码（OPEN-46 纪律）');
     assert.equal(httpLike.is_error, false);
   });
 
@@ -121,7 +121,7 @@ describe('hook-lib 纯函数面', () => {
     assert.equal(classOnly.exit_code, null, 'code=internal 是类别串，不得冒认为退出码');
   });
 
-  it('内部未决-116：error.code 类别串透传 errorCode（不冒认退出码取舍不变；语义收口在核心件 classifyResult 的 CODE_RE+errorClass 门控）', () => {
+  it('OPEN-116：error.code 类别串透传 errorCode（不冒认退出码取舍不变；语义收口在核心件 classifyResult 的 CODE_RE+errorClass 门控）', () => {
     const withCode = deriveToolResult({ error: { code: 'internal', message: 'Process exited with code 3\nCommand failed with exit code: 3.', retryable: false } });
     assert.equal(withCode.errorCode, 'internal', '宿主码面透传为 errorCode（类别串非退出码）');
     assert.equal(withCode.exit_code, 3, '退出码仍从 message 提取（不冒认取舍不变）');
@@ -134,7 +134,7 @@ describe('hook-lib 纯函数面', () => {
     assert.equal(textRun.errorCode, undefined, '文本分支不携带 errorCode');
   });
 
-  it('内部未决-116：normalizePayload 结果事件端到端——顶层 error 对象经 deriveToolResult 合成 tool_result.errorCode', () => {
+  it('OPEN-116：normalizePayload 结果事件端到端——顶层 error 对象经 deriveToolResult 合成 tool_result.errorCode', () => {
     const out = normalizePayload('PostToolUseFailure', { tool_name: 'Bash', tool_input: { command: 'x' }, error: { code: 'internal', message: 'Process exited with code 5.', retryable: false } }, { projectDir: 'C:/p', engine: SHIM_TEST_ENGINE });
     assert.equal(out.tool_result.errorCode, 'internal');
     assert.equal(out.tool_result.exit_code, 5);
@@ -165,13 +165,13 @@ describe('hook-lib 纯函数面', () => {
     assert.equal(success.tool_result.exit_code, null);
   });
 
-  test('项目根解析链（内部未决-75 实机缺口）：桌面端 cwd=应用目录时按 tool_input.path 上溯推断', () => {
+  test('项目根解析链（OPEN-75 实机缺口）：桌面端 cwd=应用目录时按 tool_input.path 上溯推断', () => {
     const rootOf = (payload) => resolveProjectRootDetailed(payload).root;
     // ① cwd 自带项目标记（.git/.sdd）→ 直用（CLI 形态预期路径）
     assert.equal(rootOf({ cwd: REPO_ROOT }), REPO_ROOT);
     // ② cwd=宿主应用安装目录（实机桌面端形态）+ 写类 path 在项目内 → 首个标记目录
     const appDir = 'C:/Users/example/AppData/Local/Programs/Kimi Code';
-    assert.equal(rootOf({ cwd: appDir, tool_input: { path: `${REPO_ROOT}/内部规格` } }), REPO_ROOT);
+    assert.equal(rootOf({ cwd: appDir, tool_input: { path: `${REPO_ROOT}/specs/README.md` } }), REPO_ROOT);
     assert.equal(rootOf({ cwd: appDir, tool_input: { file_path: `${REPO_ROOT}/README.md` } }), REPO_ROOT);
     // ③ 无标记无 path → 忠于宿主 cwd 兜底（错位进可见面登记，而非静默猜根）
     assert.equal(rootOf({ cwd: appDir }), appDir);
@@ -183,7 +183,7 @@ describe('hook-lib 纯函数面', () => {
     const appDir = 'C:/Users/example/AppData/Local/Programs/Kimi Code';
     const session = { session_id: 'sess-cache-1' };
     // 写类事件（path-walk）暖 cache：解析正确根并落缓存
-    const editPayload = { ...session, cwd: appDir, tool_input: { path: `${REPO_ROOT}/内部规格` } };
+    const editPayload = { ...session, cwd: appDir, tool_input: { path: `${REPO_ROOT}/specs/README.md` } };
     assert.equal(resolveSessionProjectRootDetailed(editPayload, stateDir).root, REPO_ROOT);
     // Bash 类负载同会话键：无 path 提示 → 复用缓存根（不再退应用目录）
     const bashPayload = { ...session, cwd: appDir, tool_input: { command: 'node --version' } };
@@ -193,7 +193,7 @@ describe('hook-lib 纯函数面', () => {
     assert.equal(resolveSessionProjectRootDetailed(otherSession, stateDir).root, appDir);
     // 缓存根标记失效（所指根无 .git/.sdd）→ 守卫拒绝采用，退兜底
     const staleDir = tempRoot('projroot-stale');
-    resolveSessionProjectRootDetailed({ session_id: 'sess-stale', cwd: appDir, tool_input: { path: `${REPO_ROOT}/内部规格` } }, staleDir);
+    resolveSessionProjectRootDetailed({ session_id: 'sess-stale', cwd: appDir, tool_input: { path: `${REPO_ROOT}/specs/README.md` } }, staleDir);
     // 缓存按会话分槽（内部任务-305 B9）：把该会话的槽位写成无标记的失效根
     const staleDigest = createHash('sha256').update('sess-stale').digest('hex').slice(0, 12);
     writeFile(`${staleDir}/project-root-${staleDigest}.json`, `${JSON.stringify({ sessionKey: 'sess-stale', root: `${staleDir}/gone` })}\n`);
@@ -257,7 +257,7 @@ describe('hook-lib 纯函数面', () => {
     assert.equal(drainPending(state).split('\n').length, PENDING_LIMIT);
   });
 
-  it('状态文件损坏即退空状态（fail-open）；写-读往返一致（显式会话键忠实保留；字典往返保留 内部任务-347）', () => {
+  it('状态文件损坏即退空状态（fail-open）；写-读往返一致（显式会话键忠实保留；字典往返保留 DEV-347）', () => {
     const dir = tempRoot('state-roundtrip');
     writeFile(join(dir, 'relay-state.json'), '{ not json');
     assert.deepEqual(readState(dir), emptyState());
@@ -448,7 +448,7 @@ describe('真实 ZCode 钩子经 shim（物化包）', () => {
     const repo = tempRoot('shim-sdd-block');
     // 最小 SDD 夹具：套件声明 内部规格，文档含 blocking 诊断（TODO 字面量触发）
     writeFile(join(repo, '.sdd', 'project.json'), '{}\n');
-    writeFile(join(repo, '.sdd', 'suite.json'), JSON.stringify({ suiteRoot: '..', documents: [{ path: '内部规格' }] }));
+    writeFile(join(repo, '.sdd', 'suite.json'), JSON.stringify({ suiteRoot: '..', documents: [{ path: 'specs/a.md' }] }));
     writeFile(join(repo, 'specs', 'a.md'), '# 夹具\n\nTODO: 自由文本待办标记触发诊断\n');
     const specGatePkg = join(homeDir, 'plugins', 'managed', 'spec-gate');
     const result = runShim({
@@ -476,7 +476,7 @@ describe('真实 ZCode 钩子经 shim（物化包）', () => {
   it('spec-gate 提醒档（exit 0 有信封）：帧入待投递队列零帧，下一次 UserPromptSubmit 纯文本投递', () => {
     const repo = tempRoot('shim-sdd-remind');
     writeFile(join(repo, '.sdd', 'project.json'), '{}\n');
-    writeFile(join(repo, '.sdd', 'suite.json'), JSON.stringify({ suiteRoot: '..', documents: [{ path: '内部规格' }] }));
+    writeFile(join(repo, '.sdd', 'suite.json'), JSON.stringify({ suiteRoot: '..', documents: [{ path: 'specs/a.md' }] }));
     writeFile(join(repo, 'specs', 'a.md'), '# 夹具\n\nTODO: 自由文本待办标记触发诊断\n');
     // 夹具包：复制真实物化包再叠加静默 UPS 钩（不动 homeDir 里的真包，保持其可重验）
     const relayPkg = tempRoot('shim-sdd-remind-pkg');
@@ -603,7 +603,7 @@ describe('真实 ZCode 钩子经 shim（物化包）', () => {
   });
 });
 
-describe('A3/A4（内部任务-2）：超时崩溃面可见化 + 冷会话根解析 fallback 可见化', () => {
+describe('A3/A4（DEV-2）：超时崩溃面可见化 + 冷会话根解析 fallback 可见化', () => {
   let homeDir;
   let pkgRoot;
 
@@ -646,7 +646,7 @@ describe('A3/A4（内部任务-2）：超时崩溃面可见化 + 冷会话根解
   });
 });
 
-describe('compact-workflow 压缩回放（内部任务-297）', () => {
+describe('compact-workflow 压缩回放（DEV-297）', () => {
   const makeRoot = (base) => {
     const root = join(base, 'workflow');
     writeFile(join(root, 'kimi', '.keep'), '');

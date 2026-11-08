@@ -1,19 +1,19 @@
-# AI Coding 方法论套件消费项目推荐 .gitignore 条目（内部接口-21 跟踪边界／内部决策-043；本文件为推荐条目唯一事实源）
-# 运行态产物不跟踪；配置三件套（内部治理状态、project.json、assurance.json）版本化。
+# AI Coding 方法论套件消费项目推荐 .gitignore 条目（跟踪边界／决策记录；本文件为推荐条目唯一事实源）
+# 运行态产物不跟踪；配置三件套（.sdd/suite.json、project.json、assurance.json）版本化。
 # 可选 docs 段：需要把 docs/ 下的计划与设计文档纳入审计链时，追加以下三行——
-# 目录级 `docs/` 排除会吞掉白名单否定行（内部未决-17 教训），必须用 `docs/*` 形态：
+# 目录级 `docs/` 排除会吞掉白名单否定行（空目录排除教训），必须用 `docs/*` 形态：
 #   docs/*
 #   !docs/plans
 #   !docs/design-docs
 # `__pycache__/` 为消费项目通用建议（消费项目可能仍有 Python 资产）；套件自身零 Python 运行不改变该建议。
-# 打包卫生/树哈希过滤另见 内部接口-21 裁决注记（内部任务-153）。
+# 打包卫生/树哈希过滤另见跟踪边界裁决注记（打包卫生）。
 .sdd/*
-!内部治理状态
-!内部治理状态
-!内部治理状态
+!.sdd/suite.json
+!.sdd/project.json
+!.sdd/assurance.json
 /.workflow/*
-!/内部工作流状态
-!/内部工作流状态
+!/.workflow/domains.json
+!/.workflow/maintainers.json
 /.scout/
 .ai-governance/runtime/
 __pycache__/

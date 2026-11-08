@@ -83,7 +83,7 @@
   "traceability": [
     {
       "domainAsset": "billing 上下文",
-      "specEntry": "内部需求-1",
+      "specEntry": "FR-billing-1",
       "codeBoundary": "services/billing"
     }
   ],

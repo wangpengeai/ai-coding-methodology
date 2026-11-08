@@ -53,7 +53,7 @@ test('G1 canonicalJsonBytes 等值组逐 case 字节相等', () => {
   }
 });
 
-test('G1b 边界组钉 JS 现状（内部决策-051 D4 已知边界登记——防静默漂移，非跨侧等值）', () => {
+test('G1b 边界组钉 JS 现状（ADR-051 D4 已知边界登记——防静默漂移，非跨侧等值）', () => {
   for (const c of canonicalVector.boundaryCases) {
     const got = canonicalJsonBytes(c.input).toString('utf8');
     assert.equal(got, c.jsExpected, `${c.name}（${c.note}）`);
@@ -116,7 +116,7 @@ test('G5 atomicWrite：写读回相等＋异常路径无临时残留（EEXIST �
   }
 });
 
-test('E02（内部任务-241）：无效 UTF-8 读错误带 INVALID_UTF8 code（工具错误可被 CLI 分类退 2）', () => {  const dir = mkdtempSync(join(tmpdir(), 'dev241-common-utf8-'));
+test('E02（DEV-241）：无效 UTF-8 读错误带 INVALID_UTF8 code（工具错误可被 CLI 分类退 2）', () => {  const dir = mkdtempSync(join(tmpdir(), 'dev241-common-utf8-'));
   try {
     const bad = join(dir, 'bad.txt');
     writeFileSync(bad, Buffer.from([0xff, 0xfe, 0x00]));
@@ -126,7 +126,7 @@ test('E02（内部任务-241）：无效 UTF-8 读错误带 INVALID_UTF8 code（
   }
 });
 
-test('内部任务-242 §三-1/2：toPosix/pyRepr/pyEquals 单源导出等值族', () => {
+test('DEV-242 §三-1/2：toPosix/pyRepr/pyEquals 单源导出等值族', () => {
   assert.equal(toPosix('a/b/c'), 'a/b/c');
   assert.equal(toPosix('a\\b'), process.platform === 'win32' ? 'a/b' : 'a\\b');
   assert.equal(pyRepr(null), 'None');

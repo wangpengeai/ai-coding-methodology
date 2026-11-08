@@ -112,7 +112,7 @@ test('治理报告：不可解析 run 文件按名点名计 blocking（2026-09-1
   );
 });
 
-test('报告四态复核：passed/blocked/stale/tampered（内部任务-5 C：legacy 报告缺省 stale）', () => {
+test('报告四态复核：passed/blocked/stale/tampered（DEV-5 C：legacy 报告缺省 stale）', () => {
   const good = buildReport({});
   assert.equal(verifyReport(good.report, { allowLegacy: true }), 'passed');
   const bad = buildReport({ manifests: [{ runId: 'r', status: 'open' }] });
@@ -321,7 +321,7 @@ test('gate：live 报告不改变 replay 判定（含缺 mode＋-live- 文件名
   try {
     const run = (args, env = {}) => spawnSync(process.execPath, [GOV_CLI, '--project-root', root, ...args], { encoding: 'utf8', env: { ...process.env, ...env } });
     assert.equal(run(['init']).status, 0);
-    const begin = JSON.parse(run(['run-begin', '--task-id', '内部任务-253']).stdout);
+    const begin = JSON.parse(run(['run-begin', '--task-id', 'DEV-253']).stdout);
     assert.equal(run(['run-finalize', '--run-id', begin.runId, '--repo-head', 'h'.repeat(40), '--diff-digest', 'sha256:' + 'a'.repeat(64)]).status, 0);
     assert.equal(run(['approve', '--role', 'accountable', '--identity', 'dev253-reviewer', '--expires-at', '2099-01-01']).status, 0);
     assert.equal(run(['gate']).status, 0, '基线 gate 应通');

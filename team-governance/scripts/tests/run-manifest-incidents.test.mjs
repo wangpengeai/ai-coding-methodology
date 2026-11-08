@@ -34,7 +34,7 @@ function beginRun(root) {
       requiredDomains: [], createdAt: new Date().toISOString(),
     }, null, 2) + '\n', 'utf8');
   }
-  const r = cli(root, ['run-begin', '--task-id', '内部任务-内部模块-15']);
+  const r = cli(root, ['run-begin', '--task-id', 'TASK-M15']);
   assert.equal(r.status, 0, `run-begin 失败：${r.stderr}`);
   return r.json.runId;
 }

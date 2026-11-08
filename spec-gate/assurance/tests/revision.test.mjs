@@ -133,7 +133,7 @@ describe('RevisionSourceBucketTest', () => {
       const proj = makeGitProject(tmp);
       const plan = join(proj, 'docs', 'plans', 'p.md');
       const before = computeRevisionSet(proj, plan);
-      writeFileSync(plan, '---\nspecRefs: [内部需求-1]\n---\n# 计划改\n', 'utf8');
+      writeFileSync(plan, '---\nspecRefs: [FR-wf-1]\n---\n# 计划改\n', 'utf8');
       const after = computeRevisionSet(proj, plan);
       assert.equal(before.source.worktreeHash, after.source.worktreeHash);
       assert.notEqual(before.plan.sha256, after.plan.sha256);
@@ -152,7 +152,7 @@ describe('RevisionNoGitTest', () => {
     writeFileSync(join(proj, 'specs', 'x.md'), '# X\n', 'utf8');
     writeFileSync(join(proj, '.sdd', 'suite.json'),
       '{"schemaVersion":"1.0.0","suiteRoot":"..","validationRoots":["specs"],'
-      + '"documents":[{"path":"内部规格","documentType":"requirement-baseline","validationMode":"draft"}]}', 'utf8');
+      + '"documents":[{"path":"specs/x.md","documentType":"requirement-baseline","validationMode":"draft"}]}', 'utf8');
     return proj;
   }
 
@@ -220,7 +220,7 @@ describe('RevisionSetShapeTest', () => {
       mkdirSync(join(proj, 'src'), { recursive: true });
       writeFileSync(join(proj, 'src', 'a.py'), 'a\n', 'utf8');
       const plan = join(proj, 'plan.md');
-      writeFileSync(plan, '---\nspecRefs: [内部需求-1]\r\n---\r\n# P\r\n', 'utf8');
+      writeFileSync(plan, '---\nspecRefs: [FR-wf-1]\r\n---\r\n# P\r\n', 'utf8');
       const rs = computeRevisionSet(proj, plan);
       const d = revisionSetToDict(rs);
       for (const key of ['sourceRevision', 'specRevision', 'planSha256', 'algorithmVersion']) {
@@ -229,7 +229,7 @@ describe('RevisionSetShapeTest', () => {
       assert.equal(d.algorithmVersion, '1');
       // CRLF 输入按 LF 内容计哈希：与手工 LF 版本一致
       const manual = createHash('sha256')
-        .update(Buffer.from('---\nspecRefs: [内部需求-1]\n---\n# P\n', 'utf8'))
+        .update(Buffer.from('---\nspecRefs: [FR-wf-1]\n---\n# P\n', 'utf8'))
         .digest('hex');
       assert.equal(d.planSha256.sha256, `sha256:${manual}`);
       assert.equal(d.planSha256.path, 'plan.md');
@@ -266,9 +266,9 @@ describe('RuntimeWorkflowExclusionTest', () => {
     try {
       const proj = workflowProject(tmp);
       for (const rel of [
-        '内部工作流状态',
-        '内部工作流状态',
-        '内部工作流状态',
+        '.workflow/routing.json',
+        '.workflow/routing-state/wf-lease-active-t1.json',
+        '.workflow/incidents.jsonl',
       ]) {
         const [before, after] = worktreeHashAfterWrite(proj, rel, '{"changed": true}\n');
         assert.equal(before, after, `${rel} 属运行态排除面：改动不得影响源码桶`);
@@ -280,7 +280,7 @@ describe('RuntimeWorkflowExclusionTest', () => {
     const tmp = tmpRoot('dev91-rev-wf-exempt-');
     try {
       const proj = workflowProject(tmp);
-      const [before, after] = worktreeHashAfterWrite(proj, '内部工作流状态', '{"id": "e2"}\n');
+      const [before, after] = worktreeHashAfterWrite(proj, '.workflow/wf-exemptions.jsonl', '{"id": "e2"}\n');
       assert.notEqual(before, after, '豁免工件不入排除面：改动必须影响源码桶');
     } finally { cleanup(tmp); }
   });
@@ -289,7 +289,7 @@ describe('RuntimeWorkflowExclusionTest', () => {
     const tmp = tmpRoot('dev91-rev-wf-lookalike-');
     try {
       const proj = workflowProject(tmp);
-      for (const rel of ['内部工作流状态', '内部工作流状态']) {
+      for (const rel of ['.workflow/routing.jsonx', '.workflow/incidents.jsonl.bak']) {
         writeFileSync(join(proj, ...rel.split('/')), '{"x": 1}\n', 'utf8');
         const [before, after] = worktreeHashAfterWrite(proj, rel, '{"x": 2}\n');
         assert.notEqual(before, after, `${rel} 不属排除面：改动必须影响源码桶`);
@@ -337,7 +337,7 @@ describe('HeadEquivalenceTest', () => {
     } finally { cleanup(tmp); }
   });
 
-  test('test_head_equivalent_false_when_commit_modifies_source_then_worktree_restored：内部任务-40 攻击形态被 blob 比对拦下', () => {
+  test('test_head_equivalent_false_when_commit_modifies_source_then_worktree_restored：DEV-40 攻击形态被 blob 比对拦下', () => {
     const tmp = tmpRoot('dev91-rev-headeq-dev40-');
     try {
       const proj = makeGitProjectWithReceipts(tmp);

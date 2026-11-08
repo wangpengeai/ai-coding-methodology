@@ -38,14 +38,14 @@ function makeRoot(t, { manifest, zcode } = {}) {
   return root;
 }
 
-test('内部任务-272 声明面诊断：中立清单与回落均损坏时 config 为零声明且 unreadable 非空', (t) => {
+test('DEV-272 声明面诊断：中立清单与回落均损坏时 config 为零声明且 unreadable 非空', (t) => {
   const root = makeRoot(t, { manifest: '{broken', zcode: '{broken' });
   const d = readHookConfigWithDiagnostics(root);
   assert.deepEqual(d.config, {}, '两源均损坏 → 零声明（fail-open）');
   assert.ok(Object.keys(d.unreadable).length > 0, 'unreadable 非空');
 });
 
-test('内部任务-272 声明面诊断：单条缺 command 进 dropped（empty-command），其余保留', (t) => {
+test('DEV-272 声明面诊断：单条缺 command 进 dropped（empty-command），其余保留', (t) => {
   const root = makeRoot(t, { manifest: { hooks: [
     { event: 'PreToolUse', command: 'node', args: ['a.mjs'] },
     { event: 'PreToolUse', type: 'process', args: [] },
@@ -55,7 +55,7 @@ test('内部任务-272 声明面诊断：单条缺 command 进 dropped（empty-c
   assert.ok(d.dropped.some((x) => x.reason === 'empty-command'), '缺 command 有诊断');
 });
 
-test('内部任务-272 声明面诊断：不支持事件进 dropped（event-unsupported），不影响其它事件', (t) => {
+test('DEV-272 声明面诊断：不支持事件进 dropped（event-unsupported），不影响其它事件', (t) => {
   const root = makeRoot(t, { manifest: { hooks: [
     { event: 'PostToolUseFailure', command: 'node' },
     { event: 'Stop', command: 'node' },
@@ -65,7 +65,7 @@ test('内部任务-272 声明面诊断：不支持事件进 dropped（event-unsu
   assert.ok(d.dropped.some((x) => x.reason === 'event-unsupported'));
 });
 
-test('内部任务-272 声明面诊断：合法零声明只 info 不 warn', (t) => {
+test('DEV-272 声明面诊断：合法零声明只 info 不 warn', (t) => {
   const root = makeRoot(t, { manifest: { hooks: [] } });
   const d = readHookConfigWithDiagnostics(root);
   assert.equal(d.declared, 0);
@@ -77,7 +77,7 @@ test('内部任务-272 声明面诊断：合法零声明只 info 不 warn', (t) 
   assert.ok(infos.some((m) => /零/.test(m)), '零声明有 info');
 });
 
-test('内部任务-272 声明面诊断：真实六插件逐插件真值（workflow 11/10，合计 16/17）', () => {
+test('DEV-272 声明面诊断：真实六插件逐插件真值（workflow 11/10，合计 16/17）', () => {
   const { byEvent, plugins } = collectHandlers(ROOTS);
   const m = Object.fromEntries(plugins.map((p) => [p.plugin, p]));
   assert.equal(m.workflow.declared, 11);
@@ -92,7 +92,7 @@ test('内部任务-272 声明面诊断：真实六插件逐插件真值（workfl
   assert.ok(byEvent.Stop && byEvent.Stop.length > 0);
 });
 
-test('内部任务-272 声明面诊断：装配级告警分类（损坏 warn 含插件名/原因计数；零声明不 warn）', (t) => {
+test('DEV-272 声明面诊断：装配级告警分类（损坏 warn 含插件名/原因计数；零声明不 warn）', (t) => {
   const corrupt = makeRoot(t, { manifest: '{broken', zcode: '{broken' });
   const zero = makeRoot(t, { manifest: { hooks: [] } });
   const dCorrupt = readHookConfigWithDiagnostics(corrupt);
@@ -108,7 +108,7 @@ test('内部任务-272 声明面诊断：装配级告警分类（损坏 warn 含
 });
 
 // ===== A-da-2 锁定用例：唯一标题（供 spec 锚） =====
-test('内部任务-272 声明面损坏与 0 处理器可观测告警：清单损坏回落', (t) => {
+test('DEV-272 声明面损坏与 0 处理器可观测告警：清单损坏回落', (t) => {
   const root = makeRoot(t, { manifest: '{broken', zcode: '{broken' });
   const d = readHookConfigWithDiagnostics(root);
   const warns = [];
@@ -118,7 +118,7 @@ test('内部任务-272 声明面损坏与 0 处理器可观测告警：清单损
 
 
 // ===== 生产装配接线（B4）：index.collectHandlers + sinks → warn 含插件名 =====
-test('内部任务-272 声明面诊断：生产 collectHandlers 装配接线（损坏根 → warn 含插件名）', (t) => {
+test('DEV-272 声明面诊断：生产 collectHandlers 装配接线（损坏根 → warn 含插件名）', (t) => {
   const root = makeRoot(t, { manifest: '{broken', zcode: '{broken' });
   const warns = [];
   collectHandlers({ workflow: root }, { warn: (m) => warns.push(m), info: () => {} });

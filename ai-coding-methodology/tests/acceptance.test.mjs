@@ -29,6 +29,8 @@ import { IDENTIFIED_ID_RE } from '../src/commands-bridge.mjs';
 import { normalizeMatcher } from '../src/hooks-bridge.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// 公开包守卫（内部任务-365）：specs/ 未随公开包发布；源仓资产在位时照常执行。
+const HAS_IF_HOST = existsSync(join(resolve(HERE, '..', '..'), 'specs', 'interfaces', 'IF-HOST-1.md'));
 const COMPAT_ROOT = resolve(HERE, '..');
 const REPO_ROOT = resolve(COMPAT_ROOT, '..');
 const PLUGINS = ['workflow', 'spec-gate', 'scout', 'team-governance', 'algo-loop', 'research-loop'];
@@ -115,7 +117,7 @@ function collectFiles(dir, out) {
 
 /** 从 内部接口-1 激活登记表读出「路径 → 登记哈希前 16 位」对（含核心契约工件）。 */
 function registeredArtifactHashes() {
-  const text = readFileSync(join(REPO_ROOT, 'specs', 'interfaces', '内部接口-1.md'), 'utf8');
+  const text = readFileSync(join(REPO_ROOT, 'specs', 'interfaces', 'IF-HOST-1.md'), 'utf8');
   const re = /\|\s*`?([^|\n]+?)`?\s*\|\s*`?sha256:([0-9a-fA-F]{16})/g;
   const pairs = [];
   let m;
@@ -432,7 +434,7 @@ test('装载链⑥：五个事件全部走真实钩子进程并产出预期决�
       return { kind: 'enter', messages: [] };
     },
   );
-  assert.equal(preStepNext, 3, 'UserPromptSubmit 与 SessionStartDelivery 各委托下游一次（内部任务-220：BridgeChannelHint 纯直通 +1）');
+  assert.equal(preStepNext, 3, 'UserPromptSubmit 与 SessionStartDelivery 各委托下游一次（DEV-220：BridgeChannelHint 纯直通 +1）');
   assert.equal(entered.kind, 'enter');
 
   // PostToolUse：真实自察记录钩子（纯记录、零输出）→ 委托下游
@@ -485,9 +487,9 @@ test('装载链⑥补：命令处理器把渲染后的正文入队为下一轮�
 
 // ── ⑦ ZCode 零影响不变量 ────────────────────────────────────────────────────
 
-test('不变量⑦：内部接口-1 登记的十一个契约工件哈希与登记值逐一相符', () => {
+test('不变量⑦：IF-HOST-1 登记的十一个契约工件哈希与登记值逐一相符', { skip: HAS_IF_HOST ? false : '公开包不含内部资产 specs/（源仓照跑）' }, () => {
   const pairs = registeredArtifactHashes();
-  assert.equal(pairs.length, 11, `内部接口-1 应登记 11 个契约工件（条件十一行表——research-loop 零钩子无 hooks 行，内部决策-047），读到 ${pairs.length}`);
+  assert.equal(pairs.length, 11, `IF-HOST-1 应登记 11 个契约工件（条件十一行表——research-loop 零钩子无 hooks 行，ADR-047），读到 ${pairs.length}`);
   for (const [rel, expected] of pairs) {
     const file = join(REPO_ROOT, rel);
     assert.ok(existsSync(file), `登记工件不存在：${rel}`);
@@ -521,15 +523,15 @@ test('不变量⑦：apply 不触碰任何 ZCode 资产（契约工件与内容�
   assert.deepEqual(drift, [], `apply 及其钩子运行期间 ZCode 资产被改动：${JSON.stringify(drift.slice(0, 5))}`);
 });
 
-test('抽取缓存判据：身份三分量 + 新鲜度语义 + 内容哈希（内部未决-41 / 内部未决-42①②，纯函数面）', async () => {
+test('抽取缓存判据：身份三分量 + 新鲜度语义 + 内容哈希（OPEN-41 / OPEN-42①②，纯函数面）', async () => {
   // 为什么要有（2026-09-29 内部任务-OPEN3942-1 / 内部规格 内部未决-42）：dsh-engine 的缓存复用
   // 判据原本只有「marker 是否存在 + size:mtimeMs 指纹」（内部任务-DSHADAPTER-3 落 内部未决-41），仍留两条残余——
   // ①来源路径分量缺失：`DSH_APP_ROOT` 改指失效根时指纹变 undefined，"根失效"与"未装 DSH"不可分辨；
   // ②同 size 同 mtime 的宿主升级仍命中。本用例把身份三分量（appRoot 路径 / 指纹 / 内容哈希）与
   // 新鲜度语义钉在纯函数面上；调用点的四态集成用例见下一个用例（内部任务-OPEN3942-1 步骤 2）。
   const engine = await import('./helpers/dsh-engine.mjs');
-  assert.equal(typeof engine.cacheIdentity, 'function', 'dsh-engine 应导出 cacheIdentity（内部未决-42①）');
-  assert.equal(typeof engine.contentHash, 'function', 'dsh-engine 应导出 contentHash（内部未决-42②）');
+  assert.equal(typeof engine.cacheIdentity, 'function', 'dsh-engine 应导出 cacheIdentity（OPEN-42①）');
+  assert.equal(typeof engine.contentHash, 'function', 'dsh-engine 应导出 contentHash（OPEN-42②）');
   assert.equal(typeof engine.isCacheFresh, 'function', 'dsh-engine 应导出 isCacheFresh');
   const dir = mkdtempSync(join(tmpdir(), 'dsh-engine-fp-'));
   try {
@@ -542,12 +544,12 @@ test('抽取缓存判据：身份三分量 + 新鲜度语义 + 内容哈希（�
     assert.match(String(h1), /^[0-9a-f]{16}$/, '内容哈希应是 16 位十六进制');
     writeFileSync(file, 'abcdef');
     assert.notEqual(engine.asarFingerprint(file), fp1, '内容变化后指纹应改变（size 分量）');
-    assert.notEqual(engine.contentHash(file), h1, '内容哈希应随内容变化（内部未决-42② 的第二判据）');
+    assert.notEqual(engine.contentHash(file), h1, '内容哈希应随内容变化（OPEN-42② 的第二判据）');
     assert.equal(engine.contentHash(join(dir, 'missing.asar')), undefined, '不可读路径的内容哈希应 undefined（不抛）');
     assert.equal(engine.asarFingerprint(join(dir, 'missing.asar')), undefined, '不可读路径的指纹应 undefined（不抛）');
     const idA = engine.cacheIdentity('C:/rootA', fp1, h1);
     const idB = engine.cacheIdentity('C:/rootB', fp1, h1);
-    assert.notEqual(idA, idB, '路径分量不同 ⇒ 身份不同（内部未决-42① 的核心）');
+    assert.notEqual(idA, idB, '路径分量不同 ⇒ 身份不同（OPEN-42① 的核心）');
     assert.notEqual(idA, engine.cacheIdentity('C:/rootA', fp1, 'abcd1234'), '内容哈希分量不同 ⇒ 身份不同');
     assert.equal(engine.isCacheFresh(undefined, idA), false, '无戳不得判新鲜（须重抽）');
     assert.equal(engine.isCacheFresh(idA, idA), true, '身份全等才新鲜');
@@ -616,7 +618,7 @@ function writeStubAsar(root, files) {
   return asar;
 }
 
-test('抽取缓存判据（调用点）：临时根 + 桩 asar 四态 + 路径分量失配不复用（内部未决-42）', async (t) => {
+test('抽取缓存判据（调用点）：临时根 + 桩 asar 四态 + 路径分量失配不复用（OPEN-42）', async (t) => {
   // 为什么要有（2026-09-29 内部任务-OPEN3942-1 / 内部规格 内部未决-42③）：纯函数用例测不到
   // "抽取后忘写戳""判据误改成或条件""根换掉仍复用"这三条静默失去收益的路径，故把**调用点**
   // `ensureEngineCache()` 与 `loadEngine()` 放进临时根 + 桩 asar 的端到端用例。
@@ -769,7 +771,7 @@ test('抽取内容自证：asar 条目 integrity.hash 失配 ⇒ fail-closed 不
   }
 });
 
-test('publishDir（直测）：同身份成品优先 / 异身份成品不得被复用 / 无 marker 半成品须清掉后发布 / 空目标直接发布（内部未决-43）', async () => {
+test('publishDir（直测）：同身份成品优先 / 异身份成品不得被复用 / 无 marker 半成品须清掉后发布 / 空目标直接发布（OPEN-43）', async () => {
   // 为什么要有（2026-09-29 内部任务-OPEN4344-1 计划步骤 1）：发布原语的判定序是 内部未决-43 并发修复的核心，
   // 而整链并发用例的红态取决于交错运气 ⇒ 直测四条判据给出**确定性**红态（含 P1 的判别力：
   // "只认 marker"的实现在第①条上必红——默认缓存目录是机器级单例，跨 DSH_APP_ROOT 会拿别根的树冒充 extracted）。
@@ -816,7 +818,7 @@ test('publishDir（直测）：同身份成品优先 / 异身份成品不得被�
   }
 });
 
-test('抽取缓存（并发发布）：异身份多进程打同一缓存 ⇒ 不降级、不混合、异身份不被复用（内部未决-43）', async (t) => {
+test('抽取缓存（并发发布）：异身份多进程打同一缓存 ⇒ 不降级、不混合、异身份不被复用（OPEN-43）', async (t) => {
   const engine = await import('./helpers/dsh-engine.mjs');
   const tmp = mkdtempSync(join(tmpdir(), 'dsh-engine-race-'));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
@@ -891,7 +893,7 @@ test('抽取缓存（并发发布）：异身份多进程打同一缓存 ⇒ 不
   }
 });
 
-test('抽取缓存（半成品目标）：目标处只有无 marker 的残留树 ⇒ 清掉后发布本身份成品（内部未决-43）', async (t) => {
+test('抽取缓存（半成品目标）：目标处只有无 marker 的残留树 ⇒ 清掉后发布本身份成品（OPEN-43）', async (t) => {
   const engine = await import('./helpers/dsh-engine.mjs');
   const tmp = mkdtempSync(join(tmpdir(), 'dsh-engine-partial-'));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
@@ -927,7 +929,7 @@ test('抽取缓存（半成品目标）：目标处只有无 marker 的残留树
   }
 });
 
-test('自察注入缝（内部未决-44②）：夹具会话记录落临时根，生产账本零新增', async () => {
+test('自察注入缝（OPEN-44②）：夹具会话记录落临时根，生产账本零新增', async () => {
   // 为什么要有：注入缝"生效"必须两头夹住——正向证明临时根确有记录落地（防注入写错目录仍绿），
   // 反向证明生产账本里夹具会话行数不变（防夹具会话继续污染；按来源归因，不受并行真实会话影响）。
   const repoLedger = join(REPO_ROOT, '.workflow', 'incidents.jsonl');
@@ -957,7 +959,7 @@ test('自察注入缝（内部未决-44②）：夹具会话记录落临时根�
   assert.equal(fixtureLedgerLines(repoLedger), before, '生产账本里夹具会话行数不得变化');
 });
 
-test('抽取缓存（陈旧清理）：陈旧 staging/retired 被清、新鲜与自己 pid 的保留、非本前缀不碰（内部未决-43）', async (t) => {
+test('抽取缓存（陈旧清理）：陈旧 staging/retired 被清、新鲜与自己 pid 的保留、非本前缀不碰（OPEN-43）', async (t) => {
   // 为什么要有（正确性维收尾评审 F1）：`gcStaleStaging()` 是新增的兜底面（崩溃残留 staging 清理），
   // 而登记面曾声称"四条用例含陈旧清理"却无对应用例 ⇒ 零测试覆盖；本用例把它钉进机器验证面。
   const engine = await import('./helpers/dsh-engine.mjs');
@@ -1018,24 +1020,24 @@ test('不变量⑦补：apply 及其钩子运行期间仓库**不新增也不消
   // 同族运行态写入（2026-09-29 delta 评审判据）：`内部治理状态`（scout 生命周期原子写）与
   // `内部治理状态`（capture-evidence --append）与 receipts 同属运行态，并发操作落在本用例
   // ~45s 窗口内会假红；故一并具名豁免（仍保留 `内部治理状态` 等版本化声明的非豁免断言）
-  const RUNTIME_WRITE_FACES = ['内部治理状态', '内部计划', '.workflow/'];
-  const RUNTIME_WRITE_FILES = new Set(['内部治理状态', '内部治理状态']);
+  const RUNTIME_WRITE_FACES = ['.sdd/receipts/', 'docs/plans/evidence/', '.workflow/'];
+  const RUNTIME_WRITE_FILES = new Set(['.sdd/ledger.json', '.sdd/evidence.jsonl']);
   const isRuntimeWriteFace = (rel) =>
     RUNTIME_WRITE_FILES.has(rel) || RUNTIME_WRITE_FACES.some((p) => rel === p.slice(0, -1) || rel.startsWith(p));
-  assert.equal(isRuntimeWriteFace('内部证据'), true, '运行态证据面应被豁免（F-1）');
-  assert.equal(isRuntimeWriteFace('内部治理状态'), true, '凭据面应被豁免（F-1）');
+  assert.equal(isRuntimeWriteFace('docs/plans/evidence/TASK-X/a.log'), true, '运行态证据面应被豁免（F-1）');
+  assert.equal(isRuntimeWriteFace('.sdd/receipts/TASK-X/verification-1.json'), true, '凭据面应被豁免（F-1）');
   // 内部任务-273 步骤11 T-09（收窄后）：仅 `.workflow/` 运行态根豁免；`docs/plans/`/`docs/design-docs/` 整树
   // 不豁免（否则两个最大 tracked 文档面会让「仓库不新增/不消失」不变量空断言——终审正确性评审指出）。
-  assert.equal(isRuntimeWriteFace('内部工作流状态'), true, '.workflow 运行态根应被豁免');
-  assert.equal(isRuntimeWriteFace('内部计划'), false, 'plans 文档面不得整树豁免（会掏空不变量）');
-  assert.equal(isRuntimeWriteFace('内部设计记录'), false, 'design-docs 面不得整树豁免');
+  assert.equal(isRuntimeWriteFace('.workflow/routing-state/wf-write-report.json'), true, '.workflow 运行态根应被豁免');
+  assert.equal(isRuntimeWriteFace('docs/plans/2026-11-01-DEV-273-x.md'), false, 'plans 文档面不得整树豁免（会掏空不变量）');
+  assert.equal(isRuntimeWriteFace('docs/design-docs/2026-09-30-mcode-adapter.md'), false, 'design-docs 面不得整树豁免');
   // 真保护面不许缩水（2026-09-29 收尾评审判据）：五插件按名派生（不抽样两条）+ 适配层源码 +
   // 版本化 .sdd 声明文件——豁免只限 receipts 运行态面，`内部治理状态` 这类版本化文件不豁免
   for (const plugin of PLUGINS) {
     assert.equal(isRuntimeWriteFace(`${plugin}/hooks/post-tool.mjs`), false, `${plugin} 资产不得被豁免——真保护面不许缩水`);
   }
   assert.equal(isRuntimeWriteFace('ai-coding-methodology/src/index.mjs'), false, '适配层源码不得被豁免——真保护面不许缩水');
-  assert.equal(isRuntimeWriteFace('内部治理状态'), false, '版本化 .sdd 声明文件不得被豁免（豁免只限 receipts 运行态面）');
+  assert.equal(isRuntimeWriteFace('.sdd/suite.json'), false, '版本化 .sdd 声明文件不得被豁免（豁免只限 receipts 运行态面）');
   const listFiles = (root) => {
     const out = [];
     const walk = (dir, rel) => {
@@ -1218,7 +1220,7 @@ test('ZCode 侧独立自证：真实钩子按**原生负载**直接运行时的�
   const injected = JSON.parse(withRoot.stdout.trim());
   assert.equal(injected.hookSpecificOutput.hookEventName, 'SessionStart');
   assert.ok(injected.hookSpecificOutput.additionalContext.length > 1000, '元技能全文应被注入');
-  assert.match(injected.hookSpecificOutput.additionalContext, /路由表/, '注入内容应含路由表（内部规则-5 的目的）');
+  assert.match(injected.hookSpecificOutput.additionalContext, /路由表/, '注入内容应含路由表（R-M1-5 的目的）');
 
   // ⑤ 其余四插件也必须能按原生负载直接跑（2026-09-28 第 98 批补；2026-10-15 内部任务-90 扩 algo-loop）：
   //    此前本用例只直驱了 workflow 的钩子，而"五插件在 ZCode 侧照旧管用"这句声称覆盖五个。
@@ -1310,13 +1312,13 @@ test('ZCode 侧独立自证：真实钩子按**原生负载**直接运行时的�
   }
 });
 
-test('不变量⑦：五插件清单版本未被适配层改写（内部接口-1 版本行与 plugin.json 一致）', () => {
-  const host = readFileSync(join(REPO_ROOT, 'specs', 'interfaces', '内部接口-1.md'), 'utf8');
+test('不变量⑦：五插件清单版本未被适配层改写（IF-HOST-1 版本行与 plugin.json 一致）', { skip: HAS_IF_HOST ? false : '公开包不含内部资产 specs/（源仓照跑）' }, () => {
+  const host = readFileSync(join(REPO_ROOT, 'specs', 'interfaces', 'IF-HOST-1.md'), 'utf8');
   for (const p of PLUGINS) {
     const manifest = JSON.parse(readFileSync(join(REPO_ROOT, p, '.zcode-plugin', 'plugin.json'), 'utf8'));
     const re = new RegExp(`\\|\\s*${p}\\s*\\|[^\\n]*?(\\d+\\.\\d+\\.\\d+)`);
     const m = host.match(re);
-    assert.ok(m, `内部接口-1 缺 ${p} 的版本行`);
+    assert.ok(m, `IF-HOST-1 缺 ${p} 的版本行`);
     assert.equal(m[1], manifest.version, `${p} 版本登记与清单不一致`);
   }
 });
@@ -1360,7 +1362,7 @@ test('不变量⑦：装机副本与仓库一致（把"验的是仓库"与"跑�
   // 内部任务-273 H-05：market 缺失时不得「只报告不判失败」地空转通过——显式 skip（skip 列表可见）；
   // 存在时下方按插件逐个比到全部六插件，断言从「>=1」收紧为等值，防再次空转。
   if (!existsSync(MARKET)) {
-    t.skip('本机无 local-marketplace 市场源：市场源==装机缓存硬断言未执行（不得以空转代替；内部任务-273 H-05）');
+    t.skip('本机无 local-marketplace 市场源：市场源==装机缓存硬断言未执行（不得以空转代替；DEV-273 H-05）');
     return;
   }
   const SKIP = /(^|[\\/])(__pycache__|\.mimosa|node_modules)([\\/]|$)|\.pyc$/;
@@ -1436,7 +1438,7 @@ test('不变量⑦：装机副本与仓库一致（把"验的是仓库"与"跑�
     t.skip(`装机缓存不全（${cacheMissing.join('；')}）——三跳硬断言未执行`);
     return;
   }
-  assert.equal(compared, PLUGINS.length, `六插件必须全部比到市场源（实际 ${compared}/${PLUGINS.length}）——内部任务-273 H-05 收紧，禁止空转`);
+  assert.equal(compared, PLUGINS.length, `六插件必须全部比到市场源（实际 ${compared}/${PLUGINS.length}）——DEV-273 H-05 收紧，禁止空转`);
   assert.deepEqual(hardProblems, [], `市场源与装机缓存（同一已发布版本）运行时面不一致：\n${hardProblems.join('\n')}`);
   if (repoNotes.length > 0) {
     const rt = repoNotes.filter((s) => !s.endsWith('.test.mjs'));
@@ -1457,7 +1459,7 @@ test('不变量⑦：套件发布面仍只认五个插件（ai-coding-methodolog
   assert.ok(!names.includes('ai-coding-methodology'), '适配层不是 ZCode 插件，不得进套件发布面');
 });
 
-test('中立数据面交叉核对：能力矩阵 dsh 列 = 适配层工具词表展开的宿主侧（内部决策-036 期一带入的矩阵）', () => {
+test('中立数据面交叉核对：能力矩阵 dsh 列 = 适配层工具词表展开的宿主侧（ADR-036 期一带入的矩阵）', () => {
   // 为什么要有（2026-10-01）：内部决策-036 把「宿主能力」搬进了中立数据面（`plugin-core/capability-matrix.json`），
   // 而本层的工具词表映射仍是源码常量（规则引擎属期二第 3 项，本批不接线）。两者一旦分叉，
   // 矩阵就不再是"宿主事实"的描述，而本层会按过期词表静默漏匹配（护栏空转）。故把**数据侧**
@@ -1479,7 +1481,7 @@ test('中立数据面交叉核对：能力矩阵 dsh 列 = 适配层工具词表
   assert.deepEqual(extra, [], `展开集出现了矩阵未登记的词：${extra.join(',')}`);
 });
 
-test('apply + mountAgents:true：agent 面按 内部任务-308 裁决 a 退役（零挂载、无告警、恰一条 info；内部未决-244）', async (t) => {
+test('apply + mountAgents:true：agent 面按 DEV-308 裁决 a 退役（零挂载、无告警、恰一条 info；OPEN-244）', async (t) => {
   // 为什么要有（原 2026-09-28 第 83 批，内部任务-273 起重述）：该用例曾用于覆盖「apply 打开 agent 面」的
   // 整块通路（取 `subagents`、调 `resolveAvailableTools`、写日志）。**内部任务-273 H-03 起行为变更**：
   // 宿主 0.2.1-rc.5 把 persona/工具面移入 Agent Preset，本层不再调用 `mountAgents`/`ctx.plugin`，
@@ -1512,7 +1514,7 @@ test('apply + mountAgents:true：agent 面按 内部任务-308 裁决 a 退役�
   // 内部任务-308（内部未决-244 裁决 a）：agent 面退役——保留配置键，移除挂载调用面；开启时恰一条退役 info，
   // 不得再有「0 挂载」日志或「agent 面不可用」告警（静默失效已由 info 兜底）。
   const log = ctx.byLevel('info').join('\n');
-  assert.match(log, /已于 内部任务-308 退役/, `mountAgents:true 须产生一条退役 info；实际 info：${JSON.stringify(ctx.byLevel('info'))}`);
+  assert.match(log, /已于 DEV-308 退役/, `mountAgents:true 须产生一条退役 info；实际 info：${JSON.stringify(ctx.byLevel('info'))}`);
   assert.ok(!/agent 面挂载/.test(log), '旧的 0 挂载日志不得再出现');
   const agentWarn = ctx.byLevel('warn').join('\n');
   assert.ok(!/agent 面不可用/.test(agentWarn), '不得再有 0 挂载告警');
@@ -1876,7 +1878,7 @@ test('UserPromptSubmit 阻断通路：用夹具钩子跑真实 reject 分支（�
   assert.match(String(out.reason), /夹具阻断：命中禁语 禁语在这里/, 'reject 必须带上钩子的阻断文案（否则文案无处可查）');
 });
 
-test('宿主契约钉子（内部未决-46）：pwsh/bash 的结构化 value 与 isError 面', async () => {
+test('宿主契约钉子（OPEN-46）：pwsh/bash 的结构化 value 与 isError 面', async () => {
   // 为什么要有：适配层读 `result.value.exitCode`（终端工具真退出码）与 `result.isError`
   // （edit/read 类失败的唯一事实）。若宿主升级把退出码只留在渲染文本里、或改名 `isError`，
   // 适配层会静默退化（失败不记），恰是本批修复要防的形态。钉子直读宿主抽取副本源，锚两处。
@@ -1884,7 +1886,7 @@ test('宿主契约钉子（内部未决-46）：pwsh/bash 的结构化 value 与
   // 同姿态（静默跳过会让钉子退化为装饰）；本机装有 DSH，故 fail-loud。
   const engine = await import('./helpers/dsh-engine.mjs');
   const decided = engine.ensureEngineCache(); // 契约：dir = `<cache>/node_modules`（dsh-engine.mjs:329/347/376）
-  assert.ok(decided.dir !== undefined, `宿主引擎不可得（${decided.mode}）：内部未决-46 宿主契约钉子必须真实执行，不得静默跳过`);
+  assert.ok(decided.dir !== undefined, `宿主引擎不可得（${decided.mode}）：OPEN-46 宿主契约钉子必须真实执行，不得静默跳过`);
   for (const pkg of ['dsh-tool-pwsh', 'dsh-tool-bash']) {
     const file = join(decided.dir, '@deepseek-ai', pkg, 'lib', 'index.js');
     assert.ok(existsSync(file), `宿主 ${pkg} 源码必须在抽取副本内（宿主升级挪包即红）`);
@@ -1902,7 +1904,7 @@ test('宿主契约钉子（内部未决-46）：pwsh/bash 的结构化 value 与
   assert.match(catalog, /readonly isError: true;/, '失败面 `isError: true` 字段是 edit 类失败的唯一结构化来源');
 });
 
-test('端到端：委派深度被如实抬进 Stop 负载（内部任务-20 A1/F4）', async (t) => {
+test('端到端：委派深度被如实抬进 Stop 负载（DEV-20 A1/F4）', async (t) => {
   // 为什么要有：夹具钩回显的是**宿主真实抬升链**的产物（agent.session.header / agent.options
   // → payload）。只测 buildPayload 形态证不了这条链（learning 2026-10-01：契约要端到端钉）。
   // 深度来源＝镜像宿主 delegationDepthOf 的两源 max；仅 origin='subagent' 不足以产键。

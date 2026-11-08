@@ -510,7 +510,7 @@ test('CORE_TOOLS / EXTENDED_TOOLS / READ_ONLY_FORBIDDEN 三表语义与互斥', 
   assert.ok(!all.includes('bash'), 'bash 不是 DSH 工具名，不进候选表');
 });
 
-test('内部任务-273 H-03：mountAgents 生产形态默认降级——全量 skipped、零 ctx.plugin（rc.5 契约门控）', async () => {
+test('DEV-273 H-03：mountAgents 生产形态默认降级——全量 skipped、零 ctx.plugin（rc.5 契约门控）', async () => {
   const ctx = makeCtx();
   const agents = [{ name: 'code-explorer', persona: 'p', zcodeTools: ['read'] }];
   // 不注入 toolSubagentModule ＝ 生产调用形态（当前宿主契约不可用 ⇒ 全量 skipped，绝不向宿主传已移除字段）
@@ -518,7 +518,7 @@ test('内部任务-273 H-03：mountAgents 生产形态默认降级——全量 s
   assert.equal(outcome.mounted, 0, 'rc.5 契约下不得挂载');
   assert.equal(outcome.failed.length, 0);
   assert.equal(outcome.skipped.length, 1);
-  assert.match(outcome.skipped[0].reason, /内部未决-244/);
+  assert.match(outcome.skipped[0].reason, /OPEN-244/);
   assert.equal(ctx.mounted.length, 0, '零 ctx.plugin 副作用');
 
   // 内部任务-274 发布验证：覆盖生产探测面与观测兜底旁路函数（functions 覆盖率过门禁；不新增用例）。

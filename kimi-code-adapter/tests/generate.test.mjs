@@ -119,7 +119,7 @@ describe('hooks[] 声明翻译', () => {
     for (const plugin of PLUGINS) {
       const neutral = neutralManifest(plugin);
       if (!Array.isArray(neutral.hooks) || neutral.hooks.length === 0) {
-        assert.equal(expected[plugin].handlers, 0, `${plugin} 零钩子（无 hooks 声明，内部决策-047）`);
+        assert.equal(expected[plugin].handlers, 0, `${plugin} 零钩子（无 hooks 声明，ADR-047）`);
         continue;
       }
       const { hooks, stats } = translateHookDeclarations(neutral.hooks, { nodePath: NODE, plugin });
@@ -171,7 +171,7 @@ describe('清单构造与校验', () => {
       const doc = buildManifest({ plugin, manifest: neutral, hasSkills: true, hasCommands: true, hooks: [{ event: 'Stop', command: 'x', timeout: 5 }] });
       assert.deepEqual(validateManifest(doc), [], `${plugin} 清单应合规`);
       assert.equal(doc.name, plugin);
-      assert.equal(doc.version, neutral.version, '版本取中立清单（套件版本即插件版本，内部决策-017）');
+      assert.equal(doc.version, neutral.version, '版本取中立清单（套件版本即插件版本，ADR-017）');
       assert.equal(doc.description, neutral.description, 'description 同名搬运');
       assert.equal(doc.author, neutral.author);
       assert.deepEqual(doc.skills, ['./skills/']);

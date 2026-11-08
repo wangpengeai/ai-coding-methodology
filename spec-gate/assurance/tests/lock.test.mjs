@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 
 import { _testHooks, acquireLock, releaseLock } from '../lock.mjs';
 
-describe('LockTest (内部任务-241)', () => {
+describe('LockTest (DEV-241)', () => {
   let tmp;
   beforeEach(() => { tmp = mkdtempSync(join(tmpdir(), 'dev241-lock-')); });
   afterEach(() => { rmSync(tmp, { recursive: true, force: true, maxRetries: 5 }); });
@@ -63,7 +63,7 @@ describe('LockTest (内部任务-241)', () => {
     assert.equal(again.ok, true, '清理后可正常获取');
   });
 
-  test('内部任务-242 §四-2：回收者偷到新鲜锁→link 复原让位（不覆盖、零残留）', () => {
+  test('DEV-242 §四-2：回收者偷到新鲜锁→link 复原让位（不覆盖、零残留）', () => {
     const lock = join(tmp, 'e.lock');
     writeFileSync(lock, 'fresh-owner', 'utf8');
     const past = new Date(Date.now() - 10 * 60 * 1000);
@@ -83,7 +83,7 @@ describe('LockTest (内部任务-241)', () => {
     }
   });
 
-  test('内部任务-242 §四-2：link 复原失败（第三方已建锁）→fail-stop 且不覆盖第三方锁', () => {
+  test('DEV-242 §四-2：link 复原失败（第三方已建锁）→fail-stop 且不覆盖第三方锁', () => {
     const lock = join(tmp, 'f.lock');
     writeFileSync(lock, 'fresh-owner', 'utf8');
     const past = new Date(Date.now() - 10 * 60 * 1000);
@@ -103,7 +103,7 @@ describe('LockTest (内部任务-241)', () => {
     }
   });
 
-  test('内部任务-242 安全复审 S-1：link 复原 EPERM（不支持硬链接）→fail-stop 且保留证据', () => {
+  test('DEV-242 安全复审 S-1：link 复原 EPERM（不支持硬链接）→fail-stop 且保留证据', () => {
     const lock = join(tmp, 'g.lock');
     writeFileSync(lock, 'fresh-owner', 'utf8');
     const past = new Date(Date.now() - 10 * 60 * 1000);
@@ -127,7 +127,7 @@ describe('LockTest (内部任务-241)', () => {
     }
   });
 
-  test('内部任务-242 安全复审 S-2：release 原子隔离，非持有者不误删且锁内容复原', () => {
+  test('DEV-242 安全复审 S-2：release 原子隔离，非持有者不误删且锁内容复原', () => {
     const lock = join(tmp, 'h.lock');
     const first = acquireLock(lock, { owner: 'owner-s2' });
     assert.equal(first.ok, true);

@@ -188,7 +188,7 @@ test('CLI ack：成功退 0 落 acknowledged 行；未知 id → stderr+1', () =
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('CLI report：有数据→failed 信封；空 home→unavailable+unverified（内部验收-9）', () => {
+test('CLI report：有数据→failed 信封；空 home→unavailable+unverified（A-M14-9）', () => {
   const home = tmpHome();
   try {
     const empty = runCli(home, ['report']);
@@ -279,7 +279,7 @@ test('e2e：SessionStart 补位采集真执行（部署面 marker 落盘 + 浮�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('e2e：补位采集平台分支 + 冷启态触发（内部任务-OBSO-COLLECT-1 评审处置 1/3/4）', () => {
+test('e2e：补位采集平台分支 + 冷启态触发（TASK-OBSO-COLLECT-1 评审处置 1/3/4）', () => {
   const home = tmpHome();
   try {
     // 冷启态：部署面在、raw/findings 全空——采集必须仍触发（目标场景），
@@ -331,7 +331,7 @@ test('e2e：Linux 补位采集真跑（PROC_ROOT 替身经 env 传播；1b3067e 
   }
 });
 
-test('e2e：darwin 补位采集真跑（LSOF_OUT 替身经 env 传播；内部任务-OBSO-DARWIN-1）', () => {
+test('e2e：darwin 补位采集真跑（LSOF_OUT 替身经 env 传播；TASK-OBSO-DARWIN-1）', () => {
   const home = tmpHome();
   try {
     mkdirSync(join(home, 'bin'), { recursive: true });
@@ -356,7 +356,7 @@ test('e2e：darwin 补位采集真跑（LSOF_OUT 替身经 env 传播；内部�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('e2e：os-observe allow/deny——pattern 追加、坏 pattern 退 2、id 前缀解析取端点（内部任务-ALLOWCLI-1）', () => {
+test('e2e：os-observe allow/deny——pattern 追加、坏 pattern 退 2、id 前缀解析取端点（TASK-ALLOWCLI-1）', () => {
   const home = tmpHome();
   try {
     mkdirSync(home, { recursive: true });

@@ -9,12 +9,14 @@
 // 作者：wangp  创建：2026-10-17  版权：MIT（见 workflow/LICENSE）
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { scanOpenItems } from '../lib/open-items-scan.mjs';
 
 const ROOT = resolve(import.meta.dirname, '../../..');
+// 公开包守卫（内部任务-365）：specs/ 未随公开包发布；源仓资产在位时照常执行。
+const HAS_OPEN_ITEMS = existsSync(join(ROOT, 'specs', 'open-items.md'));
 
 function fixtureRegistry() {
   const dir = mkdtempSync(join(tmpdir(), 'ois-fx-'));
@@ -23,34 +25,34 @@ function fixtureRegistry() {
     p,
     '---\ndocumentType: open-item-register\nvalidationMode: draft\n---\n\n# 未决项登记（OPEN-n）\n\n' +
       '| 编号 | 描述 | 类型 | 状态 | 提出日期 | 阻塞性 |\n|---|---|---|---|---|---|\n' +
-      '| 内部未决-1 | zcode-adapter install 备份无清理路径，回头条件＝下次装机批 | 缺陷 | OPEN | 2026-10-14 | non-blocking |\n' +
-      '| 内部未决-2 | kimi 签名取证待 Windows 实测 | 机制设计 | OPEN | 2026-10-16 | non-blocking（延后——等触发条件） |\n' +
-      '| 内部未决-3 | 普通未关项第三条 routing-declare 相关 | 技术核实 | OPEN | 2026-10-17 | non-blocking |\n' +
-      '| 内部未决-4 | 已裁决：某事项关闭 → 内部决策-047 | 决策 | CLOSED | 2026-09-01 | 曾 non-blocking——已解除 |\n' +
-      '| 内部未决-5 | 已验证：mimosa 插件 Stop 触发（关闭于 2026-09-15）→ 归档卷（本批迁出） | 验证 | CLOSED | 2026-09-02 | 曾 blocking，已解除 |\n' +
-      '| 内部未决-6 | 指针墓碑 → 内部证据 | 技术核实 | CLOSED | 2026-09-03 | 曾 non-blocking——已解除 |\n' +
-      '| 内部未决-7 | 指针墓碑 → git 提交 77421ba（关闭于 2026-09-15） | 技术核实 | CLOSED | 2026-09-04 | 曾 non-blocking——已解除 |\n' +
-      '| 内部未决-8 | 指针墓碑 → 内部决策-018 备选 D（关闭于 2026-09-15） | 技术核实 | CLOSED | 2026-09-05 | 曾 non-blocking——已解除 |\n' +
-      '| 内部未决-9 | 已关闭但仍是全文形态没指针的旧式行 | 决策 | CLOSED | 2026-09-06 | 曾 non-blocking——已解除 |\n' +
-      '| 内部未决-10 坏行只有两格描述吞列 NaN non-blocking |\n',
+      '| OPEN-1 | zcode-adapter install 备份无清理路径，回头条件＝下次装机批 | 缺陷 | OPEN | 2026-10-14 | non-blocking |\n' +
+      '| OPEN-2 | kimi 签名取证待 Windows 实测 | 机制设计 | OPEN | 2026-10-16 | non-blocking（延后——等触发条件） |\n' +
+      '| OPEN-3 | 普通未关项第三条 routing-declare 相关 | 技术核实 | OPEN | 2026-10-17 | non-blocking |\n' +
+      '| OPEN-4 | 已裁决：某事项关闭 → ADR-047 | 决策 | CLOSED | 2026-09-01 | 曾 non-blocking——已解除 |\n' +
+      '| OPEN-5 | 已验证：mimosa 插件 Stop 触发（关闭于 2026-09-15）→ 归档卷（本批迁出） | 验证 | CLOSED | 2026-09-02 | 曾 blocking，已解除 |\n' +
+      '| OPEN-6 | 指针墓碑 → docs/plans/evidence/DEV-55 | 技术核实 | CLOSED | 2026-09-03 | 曾 non-blocking——已解除 |\n' +
+      '| OPEN-7 | 指针墓碑 → git 提交 77421ba（关闭于 2026-09-15） | 技术核实 | CLOSED | 2026-09-04 | 曾 non-blocking——已解除 |\n' +
+      '| OPEN-8 | 指针墓碑 → ADR-018 备选 D（关闭于 2026-09-15） | 技术核实 | CLOSED | 2026-09-05 | 曾 non-blocking——已解除 |\n' +
+      '| OPEN-9 | 已关闭但仍是全文形态没指针的旧式行 | 决策 | CLOSED | 2026-09-06 | 曾 non-blocking——已解除 |\n' +
+      '| OPEN-10 坏行只有两格描述吞列 NaN non-blocking |\n',
     'utf8',
   );
   return { dir, p };
 }
 
-test('夹具册：未关 3／墓碑 5／已关全文 1／坏行计入 rowCount 不炸，哨位判定命中 内部未决-2', () => {
+test('夹具册：未关 3／墓碑 5／已关全文 1／坏行计入 rowCount 不炸，哨位判定命中 OPEN-2', () => {
   const { dir, p } = fixtureRegistry();
   try {
     const r = scanOpenItems(p);
     assert.ok(r, '可解析');
     assert.equal(r.unclosed.length, 3, '未关 3');
-    assert.equal(r.tombstones, 5, '墓碑 5（内部未决-4..8——内部未决-4 有 → 指针计墓碑）');
-    assert.equal(r.closedFullText, 1, '已关全文 1（内部未决-9 无指针）');
+    assert.equal(r.tombstones, 5, '墓碑 5（OPEN-4..8——OPEN-4 有 → 指针计墓碑）');
+    assert.equal(r.closedFullText, 1, '已关全文 1（OPEN-9 无指针）');
     assert.equal(r.rowCount, 10, '坏行计入行数不炸');
     assert.equal(r.maxNo, 10);
-    const sentry = r.unclosed.find((x) => x.id === '内部未决-2');
-    assert.ok(sentry?.sentry, '内部未决-2 阻塞性列含「延后——等触发条件」判哨位');
-    assert.ok(r.unclosed.find((x) => x.id === '内部未决-1')?.sentry, '内部未决-1 描述含「回头条件」——按描述面哨位判据亦应命中');
+    const sentry = r.unclosed.find((x) => x.id === 'OPEN-2');
+    assert.ok(sentry?.sentry, 'OPEN-2 阻塞性列含「延后——等触发条件」判哨位');
+    assert.ok(r.unclosed.find((x) => x.id === 'OPEN-1')?.sentry, 'OPEN-1 描述含「回头条件」——按描述面哨位判据亦应命中');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -121,18 +123,18 @@ test('夹具册：未关 3／墓碑 5／已关全文 1／坏行计入 rowCount �
 //   内部任务-362（2026-11-08，覆盖率遗留问题批）：登记 内部未决-299（win32 主册覆盖率同题残余）→ 未关 76→77、共 298→299、maxNo 298→299；墓碑 216／已关全文 6 不变。
 //   内部任务-362 修复复审（2026-11-08）：登记 内部未决-300（exact 失败分支行为级负例；评审 fix-induced 承接）→ 未关 77→78、共 299→300、maxNo 299→300；墓碑 216／已关全文 6 不变。
 //   内部任务-362 覆盖率复验（2026-11-08）：登记 内部未决-301（team-governance manifest stale tie-break 同毫秒 flake）→ 未关 78→79、共 300→301、maxNo 300→301；墓碑 216／已关全文 6 不变。
-test('真实仓登记册对拍（守恒口径随批更新）：未关 79／已关全文 6／墓碑 216／共 301', () => {
-  const r = scanOpenItems(join(ROOT, '内部规格'));
+test('真实仓登记册对拍（守恒口径随批更新）：未关 79／已关全文 6／墓碑 216／共 301', { skip: HAS_OPEN_ITEMS ? false : '公开包不含内部资产 specs/（源仓照跑）' }, () => {
+  const r = scanOpenItems(join(ROOT, 'specs/open-items.md'));
   assert.ok(r);
-  assert.equal(r.unclosed.length, 79, '上批 78；内部任务-362 登记 内部未决-301（＋1）→ 79');
+  assert.equal(r.unclosed.length, 79, '上批 78；DEV-362 登记 OPEN-301（＋1）→ 79');
   assert.equal(r.closedFullText, 6, '已关全文 6 不变（本步无关闭全文项）');
-  assert.equal(r.tombstones, 216, '上批 216；内部任务-362 无关闭项 → 216');
+  assert.equal(r.tombstones, 216, '上批 216；DEV-362 无关闭项 → 216');
   assert.equal(r.rowCount, 301, '按现册实算 301（登记/迁位均不减行）');
   assert.equal(r.maxNo, 301);
   const sentries = r.unclosed.filter((x) => x.sentry).map((x) => x.id);
-  assert.ok(sentries.includes('内部未决-124'), '内部未决-124 回头条件＝哨位（内部未决-15 已于 内部任务-308 关闭）');
-  assert.ok(sentries.includes('内部未决-126'), '内部未决-126 用户裁决延后＝哨位');
-  assert.ok(sentries.includes('内部未决-136'), '内部未决-136 回头条件＝哨位');
+  assert.ok(sentries.includes('OPEN-124'), 'OPEN-124 回头条件＝哨位（OPEN-15 已于 DEV-308 关闭）');
+  assert.ok(sentries.includes('OPEN-126'), 'OPEN-126 用户裁决延后＝哨位');
+  assert.ok(sentries.includes('OPEN-136'), 'OPEN-136 回头条件＝哨位');
 });
 
 test('册缺席/不可读 → null（fail-open 面）', () => {

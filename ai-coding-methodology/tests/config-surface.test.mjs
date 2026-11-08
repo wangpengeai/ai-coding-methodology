@@ -244,7 +244,7 @@ function findHint(messages) {
   return (Array.isArray(messages) ? messages : []).find((m) => JSON.stringify(m ?? {}).includes(HINT_MARK)) ?? null;
 }
 
-test('内部任务-220 ⑦ apply：桥接开启 → 首轮 pre-step 注入一次桥接通道提示；同会话不重复', async (t) => {
+test('DEV-220 ⑦ apply：桥接开启 → 首轮 pre-step 注入一次桥接通道提示；同会话不重复', async (t) => {
   const ctx = makeApplyCtx();
   await apply(ctx, { agentControlBridge: true, pluginRoots: sixInvalidRoots(t) });
   await emitCreated(ctx, { id: 'root-1', session: { header: { id: 'sid-1' } }, ctx: { get: (name) => (name === 'tools' ? ctx.tools : undefined) } });
@@ -267,7 +267,7 @@ test('内部任务-220 ⑦ apply：桥接开启 → 首轮 pre-step 注入一次
   assert.equal(rejected.messages, undefined, 'reject 不追加提示');
 });
 
-test('内部任务-220 ⑧ apply：桥接关闭/注册失败 → pre-step 监听在位但不注入（不得空转）；开→关后新会话零注入', async (t) => {
+test('DEV-220 ⑧ apply：桥接关闭/注册失败 → pre-step 监听在位但不注入（不得空转）；开→关后新会话零注入', async (t) => {
   const ctx = makeApplyCtx();
   const flag = { value: false };
   await apply(ctx, { agentControlBridge: { get: () => flag.value }, pluginRoots: sixInvalidRoots(t) });
@@ -294,7 +294,7 @@ test('内部任务-220 ⑧ apply：桥接关闭/注册失败 → pre-step 监听
   assert.equal(bridgeSidWarns.length, 1, '空 sid 注册告警在 apply 生命周期内一次性（两次空 sid created 只一条）');
 });
 
-test('内部任务-220 ⑨ apply：agents 服务缺失 → 提示文案按实际注册工具动态（不含 wait_subagent/可等待）', async (t) => {
+test('DEV-220 ⑨ apply：agents 服务缺失 → 提示文案按实际注册工具动态（不含 wait_subagent/可等待）', async (t) => {
   const ctx = makeApplyCtx({ agents: undefined });
   await apply(ctx, { agentControlBridge: true, pluginRoots: sixInvalidRoots(t) });
   await emitCreated(ctx, { id: 'root-1', session: { header: { id: 'sid-1' } }, ctx: { get: (name) => (name === 'tools' ? ctx.tools : undefined) } });
@@ -321,7 +321,7 @@ test('⑩ 切换不回收既有注册：开值建 A→关值建 B，A 仍 3、B 
   assert.equal(ctxA.tools.registry.size, 3, 'A 的既有注册不回收（切换只影响新建 agent）');
 });
 
-test('内部任务-268 配置面 v2：字段默认与 apply 四面过滤', () => {
+test('DEV-268 配置面 v2：字段默认与 apply 四面过滤', () => {
   const schema = Config({});
   const defaults = {
     pluginWorkflow: true,
@@ -355,7 +355,7 @@ test('内部任务-268 配置面 v2：字段默认与 apply 四面过滤', () =>
   assert.equal(isOsObservationEnabled({}), true);
 });
 
-test('内部任务-268 配置面 v2：apply 按插件开关过滤四面', async () => {
+test('DEV-268 配置面 v2：apply 按插件开关过滤四面', async () => {
   // 真实插件根（仓库六插件目录）：可区分「开→注册」与「关→零注册」；不再用六空根（空根恒零、零判别力）。
   const realRoots = Object.fromEntries(PLUGINS.map((plugin) => [plugin, join(REPO_ROOT, plugin)]));
   const toggleConfig = (enabled) =>

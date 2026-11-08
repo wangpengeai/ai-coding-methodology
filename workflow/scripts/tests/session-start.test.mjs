@@ -106,7 +106,7 @@ function mkOpenItemsFixture(repo) {
   writeFileSync(join(repo, 'specs', 'open-items.md'), `| 编号 | 描述 | 类型 | 状态 | 提出日期 | 阻塞性 |\n|---|---|---|---|---|---|\n${rows.join('\n')}\n`);
 }
 
-test('内部任务-8 门禁实例3 #7：`--selftest` 入口可驱动且真输出（entry-guard 断言，防无分支静默 0 假绿）', () => {
+test('DEV-8 门禁实例3 #7：`--selftest` 入口可驱动且真输出（entry-guard 断言，防无分支静默 0 假绿）', () => {
   const r = spawnSync(process.execPath, [HOOK, '--selftest'], { encoding: 'utf8', env: { ...process.env } });
   assert.equal(r.status, 0, `--selftest 须退 0（stderr=${r.stderr}）`);
   const out = String(r.stdout ?? '');
@@ -115,7 +115,7 @@ test('内部任务-8 门禁实例3 #7：`--selftest` 入口可驱动且真输出
   assert.ok(out.includes('自检自身异常 fail-open'), '含 fail-open 断言项（内容锚，非仅计数）');
 });
 
-test('内部任务-8：健康态零告警 + 元技能注入逐字一致（自检不打扰）', () => {
+test('DEV-8：健康态零告警 + 元技能注入逐字一致（自检不打扰）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-test-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -129,7 +129,7 @@ test('内部任务-8：健康态零告警 + 元技能注入逐字一致（自检
   }
 });
 
-test('内部任务-8：单钩冒烟失败 → 同帧追加告警行（含失败名与 N/3 计数），注入不受影响', () => {
+test('DEV-8：单钩冒烟失败 → 同帧追加告警行（含失败名与 N/3 计数），注入不受影响', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-test2-'));
   try {
     const root = mkRoot(home, 'bad', { 'routing-gate': 'process.exit(3);\n' });
@@ -146,7 +146,7 @@ test('内部任务-8：单钩冒烟失败 → 同帧追加告警行（含失败�
   }
 });
 
-test('内部任务-261 健康自检：manifest 缺失 → 静态四钩回落＋告警且注入不空帧', () => {
+test('DEV-261 健康自检：manifest 缺失 → 静态四钩回落＋告警且注入不空帧', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-fallback-'));
   try {
     const root = mkRoot(home, 'nomanifest', {});
@@ -161,7 +161,7 @@ test('内部任务-261 健康自检：manifest 缺失 → 静态四钩回落＋�
   }
 });
 
-test('内部任务-261 健康自检：manifest 缺 write-guard → 显式「未注册」告警且注入完整', () => {
+test('DEV-261 健康自检：manifest 缺 write-guard → 显式「未注册」告警且注入完整', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-missingwg-'));
   try {
     const root = mkRoot(home, 'threehooks', {});
@@ -179,7 +179,7 @@ test('内部任务-261 健康自检：manifest 缺 write-guard → 显式「未�
   }
 });
 
-test('内部任务-261 写仓闸配置：坏 内部工作流状态 → SessionStart 告警可见（注入不受影响）', () => {
+test('DEV-261 写仓闸配置：坏 .workflow/write-guard.json → SessionStart 告警可见（注入不受影响）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-mode-'));
   const proj = mkdtempSync(join(tmpdir(), 'wf-sstart-proj-'));
   try {
@@ -198,7 +198,7 @@ test('内部任务-261 写仓闸配置：坏 内部工作流状态 → SessionSt
   }
 });
 
-test('内部任务-8：deny 信封（exit 2 + 可解析 JSON）视为健康，不算冒烟失败', () => {
+test('DEV-8：deny 信封（exit 2 + 可解析 JSON）视为健康，不算冒烟失败', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-test3-'));
   try {
     const denyStub = "process.stdout.write(JSON.stringify({hookSpecificOutput:{hookEventName:'PreToolUse',permissionDecision:'deny',systemMessage:'x'}}));process.exit(2);\n";
@@ -211,7 +211,7 @@ test('内部任务-8：deny 信封（exit 2 + 可解析 JSON）视为健康，�
   }
 });
 
-test('内部任务-8 门 A F7：真实插件根驱动冒烟——三真实钩健康（帧内零告警）', () => {
+test('DEV-8 门 A F7：真实插件根驱动冒烟——三真实钩健康（帧内零告警）', () => {
   // 既有用例的钩夹具全是桩钩（grep runGuardSmoke 仅命中 session-start.mjs 自身）——本用例
   // 以**真实 workflow 插件根**跑一次主钩，锁「真实钩 exit 0/2 + 可解析」契约（≈0.3s）
   const realRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -222,7 +222,7 @@ test('内部任务-8 门 A F7：真实插件根驱动冒烟——三真实钩健
   assert.ok(!ctx.includes('护栏健康自检'), '三真实钩冒烟全过（零告警）');
 });
 
-test('内部任务-8：主注入缺失静默降级（零输出 exit 0）+ 自检自身异常 fail-open（零告警）', () => {
+test('DEV-8：主注入缺失静默降级（零输出 exit 0）+ 自检自身异常 fail-open（零告警）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-test4-'));
   try {
     const root = mkRoot(home, 'noskill', {}, '');
@@ -243,7 +243,7 @@ test('内部任务-8：主注入缺失静默降级（零输出 exit 0）+ 自检
   }
 });
 
-test('内部任务-89 B2：非仓无标记 cwd → 帧内追加 scout 轻提醒（帧序=正文在前）', () => {
+test('DEV-89 B2：非仓无标记 cwd → 帧内追加 scout 轻提醒（帧序=正文在前）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-nudge-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -255,14 +255,14 @@ test('内部任务-89 B2：非仓无标记 cwd → 帧内追加 scout 轻提醒�
     assert.ok(ctx.startsWith(SKILL_TEXT), '元技能正文在前（帧序锁死）');
     assert.ok(ctx.includes('【workflow 提醒】'), '轻提醒行在场');
     assert.ok(ctx.includes('scout'), '指向 scout 评估');
-    assert.ok(ctx.includes('opt-in'), 'opt-in 语义在场（内部决策-008）');
+    assert.ok(ctx.includes('opt-in'), 'opt-in 语义在场（ADR-008）');
     assert.ok(!ctx.includes('护栏健康自检'), '健康桩零告警（提醒与告警互不干扰）');
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('内部任务-89 B2：仓 cwd（.git 祖先）→ 无提醒行，注入逐字不变', () => {
+test('DEV-89 B2：仓 cwd（.git 祖先）→ 无提醒行，注入逐字不变', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-repo-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -276,7 +276,7 @@ test('内部任务-89 B2：仓 cwd（.git 祖先）→ 无提醒行，注入逐�
   }
 });
 
-test('内部任务-89 B2：标记 cwd（.sdd 治理标记）→ 无提醒行', () => {
+test('DEV-89 B2：标记 cwd（.sdd 治理标记）→ 无提醒行', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-marker-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -290,7 +290,7 @@ test('内部任务-89 B2：标记 cwd（.sdd 治理标记）→ 无提醒行', (
   }
 });
 
-test('内部任务-89 B2：垃圾负载/无 cwd/空负载 → 无提醒行，fail-open 注入不受影响', () => {
+test('DEV-89 B2：垃圾负载/无 cwd/空负载 → 无提醒行，fail-open 注入不受影响', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-junk-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -308,7 +308,7 @@ test('内部任务-89 B2：垃圾负载/无 cwd/空负载 → 无提醒行，fai
   }
 });
 
-test('内部任务-89 B2：提醒＋告警共存帧序（正文＜轻提醒＜自检告警，内部验收-17 全序锁定）', () => {
+test('DEV-89 B2：提醒＋告警共存帧序（正文＜轻提醒＜自检告警，A-M1-17 全序锁定）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-order-'));
   try {
     const root = mkRoot(home, 'bad', { 'routing-gate': 'process.exit(3);\n' }); // 单钩失败桩 → 告警行在场
@@ -327,7 +327,7 @@ test('内部任务-89 B2：提醒＋告警共存帧序（正文＜轻提醒＜�
   }
 });
 
-test('内部决策-052：架构体检提醒——天数阈命中，帧序在自检告警之前', () => {
+test('ADR-052：架构体检提醒——天数阈命中，帧序在自检告警之前', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-arch1-'));
   try {
     const root = mkRoot(home, 'bad', { 'routing-gate': 'process.exit(3);\n' });
@@ -338,7 +338,7 @@ test('内部决策-052：架构体检提醒——天数阈命中，帧序在自�
     assert.equal(r.status, 0);
     const ctx = JSON.parse(r.stdout).hookSpecificOutput.additionalContext;
     assert.ok(ctx.includes('architecture-evolve'), '提醒行在场');
-    assert.ok(ctx.includes('台账坏行 1 条已跳过'), '坏行计数回显（内部规则-23）');
+    assert.ok(ctx.includes('台账坏行 1 条已跳过'), '坏行计数回显（R-M8-23）');
     assert.ok(ctx.includes('距上次架构体检 20 天'), '天数文案含实际天数');
     const iSkill = ctx.indexOf(SKILL_TEXT);
     const iGroom = ctx.indexOf('OPEN 登记册');
@@ -348,7 +348,7 @@ test('内部决策-052：架构体检提醒——天数阈命中，帧序在自�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052：架构体检提醒——无 review 基线时按架构事实条数阈命中', () => {
+test('ADR-052：架构体检提醒——无 review 基线时按架构事实条数阈命中', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-arch2-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -360,7 +360,7 @@ test('内部决策-052：架构体检提醒——无 review 基线时按架构�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052：架构体检提醒——双阈未达/坏台账/无台账均静默', () => {
+test('ADR-052：架构体检提醒——双阈未达/坏台账/无台账均静默', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-arch3-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -380,7 +380,7 @@ test('内部决策-052：架构体检提醒——双阈未达/坏台账/无台�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052：架构体检提醒——环境变量测试缝可调阈值（条数阈与天数阈）', () => {
+test('ADR-052：架构体检提醒——环境变量测试缝可调阈值（条数阈与天数阈）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-arch4-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -394,7 +394,7 @@ test('内部决策-052：架构体检提醒——环境变量测试缝可调阈�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052：激活域判据——非 git 但 .sdd 标记仍提醒；无标记非 git 静默', () => {
+test('ADR-052：激活域判据——非 git 但 .sdd 标记仍提醒；无标记非 git 静默', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-arch5-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -410,7 +410,7 @@ test('内部决策-052：激活域判据——非 git 但 .sdd 标记仍提醒�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052：边界——双阈同中/事实过滤/未来与非法 ts/超大台账', () => {
+test('ADR-052：边界——双阈同中/事实过滤/未来与非法 ts/超大台账', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-arch6-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -439,7 +439,7 @@ test('内部决策-052：边界——双阈同中/事实过滤/未来与非法 t
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052 二期：外部动态提醒——天数阈命中，帧序在架构体检之后告警之前', () => {
+test('ADR-052 二期：外部动态提醒——天数阈命中，帧序在架构体检之后告警之前', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-radar1-'));
   try {
     const root = mkRoot(home, 'bad', { 'routing-gate': 'process.exit(3);\n' });
@@ -454,7 +454,7 @@ test('内部决策-052 二期：外部动态提醒——天数阈命中，帧序
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052 二期：外部动态提醒——到期 watch 命中/最新状态失效/未到期静默', () => {
+test('ADR-052 二期：外部动态提醒——到期 watch 命中/最新状态失效/未到期静默', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-radar2-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -472,7 +472,7 @@ test('内部决策-052 二期：外部动态提醒——到期 watch 命中/最�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052 二期：外部动态提醒——未达阈/坏台账/无台账/非激活域静默', () => {
+test('ADR-052 二期：外部动态提醒——未达阈/坏台账/无台账/非激活域静默', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-radar3-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -496,7 +496,7 @@ test('内部决策-052 二期：外部动态提醒——未达阈/坏台账/无�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052 二期：外部动态提醒——WF_RADAR_NUDGE_DAYS 测试缝与 >1MB 降级', () => {
+test('ADR-052 二期：外部动态提醒——WF_RADAR_NUDGE_DAYS 测试缝与 >1MB 降级', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-radar4-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -509,7 +509,7 @@ test('内部决策-052 二期：外部动态提醒——WF_RADAR_NUDGE_DAYS 测�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052 二期：坏 watch 行计数（status 枚举/缺 trigger/expiresAt 可解析/未来 ts）', () => {
+test('ADR-052 二期：坏 watch 行计数（status 枚举/缺 trigger/expiresAt 可解析/未来 ts）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-radar6-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -526,7 +526,7 @@ test('内部决策-052 二期：坏 watch 行计数（status 枚举/缺 trigger/
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('内部决策-052 二期：提醒帧不回声台账字段（信任边界）', () => {
+test('ADR-052 二期：提醒帧不回声台账字段（信任边界）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-radar5-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -558,7 +558,7 @@ function mkActiveRepo(base, name) {
   return repo;
 }
 
-test('内部模块-15 v2 自察就绪面四态（锚：内部验收-26）', () => {
+test('M15 v2 自察就绪面四态（锚：A-M15-26）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-ready4-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -590,7 +590,7 @@ test('内部模块-15 v2 自察就绪面四态（锚：内部验收-26）', () =
   }
 });
 
-test('内部模块-15 v2 就绪面：规则表坏/账本不可读/账本不可写/canary 失败 → 各出告警', (t) => {
+test('M15 v2 就绪面：规则表坏/账本不可读/账本不可写/canary 失败 → 各出告警', (t) => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-readyio-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -632,7 +632,7 @@ test('内部模块-15 v2 就绪面：规则表坏/账本不可读/账本不可�
   }
 });
 
-test('内部模块-15 v2 就绪面：hook-errors 近期失败与 lost-facts 非空各出告警（同时段口径）', () => {
+test('M15 v2 就绪面：hook-errors 近期失败与 lost-facts 非空各出告警（同时段口径）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-readynotice-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -655,7 +655,7 @@ test('内部模块-15 v2 就绪面：hook-errors 近期失败与 lost-facts 非�
   }
 });
 
-test('内部模块-15 v2 就绪面：非激活域静默（不渲染就绪面，其余提醒语义不变）', () => {
+test('M15 v2 就绪面：非激活域静默（不渲染就绪面，其余提醒语义不变）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-readynonrepo-'));
   try {
     const root = mkRoot(home, 'ok');
@@ -670,7 +670,7 @@ test('内部模块-15 v2 就绪面：非激活域静默（不渲染就绪面，�
   }
 });
 
-test('内部模块-15 v2 就绪面：钩接线缺失 → 告警（hooks.json 声明的脚本不存在）', () => {
+test('M15 v2 就绪面：钩接线缺失 → 告警（hooks.json 声明的脚本不存在）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-sstart-readywire-'));
   try {
     const root = mkRoot(home, 'wired');
@@ -688,7 +688,7 @@ test('内部模块-15 v2 就绪面：钩接线缺失 → 告警（hooks.json 声
   }
 });
 
-test('内部任务-341 项目 skill 索引注入：清单优先/必载标记/义务句/帧序', () => {
+test('DEV-341 项目 skill 索引注入：清单优先/必载标记/义务句/帧序', () => {
   const base = mkdtempSync(join(tmpdir(), 'wf-dev341-sstart-'));
   try {
     const root = mkRoot(base, 'plug1');
@@ -703,7 +703,7 @@ test('内部任务-341 项目 skill 索引注入：清单优先/必载标记/义
     assert.equal(res.status, 0);
     const ctx = JSON.parse(res.stdout).hookSpecificOutput.additionalContext;
     assert.ok(ctx.startsWith(SKILL_TEXT), '元技能正文须在前');
-    assert.ok(ctx.includes('【项目 skill】project-conventions @ 项目级技能：写/改任何文件前'), `缺索引行：${ctx}`);
+    assert.ok(ctx.includes('【项目 skill】project-conventions @ .agents/skills：写/改任何文件前'), `缺索引行：${ctx}`);
     assert.ok(ctx.includes('必载项声明须 --project-skill project-conventions'), '必载项须带 ack 提示');
     // 无项目 skill 仓：零注入（帧内不得出现【项目 skill】）
     const bare = join(base, 'bare');

@@ -198,7 +198,7 @@ test('规则表坏表回退：谓词不抛且按内置常量（保守）', (t) =
 
 // ── 内部任务-244 Q12：镜像 capabilityDomains/capabilityValues 由生产 resolver 驱动与校验 ──
 
-test('内部任务-244 Q12：resolver 以镜像域集为准且按五态词表校验（非法值回落保守并 degraded）', (t) => {
+test('DEV-244 Q12：resolver 以镜像域集为准且按五态词表校验（非法值回落保守并 degraded）', (t) => {
   const root = tmpRoot(t);
   const file = join(root, 'contract.json');
   // 自定义域集（缺 injection/selfCheck）＋一个非法五态值
@@ -225,7 +225,7 @@ test('内部任务-244 Q12：resolver 以镜像域集为准且按五态词表校
 // ── 内部任务-356：真实镜像的 MCode 钩失败观测面复评（内部任务-354 真机实测驱动） ──
 // 为什么钉真实镜像而不是再造夹具：本批改的是**登记值**本身，夹具只能证明 resolver 会读，
 // 证明不了登记表已按实测改口（内部任务-354 前该格为 unavailable，实测后降级面存在）。
-test('内部任务-356：真实镜像 MCode 钩失败观测面＝degraded 且保守缺省不变', () => {
+test('DEV-356：真实镜像 MCode 钩失败观测面＝degraded 且保守缺省不变', () => {
   const loaded = loadContract();
   assert.equal(loaded.ok, true, '真实镜像可装载');
   const mcode = loaded.hosts.mcode;
@@ -233,5 +233,5 @@ test('内部任务-356：真实镜像 MCode 钩失败观测面＝degraded 且保
   assert.equal(mcode.domains.hookFailure, 'degraded', '钩失败观测面降级可用（适配层诊断＋宿主 HOOK_TIMEOUT，仅超时类）');
   assert.equal(mcode.whenUndeclared, 'degraded', '保守缺省不因本次改口而抬升');
   // 边界：失败事实供给仍不可用（roll-up 因「任一域不可用→不可用」而保持不可用）
-  assert.equal(mcode.domains.failureFacts, 'unavailable', '① 失败事实供给仍不可用（内部任务-354 四次探针账本零增量）');
+  assert.equal(mcode.domains.failureFacts, 'unavailable', '① 失败事实供给仍不可用（DEV-354 四次探针账本零增量）');
 });

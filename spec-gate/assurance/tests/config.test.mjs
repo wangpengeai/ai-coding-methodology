@@ -43,13 +43,13 @@ test('loadConfig 三级降级：缺失→default／损坏与根非对象→unpar
   }
 });
 
-test('loadConfig：governanceRequired 布尔键透传，坏类型按 unparsable-default 降级（G03/内部任务-241）', () => {
+test('loadConfig：governanceRequired 布尔键透传，坏类型按 unparsable-default 降级（G03/DEV-241）', () => {
   const root = tmpRoot('dev241-gov-');
   try {
     writeFileSync(join(root, '.sdd', 'assurance.json'), JSON.stringify({ governanceRequired: true }), 'utf8');
     let cfg = loadConfig(root);
     assert.equal(cfg.source, 'file');
-    assert.equal(cfg.governanceRequired, true, '真值透传（内部接口-18 required 可达——旧实现该键被白名单丢弃恒 false）');
+    assert.equal(cfg.governanceRequired, true, '真值透传（IF-COLLAB-18 required 可达——旧实现该键被白名单丢弃恒 false）');
     writeFileSync(join(root, '.sdd', 'assurance.json'), JSON.stringify({ governanceRequired: false }), 'utf8');
     cfg = loadConfig(root);
     assert.equal(cfg.governanceRequired, false);

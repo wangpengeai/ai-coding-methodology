@@ -8,12 +8,12 @@ const keys = (d) => Object.keys(d);
 const task = (over = {}) => ({ id: 'T-1', title: 'x', status: 'active', createdAt: '2026-01-01T00:00:00+00:00', ...over });
 
 test('缺字段 / 重复 id / 非法状态', () => {
-  const ds = checkTaskLedger({ tasks: [{ id: 'T-1' }, task({ id: 'T-1' }), task({ id: 'T-2', status: 'bogus' })] }, '内部治理状态');
+  const ds = checkTaskLedger({ tasks: [{ id: 'T-1' }, task({ id: 'T-1' }), task({ id: 'T-2', status: 'bogus' })] }, '.sdd/ledger.json');
   assert.ok(ds.some((d) => d.fixHint.includes('缺少字段')));
   assert.ok(ds.some((d) => d.fixHint.includes('编号重复')));
   assert.ok(ds.some((d) => d.fixHint.includes('非法状态')));
   assert.deepEqual(keys(ds[0]), ['ruleId', 'severity', 'file', 'line', 'fixHint']);
-  assert.equal(ds[0].file, '内部治理状态');
+  assert.equal(ds[0].file, '.sdd/ledger.json');
   assert.equal(ds[0].line, 1);
 });
 
@@ -45,9 +45,9 @@ test('converged 缺 finalStatus/gateReportRef；openItems/optOuts', () => {
     optOuts: [{ scope: 'sdd', mode: 'current-task' }],
   }, 'l.json');
   assert.ok(ds.some((d) => d.ruleId === 'RULE-LEDGER-003'));
-  assert.ok(ds.some((d) => d.ruleId === 'RULE-内部未决-003'));
+  assert.ok(ds.some((d) => d.ruleId === 'RULE-OPEN-003'));
   assert.ok(ds.some((d) => d.fixHint.includes('current-task')));
-  assert.ok(ds.findIndex((d) => d.ruleId === 'RULE-LEDGER-003') < ds.findIndex((d) => d.ruleId === 'RULE-内部未决-003'));
+  assert.ok(ds.findIndex((d) => d.ruleId === 'RULE-LEDGER-003') < ds.findIndex((d) => d.ruleId === 'RULE-OPEN-003'));
 });
 
 test('F-16：坏形态产诊断而非抛错（顶层/条目/不可迭代字段）', () => {

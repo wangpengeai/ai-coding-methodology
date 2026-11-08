@@ -54,7 +54,7 @@ function withEnv(env, fn) {
   }
 }
 
-test('内部任务-20 A2/F7：未 opt-in ⇒ 用户级默认根', () => {
+test('DEV-20 A2/F7：未 opt-in ⇒ 用户级默认根', () => {
   const base = mkBase('root');
   const home = join(base, 'home');
   mkdirSync(home, { recursive: true });
@@ -68,7 +68,7 @@ test('内部任务-20 A2/F7：未 opt-in ⇒ 用户级默认根', () => {
   }
 });
 
-test('内部任务-20 A2/F7：项目记号 opt-in ⇒ 项目内根；多键逐键解析（同仓同根 / 异仓各归）', () => {
+test('DEV-20 A2/F7：项目记号 opt-in ⇒ 项目内根；多键逐键解析（同仓同根 / 异仓各归）', () => {
   const base = mkBase('local');
   const home = join(base, 'home');
   mkdirSync(home, { recursive: true });
@@ -87,7 +87,7 @@ test('内部任务-20 A2/F7：项目记号 opt-in ⇒ 项目内根；多键逐�
   }
 });
 
-test('内部任务-20 A2/F7：注入缝优先级最高（> 项目记号）', () => {
+test('DEV-20 A2/F7：注入缝优先级最高（> 项目记号）', () => {
   const base = mkBase('seam');
   const home = join(base, 'home');
   mkdirSync(home, { recursive: true });
@@ -103,7 +103,7 @@ test('内部任务-20 A2/F7：注入缝优先级最高（> 项目记号）', () 
   }
 });
 
-test('内部任务-20 A2/F7：配置非法（坏 JSON / 未知取值）⇒ 回落默认根 + 可见告警', () => {
+test('DEV-20 A2/F7：配置非法（坏 JSON / 未知取值）⇒ 回落默认根 + 可见告警', () => {
   const base = mkBase('bad');
   const home = join(base, 'home');
   mkdirSync(home, { recursive: true });

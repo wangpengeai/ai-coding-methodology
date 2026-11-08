@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "gate-内部任务-36-1",
+  "receiptId": "gate-DEV-36-1",
   "kind": "gate",
-  "taskId": "内部任务-36",
+  "taskId": "DEV-36",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,15 +15,15 @@
       "documents": "115"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-17-DEV-36-open-item-tracking-phase1-with-lease-guidance-fix.md",
       "sha256": "sha256:a8dc1d8f2788838d75bc608c2d98d9536a45a5f2d977af1329cc13a0c9acaa28"
     },
     "algorithmVersion": "1"
   },
   "createdAt": "2026-10-17T16:47:25+08:00",
   "status": "passed",
-  "verificationReceipt": "verification-内部任务-36-1",
-  "codeReviewReceipt": "code-review-内部任务-36-1",
+  "verificationReceipt": "verification-DEV-36-1",
+  "codeReviewReceipt": "code-review-DEV-36-1",
   "operationReceipt": null,
   "chainProfile": "dev",
   "blockingCount": 0,

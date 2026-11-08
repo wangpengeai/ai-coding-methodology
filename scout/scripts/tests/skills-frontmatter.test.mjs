@@ -56,7 +56,7 @@ test('T22：scout/README.md 含 research-loop、Node 版本 ≥21 与 sync 补�
   const root = resolve(SKILLS_ROOT, '..');
   const readme = readFileSync(join(root, 'README.md'), 'utf8');
   assert.ok(readme.includes('research-loop'), 'README 六件套清单须含 research-loop');
-  assert.ok(readme.includes('Node.js ≥ 21'), 'Node 版本镜像须 ≥21（内部未决-221 清偿）');
+  assert.ok(readme.includes('Node.js ≥ 21'), 'Node 版本镜像须 ≥21（OPEN-221 清偿）');
   assert.ok(readme.includes('sync') && readme.includes('补登'), 'README 须含 sync 补登承诺（T8）');
 });
 

@@ -56,7 +56,7 @@ test('a) SessionStart matcher 覆盖宿主四值（含 resume）', () => {
   }
 });
 
-test('b) UserPromptSubmit 提醒 hook 已接线（内部规则-7）', () => {
+test('b) UserPromptSubmit 提醒 hook 已接线（R-M1-7）', () => {
   const list = entries(wiring(), 'UserPromptSubmit');
   assert.ok(list.length >= 1, 'UserPromptSubmit 未接线：任务到来时点零机械覆盖');
   const procs = list.flatMap((e) => e.hooks);
@@ -80,7 +80,7 @@ test('c) 声明的每个钩子脚本文件必须存在', () => {
   }
 });
 
-test('e) 自察捕获接线：PostToolUseFailure 与 PostToolUse 双通道（内部模块-15/内部决策-019）', () => {
+test('e) 自察捕获接线：PostToolUseFailure 与 PostToolUse 双通道（M15/ADR-019）', () => {
   const w = wiring();
   const fail = entries(w, 'PostToolUseFailure');
   assert.ok(fail.length >= 1, 'PostToolUseFailure 未接线：工具失败捕获缺主通道');
@@ -91,7 +91,7 @@ test('e) 自察捕获接线：PostToolUseFailure 与 PostToolUse 双通道（内
     post.some((e) => (e.hooks ?? []).some((h) => (h.args ?? []).some((a) => a.includes('post-tool')))),
     'PostToolUse 兜底通道应指向 post-tool 脚本',
   );
-  for (const e of post) assert.equal(e.matcher, undefined, 'PostToolUse 组不得再带 matcher（内部任务-8 全命中形态）');
+  for (const e of post) assert.equal(e.matcher, undefined, 'PostToolUse 组不得再带 matcher（DEV-8 全命中形态）');
 });
 
 test('d) 既有护栏接线不得回退（Stop / PreToolUse×4，含路由闸与写仓闸）', () => {
@@ -100,11 +100,11 @@ test('d) 既有护栏接线不得回退（Stop / PreToolUse×4，含路由闸与
   assert.ok(stop.length >= 2, 'Stop 钩不得回退（task-recap 居首 + learnings-recap 次位 + verify-gate 完成闸）');
   assert.ok(
     (stop[0].hooks ?? []).some((h) => (h.args ?? []).some((a) => a.includes('task-recap'))),
-    'task-recap 必须置于 Stop 数组首位（verify-gate exit 2 可能中止后续钩——序无关健壮设计，内部决策-019 内部决策-2）',
+    'task-recap 必须置于 Stop 数组首位（verify-gate exit 2 可能中止后续钩——序无关健壮设计，ADR-019 D-M15-2）',
   );
   assert.ok(
     (stop[1].hooks ?? []).some((h) => (h.args ?? []).some((a) => a.includes('learnings-recap'))),
-    'learnings-recap 必须置于 Stop 第二位（task-recap 之后、verify-gate 之前，内部规则-9）',
+    'learnings-recap 必须置于 Stop 第二位（task-recap 之后、verify-gate 之前，R-M6-9）',
   );
   assert.ok(
     stop.some((e) => (e.hooks ?? []).some((h) => (h.args ?? []).some((a) => a.includes('verify-gate')))),
@@ -114,14 +114,14 @@ test('d) 既有护栏接线不得回退（Stop / PreToolUse×4，含路由闸与
   const scripts = pre.flatMap((e) => e.hooks.flatMap((h) => h.args ?? []));
   assert.ok(scripts.some((a) => a.includes('check-careful')), 'PreToolUse 危险命令护栏接线不得回退');
   assert.ok(scripts.some((a) => a.includes('check-freeze')), 'PreToolUse 编辑冻结护栏接线不得回退');
-  assert.ok(scripts.some((a) => a.includes('routing-gate')), 'PreToolUse 路由闸接线不得回退（内部规则-8）');
-  assert.ok(scripts.some((a) => a.includes('write-guard')), 'PreToolUse 写仓闸接线不得回退（内部任务-261/内部决策-066）');
+  assert.ok(scripts.some((a) => a.includes('routing-gate')), 'PreToolUse 路由闸接线不得回退（R-M8-8）');
+  assert.ok(scripts.some((a) => a.includes('write-guard')), 'PreToolUse 写仓闸接线不得回退（DEV-261/ADR-066）');
   // 内部任务-8（内部规则-17）：三条一律**省略 matcher 键**（全命中形态）——旧词表 Bash/Edit|Write 在
   // DSH 工具名（pwsh/edit/write）上恒不匹配（RC-0 拆护栏），改回词表即红
   for (const e of pre) assert.equal(e.matcher, undefined, `PreToolUse 组不得再带 matcher（收到「${e.matcher}」）`);
 });
 
-test('内部任务-8 任务 2.6：中立清单与物化产物同形——工具事件组一律省略 matcher（禁 .* 形态）', () => {
+test('DEV-8 任务 2.6：中立清单与物化产物同形——工具事件组一律省略 matcher（禁 .* 形态）', () => {
   const manifest = JSON.parse(readFileSync(MANIFEST_JSON, 'utf8'));
   const toolEvents = ['PreToolUse', 'PostToolUse', 'PostToolUseFailure'];
   const declared = (manifest.hooks ?? []).filter((h) => toolEvents.includes(h.event));
@@ -144,7 +144,7 @@ test('内部任务-8 任务 2.6：中立清单与物化产物同形——工具�
 
 // ── 内部任务-244 T01/T02：进程钩逐处理器期望表（manifest 派生 × hooks.json 对拍）＋ Stop 序 ──
 
-test('内部任务-244 T01/T02：type=process/command=node/timeoutMs 期望表逐处理器；Stop 恰 3 项且 verify-gate 末项', () => {
+test('DEV-244 T01/T02：type=process/command=node/timeoutMs 期望表逐处理器；Stop 恰 3 项且 verify-gate 末项', () => {
   const manifest = JSON.parse(readFileSync(MANIFEST_JSON, 'utf8'));
   const w = wiring();
   // 期望表（本批定稿；与 manifest 声明派生集合完全覆盖——新增脚本未登记即红）

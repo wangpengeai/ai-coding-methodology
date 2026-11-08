@@ -140,14 +140,14 @@ test('driver：协议文本包含 todo/goal/续跑关键词', () => {
   assert.match(text, /续跑/);
 });
 
-test('driver：协议文本含阻塞停机与 goal 阻塞时机（内部决策-053 修正案 / 内部任务-199）', () => {
+test('driver：协议文本含阻塞停机与 goal 阻塞时机（ADR-053 修正案 / DEV-199）', () => {
   const text = createLongTaskDriver().protocolText();
   for (const anchor of [
     '同一外部阻塞', '当轮停止推进', '并在回复中报告', '不得', '空转', '已尝试路径', '可解性',
     'update_goal', 'blocked', '持续达宿主阈值后', '不构成阻塞判据',
     '难度', '不确定性', '剩余工作',
   ]) {
-    assert.ok(text.includes(anchor), `协议文本须含「${anchor}」（R-da-12 / 内部决策-053 决策 9）`);
+    assert.ok(text.includes(anchor), `协议文本须含「${anchor}」（R-da-12 / ADR-053 决策 9）`);
   }
   // 既有锚点不删（追加段不得覆盖旧语义；旧用例只锁三词，这里补守）
   for (const legacy of ['每人类轮最多 2 次', '若需用户决策请在回复中直接说明', 'plan 模式']) {
@@ -320,7 +320,7 @@ test('apply（主 Stop 派发期间 abort）：marker 锚定 signal 阻止续跑
 // 内部任务-339 T-05（内部未决-246，覆盖补齐——被测行为已存在，本用例钉判别力）：既有「入口 abort」用例
 // （isolatedRoots 无 Stop 夹具）无法区分「未派发」与「派发后不续跑」；本用例以 marker 缺席证明
 // 派发未发生（index.mjs:1346 入口检查在 buildPayload/dispatch 之前返回）。
-test('内部任务-339 T-05：主 Stop 入口 abort——marker 缺席证明未派发且不续跑', async (t) => {
+test('DEV-339 T-05：主 Stop 入口 abort——marker 缺席证明未派发且不续跑', async (t) => {
   const ctx = makeCtx({ goals: { get: () => undefined } });
   await apply(ctx, { pluginRoots: fixtureRoots(t, { Stop: [{ hooks: [{ type: 'process', command: process.execPath, args: ['${PLUGIN_ROOT}/hooks/stop.mjs'], timeoutMs: 5000 }] }] }, { 'hooks/stop.mjs': STOP_OK_MARKER }) });
   const { agent, steered } = makeAgent('sess-entry-abort-marker');
@@ -402,7 +402,7 @@ test('apply：入口 signal.aborted 时不续跑', async (t) => {
   assert.equal(steered.length, 0);
 });
 
-test('内部任务-272 plan 门控装配：Stop 主路径 plan-active 不续跑', async (t) => {
+test('DEV-272 plan 门控装配：Stop 主路径 plan-active 不续跑', async (t) => {
   const hooks = { Stop: [{ hooks: [{ type: 'process', command: process.execPath, args: ['${PLUGIN_ROOT}/hooks/stop-ok.mjs'], timeoutMs: 5000 }] }] };
   const suite = () => fixtureRoots(t, hooks, { 'hooks/stop-ok.mjs': STOP_OK });
   const onCtx = makeCtx({ goals: { get: () => undefined }, planMode: { get: () => ({ active: true }) } });
@@ -419,7 +419,7 @@ test('内部任务-272 plan 门控装配：Stop 主路径 plan-active 不续跑'
   assert.equal(off.steered.length, 1, 'plan off：Stop 主路径续跑一次（差分）');
 });
 
-test('内部任务-272 plan 门控装配：LongTaskStop 回退 plan-active 不续跑', async (t) => {
+test('DEV-272 plan 门控装配：LongTaskStop 回退 plan-active 不续跑', async (t) => {
   const onCtx = makeCtx({ goals: { get: () => undefined }, planMode: { get: () => ({ active: true }) } });
   await apply(onCtx, { pluginRoots: isolatedRoots(t) });
   const on = makeAgent('sess-plan-fallback-on');
@@ -434,7 +434,7 @@ test('内部任务-272 plan 门控装配：LongTaskStop 回退 plan-active 不�
   assert.equal(off.steered.length, 1, 'plan off：LongTaskStop 回退续跑一次（差分）');
 });
 
-test('内部任务-273 H-04：goalOwnsContinuation 三态矩阵（active/activation/paused/blocked/complete/形状异常）', async () => {
+test('DEV-273 H-04：goalOwnsContinuation 三态矩阵（active/activation/paused/blocked/complete/形状异常）', async () => {
   const { goalOwnsContinuation } = await import('../src/long-task-driver.mjs');
   assert.equal(goalOwnsContinuation(null), 'free', 'clear 后 get() 返回空 ⇒ free');
   assert.equal(goalOwnsContinuation(undefined), 'free');
@@ -450,7 +450,7 @@ test('内部任务-273 H-04：goalOwnsContinuation 三态矩阵（active/activat
   assert.equal(goalOwnsContinuation('active'), 'unknown', '非对象 ⇒ unknown');
 });
 
-test('内部任务-273 H-04：goal complete 后恢复 todo 续跑（apply 级；旧 Boolean(get()) 判据下必红）', async (t) => {
+test('DEV-273 H-04：goal complete 后恢复 todo 续跑（apply 级；旧 Boolean(get()) 判据下必红）', async (t) => {
   const ctx = makeCtx({ goals: { get: () => ({ id: 'g', phase: 'complete', activation: 'disarmed' }) } });
   await apply(ctx, { pluginRoots: isolatedRoots(t) });
   const g = makeAgent('sess-goal-complete');

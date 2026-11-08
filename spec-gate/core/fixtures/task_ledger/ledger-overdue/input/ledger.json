@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "tasks": [
     {
-      "id": "内部任务-2",
+      "id": "TASK-2",
       "title": "缓存击穿缓解",
       "status": "temporary-mitigation",
       "createdAt": "2026-08-20T00:00:00+00:00",

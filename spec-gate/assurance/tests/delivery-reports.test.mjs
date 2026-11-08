@@ -71,7 +71,7 @@ function reportPath(proj, task, name) {
  * 构造完整链到 gate 凭据，返回 draft 路径（对齐 `_chain_to_gate`）。
  * @param {string} proj @param {string} [task] @returns {string}
  */
-function chainToGate(proj, task = '内部任务-1') {
+function chainToGate(proj, task = 'TASK-1') {
   const v = issueVerificationReceipt(proj, task, evidence(proj), { profile: 'full' });
   const c = issueCodeReviewReceipt(proj, task, v.receiptId, '三维通过', {
     reviewInstances: 3, reviewRound: 1, reviewProvenance: prov(task, 3),
@@ -114,17 +114,17 @@ describe('DeliveryPrepareTest', () => {
   afterEach(() => { cleanup(tmp); });
 
   test('test_prepare_produces_partial_only：prepare 只产 partial、schema 2.1.0、对象化落盘', () => {
-    const draft = prepareDelivery(proj, '内部任务-1', {
+    const draft = prepareDelivery(proj, 'TASK-1', {
       applicability: app(), changeScope: ['src/**'], receiptRefs: [],
     });
     assert.equal(draft.finalStatus, 'partial');
-    assert.equal(draft.schemaVersion, '2.1.0', '结构化 applicability 升版（内部未决-8）');
+    assert.equal(draft.schemaVersion, '2.1.0', '结构化 applicability 升版（OPEN-8）');
     assert.equal(draft.applicability.sdd.conclusion, 'required', '对象化存盘');
-    assert.ok(existsSync(reportPath(proj, '内部任务-1', 'delivery-draft.json')));
+    assert.ok(existsSync(reportPath(proj, 'TASK-1', 'delivery-draft.json')));
   });
 
   test('test_prepare_cannot_claim_complete：prepare 不得产出 complete', () => {
-    assert.throws(() => prepareDelivery(proj, '内部任务-1', {
+    assert.throws(() => prepareDelivery(proj, 'TASK-1', {
       applicability: app(), changeScope: ['src/**'], receiptRefs: [], finalStatus: 'complete',
     }));
   });
@@ -139,7 +139,7 @@ describe('ApplicabilityValidationTest', () => {
   test('test_vocab_out_of_range_rejected：词表外结论拒绝', () => {
     const bad = app();
     bad.sdd.conclusion = 'mandatory'; // 词表外
-    assert.throws(() => prepareDelivery(proj, '内部任务-2', {
+    assert.throws(() => prepareDelivery(proj, 'TASK-2', {
       applicability: bad, changeScope: ['src/**'], receiptRefs: [],
     }));
   });
@@ -147,7 +147,7 @@ describe('ApplicabilityValidationTest', () => {
   test('test_missing_key_rejected：缺 ddd 项拒绝', () => {
     const bad = app();
     delete bad.ddd;
-    assert.throws(() => prepareDelivery(proj, '内部任务-2', {
+    assert.throws(() => prepareDelivery(proj, 'TASK-2', {
       applicability: bad, changeScope: ['src/**'], receiptRefs: [],
     }));
   });
@@ -155,7 +155,7 @@ describe('ApplicabilityValidationTest', () => {
   test('test_empty_reason_rejected：空白理由拒绝', () => {
     const bad = app();
     bad.tdd.reason = '  ';
-    assert.throws(() => prepareDelivery(proj, '内部任务-2', {
+    assert.throws(() => prepareDelivery(proj, 'TASK-2', {
       applicability: bad, changeScope: ['src/**'], receiptRefs: [],
     }));
   });
@@ -168,7 +168,7 @@ describe('RequiredSectionsTest', () => {
   afterEach(() => { cleanup(tmp); });
 
   /** 绕过 prepare 直写旧形态草案（单值 applicability+空引用+占位影响；对齐 `_legacy_draft`）。 */
-  function legacyDraft(task = '内部任务-9') {
+  function legacyDraft(task = 'TASK-9') {
     const reports = join(proj, '.sdd', 'reports', task);
     mkdirSync(reports, { recursive: true });
     const draft = join(reports, 'delivery-draft.json');
@@ -189,15 +189,15 @@ describe('RequiredSectionsTest', () => {
 
   test('test_missing_sections_finalize_rejected：必检节缺失 ⇒ finalize 拒绝落地（停留 partial）', () => {
     const draft = legacyDraft();
-    const v = issueVerificationReceipt(proj, '内部任务-9', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-9', v.receiptId, '三维通过', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-9', 3),
+    const v = issueVerificationReceipt(proj, 'TASK-9', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-9', v.receiptId, '三维通过', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('TASK-9', 3),
     });
-    issueGateReceipt(proj, '内部任务-9', v.receiptId, draft, {
+    issueGateReceipt(proj, 'TASK-9', v.receiptId, draft, {
       blockingCount: 0, warningCount: 0, codeReviewReceiptId: c.receiptId,
     });
-    assert.throws(() => finalizeDelivery(proj, '内部任务-9'), /必检节/, '内部规则-12 语义：缺失即 partial');
-    assert.equal(existsSync(reportPath(proj, '内部任务-9', 'delivery-final.json')), false,
+    assert.throws(() => finalizeDelivery(proj, 'TASK-9'), /必检节/, 'R-M7-12 语义：缺失即 partial');
+    assert.equal(existsSync(reportPath(proj, 'TASK-9', 'delivery-final.json')), false,
       '最终报告不得落地（停留 partial）');
   });
 
@@ -208,7 +208,7 @@ describe('RequiredSectionsTest', () => {
   });
 
   test('test_missing_receipt_refs_only_finalize_rejected：仅缺 receiptRefs 也拒绝落地（FB-5）', () => {
-    const task = '内部任务-5';
+    const task = 'TASK-5';
     const v = issueVerificationReceipt(proj, task, evidence(proj), { profile: 'full' });
     const c = issueCodeReviewReceipt(proj, task, v.receiptId, '三维通过', {
       reviewInstances: 3, reviewRound: 1, reviewProvenance: prov(task, 3),
@@ -237,47 +237,47 @@ describe('DeliveryFinalizeTest', () => {
 
   test('test_happy_path_finalize：完整链 finalize 落 complete', () => {
     chainToGate(proj);
-    const final = finalizeDelivery(proj, '内部任务-1');
+    const final = finalizeDelivery(proj, 'TASK-1');
     assert.equal(final.finalStatus, 'complete');
-    assert.ok(existsSync(reportPath(proj, '内部任务-1', 'delivery-final.json')));
+    assert.ok(existsSync(reportPath(proj, 'TASK-1', 'delivery-final.json')));
   });
 
   test('test_finalize_without_gate_receipt_rejected：无 gate 凭据拒绝', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-1', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-1', v.receiptId, 's', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-1', 3),
+    const v = issueVerificationReceipt(proj, 'TASK-1', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-1', v.receiptId, 's', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('TASK-1', 3),
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(), changeScope: ['src/**'], receiptRefs: [v.receiptId, c.receiptId],
     });
-    assert.throws(() => finalizeDelivery(proj, '内部任务-1'));
+    assert.throws(() => finalizeDelivery(proj, 'TASK-1'));
   });
 
   test('test_finalize_after_source_change_rejected：gate 后源码变化拒绝（revision 诊断）', () => {
     chainToGate(proj);
     writeFileSync(join(proj, 'src', 'a.py'), 'a = 2\n', 'utf8'); // gate 后源码变化
-    assert.throws(() => finalizeDelivery(proj, '内部任务-1'), /revision/i);
+    assert.throws(() => finalizeDelivery(proj, 'TASK-1'), /revision/i);
   });
 
   test('test_finalize_plan_binding_mismatch_gets_pointed_message：仅 plan 桶口径不一致给专诊', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-1', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-1', v.receiptId, 's', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-1', 3),
+    const v = issueVerificationReceipt(proj, 'TASK-1', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-1', v.receiptId, 's', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('TASK-1', 3),
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(),
       changeScope: ['src/**'],
       receiptRefs: [v.receiptId, c.receiptId],
       specImpact: '规格条款演进',
     });
-    const draft = reportPath(proj, '内部任务-1', 'delivery-draft.json');
+    const draft = reportPath(proj, 'TASK-1', 'delivery-draft.json');
     const forged = computeRevisionSet(proj); // 与链同口径（未绑计划）
-    forged.plan = { path: '内部计划', sha256: `sha256:${'0'.repeat(64)}` }; // 仅 plan 桶不同
-    issueGateReceipt(proj, '内部任务-1', v.receiptId, draft, {
+    forged.plan = { path: 'docs/plans/other.md', sha256: `sha256:${'0'.repeat(64)}` }; // 仅 plan 桶不同
+    issueGateReceipt(proj, 'TASK-1', v.receiptId, draft, {
       blockingCount: 0, warningCount: 0, codeReviewReceiptId: c.receiptId, revision: forged,
     });
     let message = null;
-    try { finalizeDelivery(proj, '内部任务-1'); } catch (e) { message = e.message; }
+    try { finalizeDelivery(proj, 'TASK-1'); } catch (e) { message = e.message; }
     assert.notEqual(message, null, '期望抛错但未抛');
     assert.match(message, /计划绑定口径不一致/);
     assert.match(message, /--plan/);
@@ -285,72 +285,72 @@ describe('DeliveryFinalizeTest', () => {
   });
 
   test('test_finalize_full_revision_mismatch_keeps_original_message：三桶全不等维持原文案', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-1', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-1', v.receiptId, 's', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-1', 3),
+    const v = issueVerificationReceipt(proj, 'TASK-1', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-1', v.receiptId, 's', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('TASK-1', 3),
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(),
       changeScope: ['src/**'],
       receiptRefs: [v.receiptId, c.receiptId],
       specImpact: '规格条款演进',
     });
-    const draft = reportPath(proj, '内部任务-1', 'delivery-draft.json');
+    const draft = reportPath(proj, 'TASK-1', 'delivery-draft.json');
     // 不改工作树（否则 v/c 先与当前不一致、链层先失败）——伪造 gate 三桶均与当前不同，
     // 直达 finalize 第四消费点的 generic 分支。
     const forged = computeRevisionSet(proj);
     forged.source.worktreeHash = `sha256:${'0'.repeat(64)}`;
     forged.spec.suiteHash = `sha256:${'0'.repeat(64)}`;
-    forged.plan = { path: '内部计划', sha256: `sha256:${'0'.repeat(64)}` };
-    issueGateReceipt(proj, '内部任务-1', v.receiptId, draft, {
+    forged.plan = { path: 'docs/plans/other.md', sha256: `sha256:${'0'.repeat(64)}` };
+    issueGateReceipt(proj, 'TASK-1', v.receiptId, draft, {
       blockingCount: 0, warningCount: 0, codeReviewReceiptId: c.receiptId, revision: forged,
     });
     let message = null;
-    try { finalizeDelivery(proj, '内部任务-1'); } catch (e) { message = e.message; }
+    try { finalizeDelivery(proj, 'TASK-1'); } catch (e) { message = e.message; }
     assert.notEqual(message, null, '期望抛错但未抛');
     assert.match(message, /源码\/规格\/计划已变化/);
     assert.doesNotMatch(message, /凭据链校验失败/, '须由 finalize 第四消费点判因，而非链层拦截');
   });
 
   test('test_finalize_with_failed_gate_rejected：gate 未通过拒绝 finalize（永久面，原仅 parity 覆盖）', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-1', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-1', v.receiptId, 's', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-1', 3),
+    const v = issueVerificationReceipt(proj, 'TASK-1', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-1', v.receiptId, 's', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('TASK-1', 3),
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(), changeScope: ['src/**'], receiptRefs: [v.receiptId, c.receiptId],
     });
-    issueGateReceipt(proj, '内部任务-1', v.receiptId, reportPath(proj, '内部任务-1', 'delivery-draft.json'), {
+    issueGateReceipt(proj, 'TASK-1', v.receiptId, reportPath(proj, 'TASK-1', 'delivery-draft.json'), {
       blockingCount: 3, warningCount: 0, codeReviewReceiptId: c.receiptId,
     });
     let message = null;
-    try { finalizeDelivery(proj, '内部任务-1'); } catch (e) { message = e.message; }
+    try { finalizeDelivery(proj, 'TASK-1'); } catch (e) { message = e.message; }
     assert.notEqual(message, null, '期望抛错但未抛');
     assert.match(message, /blockingCount=3/);
     assert.match(message, /不得 finalize/);
   });
 
   test('test_finalize_rejects_non_string_chain_profile：数组 chainProfile 不得被 String() 归一为合法值', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-1', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-1', v.receiptId, 's', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-1', 3),
+    const v = issueVerificationReceipt(proj, 'TASK-1', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-1', v.receiptId, 's', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('TASK-1', 3),
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(), changeScope: ['src/**'], receiptRefs: [v.receiptId, c.receiptId],
     });
-    const gate = issueGateReceipt(proj, '内部任务-1', v.receiptId,
-      reportPath(proj, '内部任务-1', 'delivery-draft.json'), {
+    const gate = issueGateReceipt(proj, 'TASK-1', v.receiptId,
+      reportPath(proj, 'TASK-1', 'delivery-draft.json'), {
         blockingCount: 0, warningCount: 0, codeReviewReceiptId: c.receiptId,
       });
     // 损坏凭据形态：chainProfile 为非字符串数组——Python str(['deliverable']) 为非法链形态，
     // JS 亦须拒绝（String() 会把它拼成合法值，故用 pyStr 语义并重算完整性以过完整性闸）。
-    const gateFile = join(proj, '.sdd', 'receipts', '内部任务-1', `${gate.receiptId}.json`);
+    const gateFile = join(proj, '.sdd', 'receipts', 'TASK-1', `${gate.receiptId}.json`);
     const payload = JSON.parse(readFileSync(gateFile, 'utf8'));
     payload.chainProfile = ['deliverable'];
     payload.integritySha256 = integrity(payload);
     writeFileSync(gateFile, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
     let message = null;
-    try { finalizeDelivery(proj, '内部任务-1'); } catch (e) { message = e.message; }
+    try { finalizeDelivery(proj, 'TASK-1'); } catch (e) { message = e.message; }
     assert.notEqual(message, null, '期望抛错但未抛');
     assert.match(message, /非法链形态/);
   });
@@ -358,33 +358,33 @@ describe('DeliveryFinalizeTest', () => {
   test('test_finalize_with_stale_draft_rejected：gate 后草案被改拒绝（draft 哈希失配）', () => {
     const draft = chainToGate(proj);
     writeFileSync(draft, '{"finalStatus": "partial", "injected": true}', 'utf8');
-    assert.throws(() => finalizeDelivery(proj, '内部任务-1'), /draft/i);
+    assert.throws(() => finalizeDelivery(proj, 'TASK-1'), /draft/i);
   });
 
   test('test_scout_repro_finalize_keeps_profile：scout-repro 档位不得在报告层提升', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-2', evidence(proj), {
+    const v = issueVerificationReceipt(proj, 'TASK-2', evidence(proj), {
       profile: 'scout-repro',
       scout: { mode: 'explore', disposition: '归档' },
     });
-    const c = issueCodeReviewReceipt(proj, '内部任务-2', v.receiptId, 's', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-2', 3),
+    const c = issueCodeReviewReceipt(proj, 'TASK-2', v.receiptId, 's', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('TASK-2', 3),
     });
     const scoutApp = {
       sdd: { conclusion: 'lightweight', reason: 'scout 探路档免规格先行' },
       ddd: { conclusion: 'not-applicable', reason: '一次性交付物无领域建模' },
       tdd: { conclusion: 'characterization-first', reason: 'scout-repro 档证据标准' },
     };
-    prepareDelivery(proj, '内部任务-2', {
+    prepareDelivery(proj, 'TASK-2', {
       applicability: scoutApp,
       changeScope: ['src/**'],
       receiptRefs: [v.receiptId, c.receiptId],
       specImpact: '探路一次性交付物，规格影响归档处置',
     });
-    const draft = reportPath(proj, '内部任务-2', 'delivery-draft.json');
-    issueGateReceipt(proj, '内部任务-2', v.receiptId, draft, {
+    const draft = reportPath(proj, 'TASK-2', 'delivery-draft.json');
+    issueGateReceipt(proj, 'TASK-2', v.receiptId, draft, {
       blockingCount: 0, warningCount: 0, codeReviewReceiptId: c.receiptId,
     });
-    const final = finalizeDelivery(proj, '内部任务-2');
+    const final = finalizeDelivery(proj, 'TASK-2');
     assert.equal(final.evidenceProfile, 'scout-repro', '档位不得在报告层被提升为 full');
   });
 });
@@ -400,14 +400,14 @@ describe('FinalizeLedgerConvergenceTest', () => {
   }
 
   test('test_finalize_upserts_converged_entry：finalize 后台账恰一条 converged 条目', () => {
-    chainToGate(proj, '内部任务-1');
-    finalizeDelivery(proj, '内部任务-1');
-    const entries = ledger().tasks.filter((t) => t.id === '内部任务-1');
+    chainToGate(proj, 'TASK-1');
+    finalizeDelivery(proj, 'TASK-1');
+    const entries = ledger().tasks.filter((t) => t.id === 'TASK-1');
     assert.equal(entries.length, 1, 'finalize 后台账须恰有一条本任务条目');
     const e = entries[0];
     assert.equal(e.status, 'converged');
     assert.equal(e.finalStatus, 'complete');
-    assert.equal(e.gateReportRef, '内部治理状态');
+    assert.equal(e.gateReportRef, '.sdd/reports/TASK-1/delivery-final.json');
     for (const f of ['id', 'title', 'status', 'createdAt']) { // RULE-LEDGER-001 必填四字段
       assert.ok(e[f], `缺必填字段 ${f}`);
     }
@@ -418,24 +418,24 @@ describe('FinalizeLedgerConvergenceTest', () => {
     mkdirSync(join(proj, '.sdd'), { recursive: true });
     writeFileSync(ledgerPath, JSON.stringify({ tasks: [
       {
-        id: '内部任务-1', title: '租约族缺陷批次', status: 'active', createdAt: '2026-09-16T00:00:00',
+        id: 'TASK-1', title: '租约族缺陷批次', status: 'active', createdAt: '2026-09-16T00:00:00',
       },
     ] }), 'utf8');
-    chainToGate(proj, '内部任务-1');
-    finalizeDelivery(proj, '内部任务-1');
-    const entries = ledger().tasks.filter((t) => t.id === '内部任务-1');
+    chainToGate(proj, 'TASK-1');
+    finalizeDelivery(proj, 'TASK-1');
+    const entries = ledger().tasks.filter((t) => t.id === 'TASK-1');
     assert.equal(entries.length, 1, '既有条目原位收敛，不得追加重复');
     assert.equal(entries[0].title, '租约族缺陷批次', '既有 title 保留');
     assert.equal(entries[0].createdAt, '2026-09-16T00:00:00', '既有 createdAt 保留');
     assert.equal(entries[0].status, 'converged');
-    assert.equal(entries[0].gateReportRef, '内部治理状态');
+    assert.equal(entries[0].gateReportRef, '.sdd/reports/TASK-1/delivery-final.json');
   });
 
   test('test_upsert_idempotent_no_duplicate_append：重复 upsert 幂等不重复 append', () => {
-    chainToGate(proj, '内部任务-1');
-    const final = finalizeDelivery(proj, '内部任务-1');
+    chainToGate(proj, 'TASK-1');
+    const final = finalizeDelivery(proj, 'TASK-1');
     _testHooks.upsertLedgerConverged(proj, final); // 重复 upsert：读侧幂等，不重复 append
-    const entries = ledger().tasks.filter((t) => t.id === '内部任务-1');
+    const entries = ledger().tasks.filter((t) => t.id === 'TASK-1');
     assert.equal(entries.length, 1, '幂等 upsert 不得产生重复条目');
   });
 
@@ -443,17 +443,17 @@ describe('FinalizeLedgerConvergenceTest', () => {
     const ledgerPath = join(proj, '.sdd', 'ledger.json');
     mkdirSync(join(proj, '.sdd'), { recursive: true });
     writeFileSync(ledgerPath, '{ not json', 'utf8');
-    chainToGate(proj, '内部任务-1');
-    assert.throws(() => finalizeDelivery(proj, '内部任务-1'), /台账/,
+    chainToGate(proj, 'TASK-1');
+    assert.throws(() => finalizeDelivery(proj, 'TASK-1'), /台账/,
       '台账损坏须响亮失败并指引重跑（不得静默吞掉收敛义务）');
   });
 
-  test('D03（内部任务-241）：台账锁被占用 → finalize 响亮失败且不写', () => {
-    chainToGate(proj, '内部任务-1');
+  test('D03（DEV-241）：台账锁被占用 → finalize 响亮失败且不写', () => {
+    chainToGate(proj, 'TASK-1');
     const lockPath = join(proj, '.sdd', 'ledger.lock');
     assert.equal(acquireLock(lockPath, { owner: 'holder' }).ok, true);
     try {
-      assert.throws(() => finalizeDelivery(proj, '内部任务-1'), /台账被并发占用/);
+      assert.throws(() => finalizeDelivery(proj, 'TASK-1'), /台账被并发占用/);
     } finally {
       releaseLock(lockPath, 'holder');
     }
@@ -472,8 +472,8 @@ describe('OperationChainFinalizeTest', () => {
     writeFileSync(join(proj, '.sdd', 'suite.json'), '{"documents": []}\n', 'utf8');
     mkdirSync(join(proj, 'ops'));
     writeFileSync(join(proj, 'ops', 'record.md'), '# 记录\n', 'utf8');
-    v = issueVerificationReceipt(proj, '内部任务-1', [{ path: 'x', sha256: 'y', exitCode: 0 }]);
-    o = issueOperationReceipt(proj, '内部任务-1', v.receiptId, {
+    v = issueVerificationReceipt(proj, 'TASK-1', [{ path: 'x', sha256: 'y', exitCode: 0 }]);
+    o = issueOperationReceipt(proj, 'TASK-1', v.receiptId, {
       authorizationQuote: '用户当轮指令：执行本机装机',
       authorizationScope: '四插件装机',
       verificationCriteria: [{ criterion: '对拍 0 差异', evidenceRef: 'layout.log' }],
@@ -484,36 +484,36 @@ describe('OperationChainFinalizeTest', () => {
         sha256: `sha256:${sha256Hex(readFileSync(join(proj, 'ops', 'record.md')))}`,
       },
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(),
       changeScope: [],
       receiptRefs: [v.receiptId, o.receiptId],
-      specImpact: '操作链批次规格投影（内部决策-023）',
+      specImpact: '操作链批次规格投影（ADR-023）',
     });
   });
   afterEach(() => { cleanup(tmp); });
 
   test('test_finalize_operation_chain_completes：操作链 finalize 落地且台账照常收敛', () => {
-    const report = runGateOperation(proj, '内部任务-1');
+    const report = runGateOperation(proj, 'TASK-1');
     assert.equal(report.blockingCount, 0);
-    const final = finalizeDelivery(proj, '内部任务-1');
+    const final = finalizeDelivery(proj, 'TASK-1');
     assert.equal(final.finalStatus, 'complete');
     assert.equal(final.evidenceProfile, 'full');
     const ledger = JSON.parse(readFileSync(join(proj, '.sdd', 'ledger.json'), 'utf8'));
-    const entries = ledger.tasks.filter((t) => t.id === '内部任务-1');
+    const entries = ledger.tasks.filter((t) => t.id === 'TASK-1');
     assert.equal(entries.length, 1, '操作链 finalize 后台账须恰有一条本任务条目');
     assert.equal(entries[0].status, 'converged');
   });
 
   test('test_finalize_after_operation_receipt_deleted_is_value_error：gate 自述链而 operation 被删 ⇒ 链校验失败', () => {
-    const report = runGateOperation(proj, '内部任务-1');
+    const report = runGateOperation(proj, 'TASK-1');
     assert.equal(report.blockingCount, 0);
-    const opFiles = readdirSync(join(proj, '.sdd', 'receipts', '内部任务-1'))
+    const opFiles = readdirSync(join(proj, '.sdd', 'receipts', 'TASK-1'))
       .filter((n) => n.startsWith('operation-') && n.endsWith('.json'));
     assert.equal(opFiles.length, 1);
-    rmSync(join(proj, '.sdd', 'receipts', '内部任务-1', opFiles[0]));
+    rmSync(join(proj, '.sdd', 'receipts', 'TASK-1', opFiles[0]));
     let error = null;
-    try { finalizeDelivery(proj, '内部任务-1'); } catch (e) { error = e; }
+    try { finalizeDelivery(proj, 'TASK-1'); } catch (e) { error = e; }
     assert.notEqual(error, null, '期望抛错但未抛');
     assert.match(error.message, /凭据链校验失败/);
     assert.equal(error instanceof ChainProfileError, false,
@@ -522,12 +522,12 @@ describe('OperationChainFinalizeTest', () => {
 
   test('test_finalize_rejects_l1_gate_with_clear_guidance：L1 完成标记即 gate 本身，显式拒绝', () => {
     // 清掉 L2 夹具凭据，改立 L1 链（latestReceipt 取序号最大者=L1）
-    for (const name of readdirSync(join(proj, '.sdd', 'receipts', '内部任务-1'))) {
+    for (const name of readdirSync(join(proj, '.sdd', 'receipts', 'TASK-1'))) {
       if (name.startsWith('operation-') && name.endsWith('.json')) {
-        rmSync(join(proj, '.sdd', 'receipts', '内部任务-1', name));
+        rmSync(join(proj, '.sdd', 'receipts', 'TASK-1', name));
       }
     }
-    issueOperationReceipt(proj, '内部任务-1', v.receiptId, {
+    issueOperationReceipt(proj, 'TASK-1', v.receiptId, {
       authorizationQuote: '用户当轮指令：执行本机缓存对齐',
       authorizationScope: '本机缓存',
       verificationCriteria: [{
@@ -543,12 +543,12 @@ describe('OperationChainFinalizeTest', () => {
       },
       riskLevel: 'L1',
     });
-    const report = runGateOperation(proj, '内部任务-1', { l1: true });
+    const report = runGateOperation(proj, 'TASK-1', { l1: true });
     assert.equal(report.blockingCount, 0);
-    const gateRec = latestReceipt(proj, '内部任务-1', 'gate');
+    const gateRec = latestReceipt(proj, 'TASK-1', 'gate');
     assert.equal(gateRec.riskLevel, 'L1');
     let message = null;
-    try { finalizeDelivery(proj, '内部任务-1'); } catch (e) { message = e.message; }
+    try { finalizeDelivery(proj, 'TASK-1'); } catch (e) { message = e.message; }
     assert.notEqual(message, null, '期望抛错但未抛');
     assert.match(message, /L1/);
     assert.match(message, /无需/);
@@ -571,12 +571,12 @@ describe('DeliverableChainFinalizeTest', () => {
   afterEach(() => { cleanup(tmp); });
 
   test('test_finalize_deliverable_chain_completes：三环制品链 finalize 落地且台账收敛', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-1', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-1', v.receiptId, '制品评审', {
+    const v = issueVerificationReceipt(proj, 'TASK-1', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-1', v.receiptId, '制品评审', {
       reviewInstances: 1, reviewMode: 'deliverable',
-      reviewRound: 1, reviewProvenance: prov('内部任务-1', 1),
+      reviewRound: 1, reviewProvenance: prov('TASK-1', 1),
     });
-    const o = issueOperationReceipt(proj, '内部任务-1', v.receiptId, {
+    const o = issueOperationReceipt(proj, 'TASK-1', v.receiptId, {
       authorizationQuote: '用户当轮指令：制作 PPT 交付制品',
       authorizationScope: '忽略面制品生成',
       verificationCriteria: [{ criterion: '制品在案', evidenceRef: 'out.pptx' }],
@@ -587,34 +587,34 @@ describe('DeliverableChainFinalizeTest', () => {
         sha256: `sha256:${sha256Hex(readFileSync(join(proj, 'ops', 'record.md')))}`,
       },
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(),
       changeScope: [],
       receiptRefs: [v.receiptId, c.receiptId, o.receiptId],
-      specImpact: '制品链批次规格投影（内部决策-023 修正案 2）',
+      specImpact: '制品链批次规格投影（ADR-023 修正案 2）',
     });
-    issueGateReceipt(proj, '内部任务-1', v.receiptId, reportPath(proj, '内部任务-1', 'delivery-draft.json'), {
+    issueGateReceipt(proj, 'TASK-1', v.receiptId, reportPath(proj, 'TASK-1', 'delivery-draft.json'), {
       blockingCount: 0,
       warningCount: 0,
       codeReviewReceiptId: c.receiptId,
       operationReceiptId: o.receiptId,
     });
-    const final = finalizeDelivery(proj, '内部任务-1');
+    const final = finalizeDelivery(proj, 'TASK-1');
     assert.equal(final.finalStatus, 'complete');
     const ledger = JSON.parse(readFileSync(join(proj, '.sdd', 'ledger.json'), 'utf8'));
-    const entries = ledger.tasks.filter((t) => t.id === '内部任务-1');
+    const entries = ledger.tasks.filter((t) => t.id === 'TASK-1');
     assert.equal(entries.length, 1, '制品链 finalize 后台账须恰有一条本任务条目');
     assert.equal(entries[0].status, 'converged');
   });
 
   test('A8 2.1.0 deliverable 三环 finalize 端到端（reviewRing 在场、无 REVIEWPROV-LEGACY）', () => {
-    const v = issueVerificationReceipt(proj, '内部任务-1', evidence(proj), { profile: 'full' });
-    const c = issueCodeReviewReceipt(proj, '内部任务-1', v.receiptId, '制品评审', {
+    const v = issueVerificationReceipt(proj, 'TASK-1', evidence(proj), { profile: 'full' });
+    const c = issueCodeReviewReceipt(proj, 'TASK-1', v.receiptId, '制品评审', {
       reviewInstances: 1, reviewMode: 'deliverable',
-      reviewRound: 1, reviewProvenance: prov('内部任务-1', 1),
+      reviewRound: 1, reviewProvenance: prov('TASK-1', 1),
     });
     assert.equal(c.schemaVersion, '2.1.0', '带 provenance 的评审环凭据为 2.1.0');
-    const o = issueOperationReceipt(proj, '内部任务-1', v.receiptId, {
+    const o = issueOperationReceipt(proj, 'TASK-1', v.receiptId, {
       authorizationQuote: '用户当轮指令：制作 PPT 交付制品',
       authorizationScope: '忽略面制品生成',
       verificationCriteria: [{ criterion: '制品在案', evidenceRef: 'out.pptx' }],
@@ -625,13 +625,13 @@ describe('DeliverableChainFinalizeTest', () => {
         sha256: `sha256:${sha256Hex(readFileSync(join(proj, 'ops', 'record.md')))}`,
       },
     });
-    prepareDelivery(proj, '内部任务-1', {
+    prepareDelivery(proj, 'TASK-1', {
       applicability: app(),
       changeScope: [],
       receiptRefs: [v.receiptId, c.receiptId, o.receiptId],
-      specImpact: '制品链批次规格投影（内部决策-023 修正案 2）',
+      specImpact: '制品链批次规格投影（ADR-023 修正案 2）',
     });
-    const report = runGate(proj, '内部任务-1', { coreRunner: fakeCore(), chainProfile: 'deliverable' });
+    const report = runGate(proj, 'TASK-1', { coreRunner: fakeCore(), chainProfile: 'deliverable' });
     assert.equal(report.blockingCount, 0, JSON.stringify(report.diagnostics));
     assert.equal(report.sections.receipts.reviewRing.mode, 'deliverable', '评审环投影在场');
     assert.equal(report.sections.receipts.reviewRing.receiptId, c.receiptId);
@@ -640,10 +640,10 @@ describe('DeliverableChainFinalizeTest', () => {
       0,
       '2.1.0 评审环不得出现 legacy provenance warning',
     );
-    const final = finalizeDelivery(proj, '内部任务-1');
+    const final = finalizeDelivery(proj, 'TASK-1');
     assert.equal(final.finalStatus, 'complete');
     assert.equal(final.schemaVersion, '2.1.0', '最终报告继承草案 schemaVersion');
-    assert.equal(final.gateReceipt, latestReceipt(proj, '内部任务-1', 'gate').receiptId);
+    assert.equal(final.gateReceipt, latestReceipt(proj, 'TASK-1', 'gate').receiptId);
   });
 });
 
@@ -662,18 +662,18 @@ describe('ChainHeadEquivalenceTest', () => {
 
   /** 连签 verification + code-review（内部任务-40）。 */
   function chain() {
-    const v = issueVerificationReceipt(proj, '内部任务-40', evidence(proj), { profile: 'full' });
-    issueCodeReviewReceipt(proj, '内部任务-40', v.receiptId, '三维通过', {
-      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('内部任务-40', 3),
+    const v = issueVerificationReceipt(proj, 'DEV-40', evidence(proj), { profile: 'full' });
+    issueCodeReviewReceipt(proj, 'DEV-40', v.receiptId, '三维通过', {
+      reviewInstances: 3, reviewRound: 1, reviewProvenance: prov('DEV-40', 3),
     });
   }
 
   /** 手写 finalize 用草案（对齐 Python 用例内联字典，键序一致）。 */
   function writeDraft() {
-    const draft = reportPath(proj, '内部任务-40', 'delivery-draft.json');
-    mkdirSync(join(proj, '.sdd', 'reports', '内部任务-40'), { recursive: true });
+    const draft = reportPath(proj, 'DEV-40', 'delivery-draft.json');
+    mkdirSync(join(proj, '.sdd', 'reports', 'DEV-40'), { recursive: true });
     writeFileSync(draft, JSON.stringify({
-      taskId: '内部任务-40',
+      taskId: 'DEV-40',
       finalStatus: 'partial',
       applicability: {
         sdd: { conclusion: 'required', reason: '接口契约面' },
@@ -681,7 +681,7 @@ describe('ChainHeadEquivalenceTest', () => {
         tdd: { conclusion: 'strict', reason: '可复现缺陷' },
       },
       receiptRefs: [{
-        path: '内部治理状态',
+        path: '.sdd/receipts/DEV-40/receipt-chain.json',
         sha256: `sha256:${'0'.repeat(64)}`,
         kind: 'receipt-chain',
       }],
@@ -693,31 +693,31 @@ describe('ChainHeadEquivalenceTest', () => {
   test('test_finalize_accepts_head_shift：gate 后提交运行态产物仍可 finalize', () => {
     chain();
     const draft = writeDraft();
-    const v = latestReceipt(proj, '内部任务-40', 'verification');
-    const c = latestReceipt(proj, '内部任务-40', 'code-review');
-    const gate = issueGateReceipt(proj, '内部任务-40', v.receiptId, draft, {
+    const v = latestReceipt(proj, 'DEV-40', 'verification');
+    const c = latestReceipt(proj, 'DEV-40', 'code-review');
+    const gate = issueGateReceipt(proj, 'DEV-40', v.receiptId, draft, {
       blockingCount: 0, warningCount: 0, codeReviewReceiptId: c.receiptId,
     });
     assert.equal(gate.status, 'passed');
     commitAll(proj, 'chore(receipts): 提交 gate 凭据');
-    const final = finalizeDelivery(proj, '内部任务-40');
-    assert.equal(final.taskId, '内部任务-40');
+    const final = finalizeDelivery(proj, 'DEV-40');
+    assert.equal(final.taskId, 'DEV-40');
   });
 
   test('test_finalize_rejects_gate_head_unverifiable：head 不可证 ⇒ 第四消费点拒绝 finalize', () => {
     chain();
     const draft = writeDraft();
-    const v = latestReceipt(proj, '内部任务-40', 'verification');
-    const c = latestReceipt(proj, '内部任务-40', 'code-review');
-    const gate = issueGateReceipt(proj, '内部任务-40', v.receiptId, draft, {
+    const v = latestReceipt(proj, 'DEV-40', 'verification');
+    const c = latestReceipt(proj, 'DEV-40', 'code-review');
+    const gate = issueGateReceipt(proj, 'DEV-40', v.receiptId, draft, {
       blockingCount: 0, warningCount: 0, codeReviewReceiptId: c.receiptId,
     });
     // 篡改 gate 凭据的 head 为仓内不存在 sha，并按凭据口径重算完整性哈希（模拟 legacy/坏形态）
-    const path = join(proj, '.sdd', 'receipts', '内部任务-40', `${gate.receiptId}.json`);
+    const path = join(proj, '.sdd', 'receipts', 'DEV-40', `${gate.receiptId}.json`);
     const payload = JSON.parse(readFileSync(path, 'utf8'));
     payload.revision.sourceRevision.head = '0'.repeat(40);
     payload.integritySha256 = integrity(payload);
     writeFileSync(path, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-    assert.throws(() => finalizeDelivery(proj, '内部任务-40'), /提交可达性无法证明/);
+    assert.throws(() => finalizeDelivery(proj, 'DEV-40'), /提交可达性无法证明/);
   });
 });

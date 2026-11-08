@@ -20,7 +20,7 @@ function makeSyncFixture() {
   const repo = join(home, 'repo');
   const market = join(home, 'market');
   for (const p of PLUGINS) {
-    writePluginPair(repo, p, '0.1.0', `${p} 测试描述（内部决策-017）`);
+    writePluginPair(repo, p, '0.1.0', `${p} 测试描述（ADR-017）`);
     writeFile(join(repo, p, 'skills', 'demo.md'), '# demo\n');
   }
   mkdirSync(join(market, 'plugins'), { recursive: true });
@@ -54,7 +54,7 @@ test('同步与清单刷新：六条目 0.1.0、description 透传、vision-brid
     const byName = new Map(mj.plugins.map((p) => [p.name, p]));
     for (const p of PLUGINS) {
       assert.equal(byName.get(p)?.version, '0.1.0', `${p} 版本 0.1.0`);
-      assert.ok(byName.get(p)?.description.includes('内部决策-017'), `${p} description 由清单透传`);
+      assert.ok(byName.get(p)?.description.includes('ADR-017'), `${p} description 由清单透传`);
       assert.ok(byName.get(p)?.description_i18n?.en, `${p} 英译条目`);
       assert.equal(byName.get(p)?.source, `./plugins/${p}`, `${p} source（相对市场根）`);
     }
@@ -82,7 +82,7 @@ test('同步排除 Python 字节码缓存：__pycache__/.pyc/.mimosa 不进副�
     writeFileSync(join(f.repo, 'spec-gate', 'assurance', '__pycache__2', 'keep.txt'), 'x');
     assert.equal(runMarketRound(f.repo, f.market).ok, true);
     const dst = join(f.market, 'plugins', 'spec-gate', 'assurance');
-    assert.ok(!existsSync(join(dst, '__pycache__')), '__pycache__ 不进发行副本（内部任务-PYCLEAN-1）');
+    assert.ok(!existsSync(join(dst, '__pycache__')), '__pycache__ 不进发行副本（TASK-PYCLEAN-1）');
     assert.ok(!existsSync(join(dst, 'loose.pyc')), '散落 .pyc 不进发行副本');
     assert.ok(!existsSync(join(dst, '.mimosa')), '.mimosa 不进发行副本（core-baseline 同口径）');
     assert.ok(existsSync(join(dst, 'keep.py')), '源文件照常同步');
@@ -171,7 +171,7 @@ test('buildEntry 旧条目沿用与缺省（迁自源 selftest :687-690 断言�
     const byName = new Map(doc.plugins.map((p) => [p.name, p]));
     assert.equal(byName.get('scout')?.category, 'developer-tools', '无旧条目用缺省 category');
     assert.ok(Array.isArray(byName.get('scout')?.keywords) && byName.get('scout').keywords.includes('探路'), '无旧条目用缺省 keywords');
-    assert.equal(byName.get('workflow')?.description_i18n?.['zh-CN'], 'workflow 测试描述（内部决策-017）', 'zh-CN 由清单 description 透传');
+    assert.equal(byName.get('workflow')?.description_i18n?.['zh-CN'], 'workflow 测试描述（ADR-017）', 'zh-CN 由清单 description 透传');
     assert.ok(byName.get('workflow')?.description_i18n?.en, '英译条目在位');
     // 再跑一轮预置旧值沿用：给 scout 造旧条目（category/keywords 旧值），重跑后沿用
     doc.plugins.find((p) => p.name === 'scout').category = 'custom-cat';
@@ -285,7 +285,7 @@ test('市场清单损坏先于写副作用：读闸失败 → 拒绝且 plugins 
   }
 });
 
-test('syncPlugins 失败回滚：市场恢复字节一致（备份 rename 回＋新建目录删除）〔内部任务-275/内部未决-163〕', () => {
+test('syncPlugins 失败回滚：市场恢复字节一致（备份 rename 回＋新建目录删除）〔DEV-275/OPEN-163〕', () => {
   const f = makeSyncFixture();
   try {
     assert.equal(runMarketRound(f.repo, f.market).ok, true, '先建立既有市场目录（备份面）');
@@ -302,7 +302,7 @@ test('syncPlugins 失败回滚：市场恢复字节一致（备份 rename 回＋
   }
 });
 
-test('syncPlugins 写后自检：落位后损坏检出且回滚〔内部任务-275/内部未决-163〕', () => {
+test('syncPlugins 写后自检：落位后损坏检出且回滚〔DEV-275/OPEN-163〕', () => {
   const f = makeSyncFixture();
   try {
     assert.equal(runMarketRound(f.repo, f.market).ok, true);
@@ -319,7 +319,7 @@ test('syncPlugins 写后自检：落位后损坏检出且回滚〔内部任务-2
   }
 });
 
-test('syncPlugins 写后自检不可读：目标目录被同名文件替换 → problem 优先于哈希比对且回滚（内部未决-249）', () => {
+test('syncPlugins 写后自检不可读：目标目录被同名文件替换 → problem 优先于哈希比对且回滚（OPEN-249）', () => {
   const f = makeSyncFixture();
   try {
     assert.equal(runMarketRound(f.repo, f.market).ok, true);
@@ -339,7 +339,7 @@ test('syncPlugins 写后自检不可读：目标目录被同名文件替换 → 
   }
 });
 
-test('备份超龄清理：31 天前备份目录被清、29 天前保留（install .bak 超龄先例同款，round1 S2）〔内部任务-275〕', () => {
+test('备份超龄清理：31 天前备份目录被清、29 天前保留（install .bak 超龄先例同款，round1 S2）〔DEV-275〕', () => {
   const f = makeSyncFixture();
   try {
     const root = join(f.market, '.publish-backups');

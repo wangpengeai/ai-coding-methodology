@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "operation-内部任务-78-1",
+  "receiptId": "operation-DEV-78-1",
   "kind": "operation",
-  "taskId": "内部任务-78",
+  "taskId": "DEV-78",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -19,7 +19,7 @@
   },
   "createdAt": "2026-10-17T20:01:30+08:00",
   "status": "passed",
-  "verificationReceipt": "verification-内部任务-78-1",
+  "verificationReceipt": "verification-DEV-78-1",
   "authorization": {
     "quote": "用户当轮指令：合并所有分支，发布 0.12.1 并安装",
     "scope": "master 合并＋bump 0.12.1＋publish＋三宿主 install＋装机收口链",
@@ -28,7 +28,7 @@
   "verificationCriteria": [
     {
       "criterion": "「workflow」注册表版本=0.12.1（installed_plugins.json plugins[2].version）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -40,8 +40,8 @@
       }
     },
     {
-      "criterion": "「workflow」注册表双读（version==installPath 末段，内部任务-INSTALL-038 教训）",
-      "evidenceRef": "内部证据#验证判据",
+      "criterion": "「workflow」注册表双读（version==installPath 末段，TASK-INSTALL-038 教训）",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -59,7 +59,7 @@
     },
     {
       "criterion": "「workflow」市场清单条目版本==发布源 plugin.json（0.12.1，跨面对照）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -72,7 +72,7 @@
     },
     {
       "criterion": "「workflow」装机树哈希=发布源（7cb09ef7）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -84,7 +84,7 @@
     },
     {
       "criterion": "「workflow」派生镜像树哈希=发布源（7cb09ef7）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -96,7 +96,7 @@
     },
     {
       "criterion": "「spec-gate」注册表版本=0.12.1（installed_plugins.json plugins[3].version）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -108,8 +108,8 @@
       }
     },
     {
-      "criterion": "「spec-gate」注册表双读（version==installPath 末段，内部任务-INSTALL-038 教训）",
-      "evidenceRef": "内部证据#验证判据",
+      "criterion": "「spec-gate」注册表双读（version==installPath 末段，TASK-INSTALL-038 教训）",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -127,7 +127,7 @@
     },
     {
       "criterion": "「spec-gate」市场清单条目版本==发布源 plugin.json（0.12.1，跨面对照）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -140,7 +140,7 @@
     },
     {
       "criterion": "「spec-gate」装机树哈希=发布源（8f538d29）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -152,7 +152,7 @@
     },
     {
       "criterion": "「spec-gate」派生镜像树哈希=发布源（8f538d29）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -164,7 +164,7 @@
     },
     {
       "criterion": "「scout」注册表版本=0.12.1（installed_plugins.json plugins[4].version）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -176,8 +176,8 @@
       }
     },
     {
-      "criterion": "「scout」注册表双读（version==installPath 末段，内部任务-INSTALL-038 教训）",
-      "evidenceRef": "内部证据#验证判据",
+      "criterion": "「scout」注册表双读（version==installPath 末段，TASK-INSTALL-038 教训）",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -195,7 +195,7 @@
     },
     {
       "criterion": "「scout」市场清单条目版本==发布源 plugin.json（0.12.1，跨面对照）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -208,7 +208,7 @@
     },
     {
       "criterion": "「scout」装机树哈希=发布源（bda7b0d3）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -220,7 +220,7 @@
     },
     {
       "criterion": "「scout」派生镜像树哈希=发布源（bda7b0d3）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -232,7 +232,7 @@
     },
     {
       "criterion": "「team-governance」注册表版本=0.12.1（installed_plugins.json plugins[5].version）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -244,8 +244,8 @@
       }
     },
     {
-      "criterion": "「team-governance」注册表双读（version==installPath 末段，内部任务-INSTALL-038 教训）",
-      "evidenceRef": "内部证据#验证判据",
+      "criterion": "「team-governance」注册表双读（version==installPath 末段，TASK-INSTALL-038 教训）",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -263,7 +263,7 @@
     },
     {
       "criterion": "「team-governance」市场清单条目版本==发布源 plugin.json（0.12.1，跨面对照）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -276,7 +276,7 @@
     },
     {
       "criterion": "「team-governance」装机树哈希=发布源（99acdc38）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -288,7 +288,7 @@
     },
     {
       "criterion": "「team-governance」派生镜像树哈希=发布源（99acdc38）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -300,7 +300,7 @@
     },
     {
       "criterion": "「algo-loop」注册表版本=0.12.1（installed_plugins.json plugins[8].version）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -312,8 +312,8 @@
       }
     },
     {
-      "criterion": "「algo-loop」注册表双读（version==installPath 末段，内部任务-INSTALL-038 教训）",
-      "evidenceRef": "内部证据#验证判据",
+      "criterion": "「algo-loop」注册表双读（version==installPath 末段，TASK-INSTALL-038 教训）",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -331,7 +331,7 @@
     },
     {
       "criterion": "「algo-loop」市场清单条目版本==发布源 plugin.json（0.12.1，跨面对照）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -344,7 +344,7 @@
     },
     {
       "criterion": "「algo-loop」装机树哈希=发布源（8fe1bedf）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -356,7 +356,7 @@
     },
     {
       "criterion": "「algo-loop」派生镜像树哈希=发布源（8fe1bedf）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -368,7 +368,7 @@
     },
     {
       "criterion": "「research-loop」注册表版本=0.12.1（installed_plugins.json plugins[9].version）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -380,8 +380,8 @@
       }
     },
     {
-      "criterion": "「research-loop」注册表双读（version==installPath 末段，内部任务-INSTALL-038 教训）",
-      "evidenceRef": "内部证据#验证判据",
+      "criterion": "「research-loop」注册表双读（version==installPath 末段，TASK-INSTALL-038 教训）",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -399,7 +399,7 @@
     },
     {
       "criterion": "「research-loop」市场清单条目版本==发布源 plugin.json（0.12.1，跨面对照）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "json-field-eq",
         "path": {
@@ -412,7 +412,7 @@
     },
     {
       "criterion": "「research-loop」装机树哈希=发布源（278a4bc6）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -424,7 +424,7 @@
     },
     {
       "criterion": "「research-loop」派生镜像树哈希=发布源（278a4bc6）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "dir-tree-hash",
         "path": {
@@ -436,7 +436,7 @@
     },
     {
       "criterion": "派生镜像清单文件哈希=市场源（对齐完成，跨面比对）",
-      "evidenceRef": "内部证据#验证判据",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "file-sha256",
         "path": {
@@ -447,8 +447,8 @@
       }
     },
     {
-      "criterion": "宿主 zcode 应用在位（宿主装机生效宣称，内部决策-048）",
-      "evidenceRef": "内部证据#验证判据",
+      "criterion": "宿主 zcode 应用在位（宿主装机生效宣称，ADR-048）",
+      "evidenceRef": "docs/plans/evidence/DEV-78/operation-record.md#验证判据",
       "probe": {
         "type": "host-app-present",
         "expect": {
@@ -462,7 +462,7 @@
   "rollback": "ZCode：installed_plugins.json 备份 .bak-20261017-195714 与旧版本 cache 目录在位可回退；MCode/Kimi：物化目录可 rm 重装旧版；版本回退=git revert bump 提交后重跑 publish/install",
   "effectiveBoundary": "本机 darwin 三宿主；跨机需各自 install（命令与判据随仓库分发）",
   "recordRef": {
-    "path": "内部证据",
+    "path": "docs/plans/evidence/DEV-78/operation-record.md",
     "sha256": "sha256:262f592fc098238fdf550b57d28c7544630e511e0d4533b81b8d16266d752c1d"
   },
   "integritySha256": "sha256:c1a21131b4f6f1e9d10b40ee42e491e23feb0666ca68f60dec712150c7317e39"

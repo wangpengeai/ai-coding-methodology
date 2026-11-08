@@ -8,7 +8,7 @@ import { describe, it } from 'node:test';
 
 import { resolveHostRoot } from '../src/host-root.mjs';
 
-describe('宿主根三级探测（内部任务-305）', () => {
+describe('宿主根三级探测（DEV-305）', () => {
   it('--data-dir 优先于 env 与平台标准位', () => {
     const root = resolveHostRoot('/tmp/explicit', { KIMI_CODE_HOME: '/tmp/env', HOME: '/tmp/home', USERPROFILE: '/tmp/home' }, 'linux');
     assert.equal(root, resolve('/tmp/explicit'), '显式旗标最高优先');

@@ -114,7 +114,7 @@ test('坏行容忍：混入非 JSON 行后读取仍返回有效记录', () => {
   }
 });
 
-test('readIncidentsWithStats：坏行计数与记录同次读盘（内部未决-92，内部任务-50）', () => {
+test('readIncidentsWithStats：坏行计数与记录同次读盘（OPEN-92，DEV-50）', () => {
   const root = tmpRoot();
   try {
     LIB.appendIncident(root, rec({ id: 'ri-ws-1' }));
@@ -132,7 +132,7 @@ test('readIncidentsWithStats：坏行计数与记录同次读盘（内部未决-
   }
 });
 
-test('CLI list --json：ledger.dropped 投影（内部未决-92，内部接口-19 §2 加法）', () => {
+test('CLI list --json：ledger.dropped 投影（OPEN-92，IF-COLLAB-19 §2 加法）', () => {
   const root = tmpRoot();
   try {
     LIB.appendIncident(root, rec({ id: 'ri-dr-1' }));
@@ -149,7 +149,7 @@ test('CLI list --json：ledger.dropped 投影（内部未决-92，内部接口-1
   }
 });
 
-test('CLI triage/resolve --json：成功面单行机器投影（内部未决-99，内部任务-50）', () => {
+test('CLI triage/resolve --json：成功面单行机器投影（OPEN-99，DEV-50）', () => {
   const root = tmpRoot();
   try {
     LIB.appendIncident(root, rec({ id: 'ri-tj-1' }));
@@ -259,12 +259,12 @@ test('CLI 子进程：list/triage/resolve 流转与 --selftest', () => {
   }
 });
 
-test('孤儿读原语已删（内部未决-47 收敛，内部任务-44）：openCountExcludingKind/openSplitBySession 不再导出', () => {
+test('孤儿读原语已删（OPEN-47 收敛，DEV-44）：openCountExcludingKind/openSplitBySession 不再导出', () => {
   assert.equal(typeof LIB.openCountExcludingKind, 'undefined', 'openCountExcludingKind 应已删除');
   assert.equal(typeof LIB.openSplitBySession, 'undefined', 'openSplitBySession 应已删除');
 });
 
-test('countSummary：exit-nonzero 探针分层不计待排查（内部任务-OSNOISE-1）', () => {
+test('countSummary：exit-nonzero 探针分层不计待排查（TASK-OSNOISE-1）', () => {
   const root = tmpRoot();
   try {
     LIB.appendIncident(root, rec({ id: 'tf-probe', session: 'sess-mine', errorClass: 'exit-nonzero' }));
@@ -282,7 +282,7 @@ test('countSummary：exit-nonzero 探针分层不计待排查（内部任务-OSN
     assert.deepEqual({ open: summary.open, pending: summary.pending }, { open: 4, pending: 2 }, 'countSummary 直测：未分层 open 与分层待排查同源');
     // errorClass 层**只作用于 tool-failure**（评审正确性 #1）：别的 kind 带该字段不得被静默
     LIB.appendIncident(root, rec({ id: 'll-x', session: 'sess-mine', kind: 'lease-loop', errorClass: 'exit-nonzero' }));
-    assert.equal(LIB.countSummary(root).pending, 3, 'lease-loop 即便带 exit-nonzero 仍计待排查（内部规则-3 强制显示不变量）');
+    assert.equal(LIB.countSummary(root).pending, 3, 'lease-loop 即便带 exit-nonzero 仍计待排查（R-M15-3 强制显示不变量）');
     assert.equal(LIB.isPendingIncident(rec({ id: 'll-y', kind: 'lease-loop', errorClass: 'exit-nonzero', status: 'open' })), true);
     LIB.setStatus(root, 'll-x', 'resolved', '自检收尾');
     assert.equal(LIB.countSummary(root).pending, 2, '收尾后回到两条');
@@ -296,7 +296,7 @@ test('countSummary：exit-nonzero 探针分层不计待排查（内部任务-OSN
     assert.equal(LIB.openCount(broken), 0, '同路径 openCount 亦为 0');
     // 排除名单锁死（视角二 #2：新增 errorClass 必须显式判定是否分层，改名单即改此断言）；
     // 分开断言两个名单，不做拼接顺序耦合（评审实例一 #8）。
-    assert.deepEqual([...LIB.PENDING_EXCLUDED_KINDS], ['lease-deny', 'lease-revive'], 'kind 层排除名单变化需同步判定（内部决策-045/内部任务-96：lease-revive 设计内恢复留痕不入待排查）');
+    assert.deepEqual([...LIB.PENDING_EXCLUDED_KINDS], ['lease-deny', 'lease-revive'], 'kind 层排除名单变化需同步判定（ADR-045/DEV-96：lease-revive 设计内恢复留痕不入待排查）');
     assert.deepEqual([...LIB.PENDING_EXCLUDED_ERROR_CLASSES], ['exit-nonzero'], 'errorClass 层排除名单变化需同步判定');
     assert.equal(LIB.PENDING_ERROR_CLASS_SCOPE_KIND, 'tool-failure', 'errorClass 轴作用域 kind 锁死（收尾复审 #4：提醒面文案与谓词同源）');
   } finally {
@@ -333,7 +333,7 @@ test('resolveOpenByKind：按 kind 批量解决 open 记录（append-only，前�
 
 // ── 内部任务-LEASEGATE-1（2026-09-22）：reopensWithin 行级读原语（lease-loop 升级判定数据源）──
 
-test('reopensWithin：同 id 振荡行级计数（readIncidents 的 id 折叠不可用，内部任务-LEASEGATE-1）', () => {
+test('reopensWithin：同 id 振荡行级计数（readIncidents 的 id 折叠不可用，TASK-LEASEGATE-1）', () => {
   const root = tmpRoot();
   try {
     LIB.appendIncident(root, rec({ id: 'ld-osc', kind: 'lease-deny', digest: 'dgosc00000000001', session: 'sess-x' }));
@@ -412,7 +412,7 @@ test('reopensWithin：坏行容忍（振荡行间的坏 JSON 行不中断计数�
   }
 });
 
-test('CLI 可见化（内部未决-14 批次）：前缀回填成功；不存在/歧义/回退拒绝 stderr 可见退 1', async () => {
+test('CLI 可见化（OPEN-14 批次）：前缀回填成功；不存在/歧义/回退拒绝 stderr 可见退 1', async () => {
   const root = tmpRoot();
   const { resolveIncidentId } = await import('../../scripts/incident-cli.mjs');
   try {
@@ -459,7 +459,7 @@ test('CLI 可见化（内部未决-14 批次）：前缀回填成功；不存在
 
 // ── 内部任务-DEBTFIX-1：同状态更正通道 / 归属列 / 拆分原语 ──
 
-test('setStatus 更正通道：同状态 + 不同 note 追加更正快照（内部任务-DEBTFIX-1）', () => {
+test('setStatus 更正通道：同状态 + 不同 note 追加更正快照（TASK-DEBTFIX-1）', () => {
   const home = tmpRoot();
   try {
     LIB.appendIncident(home, rec({ id: 'ri-am-1' }));
@@ -476,7 +476,7 @@ test('setStatus 更正通道：同状态 + 不同 note 追加更正快照（内�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('setStatus 幂等：同 note / 无 note 零新增（内部任务-DEBTFIX-1 防回归）', () => {
+test('setStatus 幂等：同 note / 无 note 零新增（TASK-DEBTFIX-1 防回归）', () => {
   const home = tmpRoot();
   try {
     LIB.appendIncident(home, rec({ id: 'ri-am-2' }));
@@ -490,7 +490,7 @@ test('setStatus 幂等：同 note / 无 note 零新增（内部任务-DEBTFIX-1 
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('更正行不计入 reopensWithin（lease-loop 升级通道隔离，内部任务-DEBTFIX-1 R9）', () => {
+test('更正行不计入 reopensWithin（lease-loop 升级通道隔离，TASK-DEBTFIX-1 R9）', () => {
   const home = tmpRoot();
   try {
     const q = { kind: 'lease-deny', digest: 'ld-am-0000000001', session: 'sess-x', windowMs: 600000, now: Date.now() };
@@ -503,7 +503,7 @@ test('更正行不计入 reopensWithin（lease-loop 升级通道隔离，内部�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('状态迁移不继承 amended 标记（内部任务-DEBTFIX-1 收尾评审 #4）', () => {
+test('状态迁移不继承 amended 标记（TASK-DEBTFIX-1 收尾评审 #4）', () => {
   const home = tmpRoot();
   try {
     const q = { kind: 'lease-deny', digest: 'ld-am-0000000002', session: 'sess-x', windowMs: 600000, now: Date.now() };
@@ -516,23 +516,23 @@ test('状态迁移不继承 amended 标记（内部任务-DEBTFIX-1 收尾评审
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('renderList 归属列：session 短标识 + taskId（内部任务-DEBTFIX-1）', () => {
+test('renderList 归属列：session 短标识 + taskId（TASK-DEBTFIX-1）', () => {
   const home = tmpRoot();
   try {
     LIB.appendIncident(home, rec({
       id: 'ri-own-1',
       session: 'session-78a08d5a-9d53-4eb9-ad1f-1b8c13621d9f',
-      taskId: '内部任务-1',
+      taskId: 'TASK-1',
     }));
     const out = spawnSync(process.execPath, [CLI, 'list'], { encoding: 'utf8', env: { ...process.env, WF_INCIDENT_ROOT: home } });
     assert.equal(out.status, 0);
-    assert.ok(out.stdout.includes('78a08d5a/内部任务-1'), '归属列含会话短标识与 taskId（剥 session- 前缀）');
+    assert.ok(out.stdout.includes('78a08d5a/TASK-1'), '归属列含会话短标识与 taskId（剥 session- 前缀）');
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
 // ── 内部任务-244 S07：list 人读渲染剥控制字符＋未知 kind 归一（防终端/模型输出注入） ──
 
-test('内部任务-244 S07：list 渲染剥控制字符且未知 kind 归一 unknown', () => {
+test('DEV-244 S07：list 渲染剥控制字符且未知 kind 归一 unknown', () => {
   const home = tmpRoot();
   try {
     const file = join(home, '.workflow', 'incidents.jsonl');
@@ -559,7 +559,7 @@ test('内部任务-244 S07：list 渲染剥控制字符且未知 kind 归一 unk
 
 // ── 内部任务-244 遗留项③：list --heat 与 digest 人读渲染同样过 sanitizeDisplayText ──
 
-test('内部任务-244 遗留：list --heat 与 digest 渲染剥控制字符（heat digest/cause/kind 键）', () => {
+test('DEV-244 遗留：list --heat 与 digest 渲染剥控制字符（heat digest/cause/kind 键）', () => {
   const home = tmpRoot();
   try {
     const file = join(home, '.workflow', 'incidents.jsonl');
@@ -581,7 +581,7 @@ test('内部任务-244 遗留：list --heat 与 digest 渲染剥控制字符（h
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('CLI --help：退 0 且用法含全部子命令（内部任务-20 A1/F8）', () => {
+test('CLI --help：退 0 且用法含全部子命令（DEV-20 A1/F8）', () => {
   const r = spawnSync(process.execPath, [CLI, '--help'], { encoding: 'utf8' });
   assert.equal(r.status, 0, `--help 必须退 0（实际 ${r.status}：${r.stderr}）`);
   for (const token of ['list', 'triage', 'resolve', 'lease', '--selftest', '--json']) {
@@ -591,7 +591,7 @@ test('CLI --help：退 0 且用法含全部子命令（内部任务-20 A1/F8）'
   assert.equal(h.status, 0, '-h 同 --help');
 });
 
-test('CLI list --json：机器可读投影（内部任务-20 A1/F8，内部接口-19 §2）', () => {
+test('CLI list --json：机器可读投影（DEV-20 A1/F8，IF-COLLAB-19 §2）', () => {
   const root = tmpRoot();
   try {
     // heat() 有 30 天窗口且按 digest 聚合（incident-store 的 heat 语义，评审 C2）⇒ 夹具须给
@@ -609,7 +609,7 @@ test('CLI list --json：机器可读投影（内部任务-20 A1/F8，内部接�
     assert.deepEqual(
       Object.keys(out).sort(),
       ['counts', 'countsByCause', 'filter', 'ledger', 'projectRoot', 'records', 'rulesVersion', 'schemaVersion'],
-      '键集即契约面：增删键必须同批改 内部接口-19 与用例（v2 加法：rulesVersion/countsByCause）',
+      '键集即契约面：增删键必须同批改 IF-COLLAB-19 与用例（v2 加法：rulesVersion/countsByCause）',
     );
     const heat = JSON.parse(spawnSync(process.execPath, [CLI, '--project-root', root, 'list', '--heat', '--json'], { encoding: 'utf8' }).stdout);
     assert.ok(Array.isArray(heat.heat) && heat.heat.length === 2, '--heat --json 出两行 heat 聚合（两条不同 digest + 近期时戳）');
@@ -625,7 +625,7 @@ test('CLI list --json：机器可读投影（内部任务-20 A1/F8，内部接�
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('CLI list --json：ledger.status=unreadable（存在但不可读，内部验收-1 声明的该臂）', () => {
+test('CLI list --json：ledger.status=unreadable（存在但不可读，A-M15-1 声明的该臂）', () => {
   const root = tmpRoot();
   try {
     // 账本路径造成**目录**（EISDIR 形态）：存在但不是常规文件 ⇒ unreadable，绝不伪装零记录
@@ -636,7 +636,7 @@ test('CLI list --json：ledger.status=unreadable（存在但不可读，内部�
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('CLI 写侧不受 -h 干扰：--note -h 不吞成用法（内部任务-20 A1 评审①2）', () => {
+test('CLI 写侧不受 -h 干扰：--note -h 不吞成用法（DEV-20 A1 评审①2）', () => {
   const root = tmpRoot();
   try {
     LIB.appendIncident(root, rec({ id: 'ri-note-h', ts: Date.now() }));
@@ -650,7 +650,7 @@ test('CLI 写侧不受 -h 干扰：--note -h 不吞成用法（内部任务-20 A
 
 // ── 内部任务-20 B 批（F9）：session 形态归一 + host 维度 ──
 
-test('内部任务-20 B/F9：normalizeSession 形态归一、归属不可判与幂等', () => {
+test('DEV-20 B/F9：normalizeSession 形态归一、归属不可判与幂等', () => {
   const n = LIB.normalizeSession;
   assert.equal(typeof n, 'function', '须导出 normalizeSession（归一单点）');
   assert.equal(n('session-abc'), n('abc'), 'session- 前缀形态归一为同值');
@@ -662,7 +662,7 @@ test('内部任务-20 B/F9：normalizeSession 形态归一、归属不可判与�
   assert.equal(n(n('sess_abc')), n('sess_abc'), '幂等：n(n(x))===n(x)（防二次剥前缀漂移）');
 });
 
-test('内部未决-110：同参数随即成功自愈——仅收口本会话窗内 open 态 tool-failure（内部任务-52）', () => {
+test('OPEN-110：同参数随即成功自愈——仅收口本会话窗内 open 态 tool-failure（DEV-52）', () => {
   const root = tmpRoot();
   const now = Date.now();
   const win = 5 * 60 * 1000;
@@ -679,7 +679,7 @@ test('内部未决-110：同参数随即成功自愈——仅收口本会话窗�
     assert.equal(r.resolved, 1, '恰收口目标一条');
     const byId = new Map(LIB.readIncidents(root).map((x) => [x.id, x]));
     assert.equal(byId.get('tf-h1').status, 'resolved');
-    assert.equal(byId.get('tf-h1').note, '同参数随即成功自愈（内部未决-110）');
+    assert.equal(byId.get('tf-h1').note, '同参数随即成功自愈（OPEN-110）');
     assert.equal(byId.get('tf-h2').status, 'open', '他会话不代结');
     assert.equal(byId.get('tf-h3').status, 'open', '窗外不收口');
     assert.equal(byId.get('tf-h4').status, 'triaged', '已 triaged 不被机器改判');
@@ -713,7 +713,7 @@ test('archiveAgedIncidents：三条件全命中恰迁移一条', () => {
     assert.equal(r.archived, 1, '恰迁移一条');
     const byDigest = new Map(LIB.readIncidents(root).map((x) => [x.digest, x]));
     assert.equal(byDigest.get('dg-arch-1').status, 'archived', '目标转 archived');
-    assert.equal(byDigest.get('dg-arch-1').note.includes('内部决策-041'), true, '迁移 note 带自动收口标记');
+    assert.equal(byDigest.get('dg-arch-1').note.includes('ADR-041'), true, '迁移 note 带自动收口标记');
     assert.equal(byDigest.get('dg-arch-2').status, 'open', 'error-flag 不误伤');
     assert.equal(byDigest.get('dg-arch-3').status, 'open', '未超龄不动');
     assert.equal(byDigest.get('dg-arch-6').status, 'resolved', '非 open 记录不被再迁移');
@@ -774,7 +774,7 @@ test('archiveAgedIncidents：缺省上限 500 截断（阶段门①：钉死真�
   }
 });
 
-test('archiveAgedIncidents：retry-loop 升级通道不受影响（内部验收-1 负例）', () => {
+test('archiveAgedIncidents：retry-loop 升级通道不受影响（A-M15-1 负例）', () => {
   const root = tmpRoot();
   const now = Date.now();
   try {
@@ -1012,7 +1012,7 @@ test('统一处置原语：机器只动 open', () => {
   }
 });
 
-test('内部模块-15 v2 旧账本零迁移兼容', () => {
+test('M15 v2 旧账本零迁移兼容', () => {
   const root = tmpRoot();
   const now = Date.now();
   const file = join(root, '.workflow', 'incidents.jsonl');
@@ -1081,7 +1081,7 @@ const emitPayload = (over = {}) => ({
   ...over,
 });
 
-test('内部模块-15 v2 CLI emit/promote/digest（锚：内部验收-25）', () => {
+test('M15 v2 CLI emit/promote/digest（锚：A-M15-25）', () => {
   const root = tmpRoot();
   try {
     // ── emit ──
@@ -1156,7 +1156,7 @@ test('内部模块-15 v2 CLI emit/promote/digest（锚：内部验收-25）', ()
     assert.ok(draft.includes('learning'), '草案含建议目标');
     assert.ok(draft.includes('em-1') && draft.includes('复核'), '草案含记录摘要与复核判据');
     assert.equal(LIB.readIncidents(root).find((x) => x.id === 'em-1').promotedTo, 'learning', '记录追加 promotedTo');
-    assert.ok(!existsSync(join(root, '经验记录')), '不写 learnings 权威面');
+    assert.ok(!existsSync(join(root, 'learnings.md')), '不写 learnings 权威面');
     assert.ok(!existsSync(join(root, 'specs', 'open-items.md')), '不写 OPEN 权威面');
     assert.ok(!existsSync(join(root, '.context', 'architecture-feedback.jsonl')), '不写架构反馈权威面');
     assert.equal(runCli(['--project-root', root, 'promote', 'em-1', '--to', 'bogus']).status, 1, '非法目标退 1');
@@ -1266,7 +1266,7 @@ test('评审修复 N3：emit 的 note/tool 等短串走 token 白名单（中文
   }
 });
 
-test('内部模块-15 v2 list --json 加法键：rulesVersion/countsByCause/records[].cause，pending 切 v2 单源', () => {
+test('M15 v2 list --json 加法键：rulesVersion/countsByCause/records[].cause，pending 切 v2 单源', () => {
   const root = tmpRoot();
   const now = Date.now();
   try {
@@ -1374,7 +1374,7 @@ test('评审修复 N4：countLostFacts 单源非空行计数（坏行/半行/空
   }
 });
 
-test('内部模块-15 v2 countCauses 单源：zeroKeys 预置 / 缺 cause 归 unclassified / 调用点键集各自保留', () => {
+test('M15 v2 countCauses 单源：zeroKeys 预置 / 缺 cause 归 unclassified / 调用点键集各自保留', () => {
   // 内部决策-063 修正案 3 决策 24.1：cause 计数抽 countCauses(rows,{zeroKeys=[]}) 单源；
   // 键集**按调用点保留**（CLI 无零键、store/summary 现状九键、retro 窗口过滤后无零键）。
   const rows = [{ cause: 'real-failure' }, { cause: 'probe-noise' }, {}, { cause: 'unclassified' }, { cause: '' }];
@@ -1412,7 +1412,7 @@ function writeLost(root, lines) {
   return file;
 }
 
-test('内部任务-320 旁路写入→dry-run 可回放（写侧 kind 归一后行可回放）', async () => {
+test('DEV-320 旁路写入→dry-run 可回放（写侧 kind 归一后行可回放）', async () => {
   const root = tmpRoot();
   try {
     const file = writeLost(root, [lostLine({ kind: 'observation-degraded', count: 2 })]);
@@ -1428,7 +1428,7 @@ test('内部任务-320 旁路写入→dry-run 可回放（写侧 kind 归一后�
   }
 });
 
-test('内部任务-320 旁路写入→真实回放落账（kind/cause=observation-degraded、severity=warn）', async () => {
+test('DEV-320 旁路写入→真实回放落账（kind/cause=observation-degraded、severity=warn）', async () => {
   const root = tmpRoot();
   try {
     writeLost(root, [lostLine({ kind: 'observation-degraded', count: 3 })]);
@@ -1448,7 +1448,7 @@ test('内部任务-320 旁路写入→真实回放落账（kind/cause=observatio
   }
 });
 
-test('内部模块-15 v2 lost-facts 回放（幂等/审计/原子截断）', async () => {
+test('M15 v2 lost-facts 回放（幂等/审计/原子截断）', async () => {
   const { replayLostFacts } = await import('../incident-cli.mjs');
   const now = Date.now();
   const v1 = lostLine({ ts: now - 1000, count: 1 });
@@ -1582,7 +1582,7 @@ test('内部模块-15 v2 lost-facts 回放（幂等/审计/原子截断）', asy
   }
 });
 
-test('内部模块-15 v2 单源收敛（规则表驱动/宿主探测/计数单源）', async () => {
+test('M15 v2 单源收敛（规则表驱动/宿主探测/计数单源）', async () => {
   // ① 宿主探测单源：前缀矩阵经公开 API（host-detect 为唯一实现；Kimi/MCode + ZCODE_ 真实组合）
   const { hostOf } = await import('../lib/host-detect.mjs');
   assert.equal(hostOf({}, { DSH_SESSION_ID: 's' }), 'dsh');
@@ -1658,7 +1658,7 @@ test('内部模块-15 v2 单源收敛（规则表驱动/宿主探测/计数单�
 
 // ── 内部任务-244 P01：open 面快速读（解析面读放大治理）────
 
-test('内部任务-244 P01：readOpenIncidents 末状态折叠口径（已 resolved 的 id 不入 open 面）', () => {
+test('DEV-244 P01：readOpenIncidents 末状态折叠口径（已 resolved 的 id 不入 open 面）', () => {
   const root = tmpRoot();
   try {
     LIB.appendIncident(root, rec({ id: 'fo-a', ts: 1000 }));
@@ -1683,7 +1683,7 @@ test('内部任务-244 P01：readOpenIncidents 末状态折叠口径（已 resol
 
 // ── 内部任务-244 P01：重试自愈索引（纯缓存）单元面 ──
 
-test('内部任务-244 P01：重试自愈索引——写读/过期 miss/上限 200/清理/删除', () => {
+test('DEV-244 P01：重试自愈索引——写读/过期 miss/上限 200/清理/删除', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'inc-idx-'));
   try {
     assert.equal(LIB.readRetryOpenIndex(stateDir, 'sess-idx').hit, false, '缺失即 miss');
@@ -1712,7 +1712,7 @@ test('内部任务-244 P01：重试自愈索引——写读/过期 miss/上限 2
   }
 });
 
-test('内部任务-244 P01：healRetryOpenByIndex 命中走索引（读为常数 ≤2；未入索引记录不被收口）', () => {
+test('DEV-244 P01：healRetryOpenByIndex 命中走索引（读为常数 ≤2；未入索引记录不被收口）', () => {
   const root = tmpRoot();
   const stateDir = mkdtempSync(join(tmpdir(), 'inc-idx-heal-'));
   try {
@@ -1741,7 +1741,7 @@ test('内部任务-244 P01：healRetryOpenByIndex 命中走索引（读为常数
   }
 });
 
-test('内部任务-244 P03：setStatusMany 批量迁移单次整读＋prevStatus 审计＋锁释放', () => {
+test('DEV-244 P03：setStatusMany 批量迁移单次整读＋prevStatus 审计＋锁释放', () => {
   const root = tmpRoot();
   try {
     for (let i = 0; i < 5; i += 1) {
@@ -1765,7 +1765,7 @@ test('内部任务-244 P03：setStatusMany 批量迁移单次整读＋prevStatus
   }
 });
 
-test('内部任务-244 P01：archiveAgedIncidents 迁移读盘次数与条数解耦（N 条 ≤2 次整读）', () => {
+test('DEV-244 P01：archiveAgedIncidents 迁移读盘次数与条数解耦（N 条 ≤2 次整读）', () => {
   const root = tmpRoot();
   try {
     for (let i = 0; i < 6; i += 1) {
@@ -1785,7 +1785,7 @@ test('内部任务-244 P01：archiveAgedIncidents 迁移读盘次数与条数解
   }
 });
 
-test('内部任务-244 P03：状态写锁——活锁占用失败可见；死 pid 陈旧锁回收后成功', () => {
+test('DEV-244 P03：状态写锁——活锁占用失败可见；死 pid 陈旧锁回收后成功', () => {
   const root = tmpRoot();
   const stateDir = mkdtempSync(join(tmpdir(), 'inc-slock-'));
   const prevState = process.env.WF_ROUTING_STATE_DIR;
@@ -1813,7 +1813,7 @@ test('内部任务-244 P03：状态写锁——活锁占用失败可见；死 pi
   }
 });
 
-test('内部任务-244 最终评审 B4：空/半写锁 2s 宽限回收（statSync 导入回归锁）', () => {
+test('DEV-244 最终评审 B4：空/半写锁 2s 宽限回收（statSync 导入回归锁）', () => {
   const root = tmpRoot();
   const stateDir = mkdtempSync(join(tmpdir(), 'inc-emptylock-'));
   const prevState = process.env.WF_ROUTING_STATE_DIR;
@@ -1838,7 +1838,7 @@ test('内部任务-244 最终评审 B4：空/半写锁 2s 宽限回收（statSyn
   }
 });
 
-test('内部任务-244 P03：prevStatus 非法链 → 拒绝并 status-regression 留痕', () => {
+test('DEV-244 P03：prevStatus 非法链 → 拒绝并 status-regression 留痕', () => {
   const root = tmpRoot();
   const stateDir = mkdtempSync(join(tmpdir(), 'inc-chain-'));
   const prevState = process.env.WF_ROUTING_STATE_DIR;
@@ -1863,7 +1863,7 @@ test('内部任务-244 P03：prevStatus 非法链 → 拒绝并 status-regressio
 
 // ── 内部任务-244 Q02：lost-facts 回放 dry-run 与真实执行共用一个决策树 ──
 
-test('内部任务-244 Q02：dry-run 计划与真实回放同源（planLostReplay 单决策树）', async () => {
+test('DEV-244 Q02：dry-run 计划与真实回放同源（planLostReplay 单决策树）', async () => {
   const root = tmpRoot();
   try {
     const { planLostReplay, replayLostFacts } = await import('../incident-cli.mjs');
@@ -1937,7 +1937,7 @@ function readJournalLines(file) {
   return readFileSync(file, 'utf8').split('\n').filter((l) => l.trim() !== '').map((l) => JSON.parse(l));
 }
 
-test('内部任务-349 归因判定：target 等值白名单（仓根/子目录/仓外一律）', async () => {
+test('DEV-349 归因判定：target 等值白名单（仓根/子目录/仓外一律）', async () => {
   assert.equal(typeof LIB.incidentJournalTargets, 'function', '须导出 incidentJournalTargets（纯判定）');
   const repo = mkdtempSync(join(tmpdir(), 'wf-dev349-pure-'));
   try {
@@ -1955,7 +1955,7 @@ test('内部任务-349 归因判定：target 等值白名单（仓根/子目录/
   }
 });
 
-test('内部任务-349 归因判定：相对 root 按 cwd 归一（子目录形态不得误判仓根账本）', () => {
+test('DEV-349 归因判定：相对 root 按 cwd 归一（子目录形态不得误判仓根账本）', () => {
   const repo = mkdtempSync(join(tmpdir(), 'wf-dev349-rel-'));
   const sub = join(repo, 'sub');
   mkdirSync(sub, { recursive: true });
@@ -1971,12 +1971,12 @@ test('内部任务-349 归因判定：相对 root 按 cwd 归一（子目录形�
   }
 });
 
-test('内部任务-349 归因写：appendIncident/setStatus 各追加一条 internal 行（sid/taskId 原样透传）', async (t) => {
+test('DEV-349 归因写：appendIncident/setStatus 各追加一条 internal 行（sid/taskId 原样透传）', async (t) => {
   const fx = await journalFixture();
   if (fx.skip) { t.skip('git 不可用'); return; }
   try {
     const journal = await journalFileFor(fx.state, fx.repo);
-    const a = LIB.appendIncident(fx.repo, { id: 'ri-dev349-1', ts: Date.now(), session: 'session-abc', taskId: '内部任务-349', kind: 'tool-failure', digest: 'd000000000000001' });
+    const a = LIB.appendIncident(fx.repo, { id: 'ri-dev349-1', ts: Date.now(), session: 'session-abc', taskId: 'DEV-349', kind: 'tool-failure', digest: 'd000000000000001' });
     assert.equal(a.ok, true, '账本追加须成功');
     let rows = readJournalLines(journal);
     assert.equal(rows.length, 1, '一次账本写须追加一条 journal 行');
@@ -1985,9 +1985,9 @@ test('内部任务-349 归因写：appendIncident/setStatus 各追加一条 inte
     assert.equal(rows[0].sid, 'session-abc', 'sid 取记录归属会话原样透传');
     const { sidDigestOf } = await import('../lib/write-audit.mjs');
     assert.equal(rows[0].sidDigest, sidDigestOf('session-abc'), 'sidDigest 与报表同算法（sha256 前 16 位）');
-    assert.equal(rows[0].taskId, '内部任务-349');
+    assert.equal(rows[0].taskId, 'DEV-349');
     assert.deepEqual(rows[0].targets, [LIB.INCIDENT_JOURNAL_TARGET], 'target 固定为账本等值路径');
-    const s = LIB.setStatus(fx.repo, 'ri-dev349-1', 'resolved', '内部任务-349');
+    const s = LIB.setStatus(fx.repo, 'ri-dev349-1', 'resolved', 'DEV-349');
     assert.equal(s.ok, true, '状态迁移须成功');
     rows = readJournalLines(journal);
     assert.equal(rows.length, 2, '状态迁移须再追加一条（账本写与归因行一比一）');
@@ -1997,7 +1997,7 @@ test('内部任务-349 归因写：appendIncident/setStatus 各追加一条 inte
   }
 });
 
-test('内部任务-349 归因写：非激活域（无 .git/.sdd）零 journal（既有夹具零污染保护锁）', async () => {
+test('DEV-349 归因写：非激活域（无 .git/.sdd）零 journal（既有夹具零污染保护锁）', async () => {
   const root = tmpRoot();
   const state = mkdtempSync(join(tmpdir(), 'wf-dev349-state-'));
   const saved = process.env.WF_ROUTING_STATE_DIR;
@@ -2013,7 +2013,7 @@ test('内部任务-349 归因写：非激活域（无 .git/.sdd）零 journal（
   }
 });
 
-test('内部任务-349 归因写：journal 写失败 fail-open（账本成功即 ok，且不抛）', async (t) => {
+test('DEV-349 归因写：journal 写失败 fail-open（账本成功即 ok，且不抛）', async (t) => {
   const fx = await journalFixture();
   if (fx.skip) { t.skip('git 不可用'); return; }
   const stateFile = join(fx.repo, 'state-as-file');
@@ -2028,7 +2028,7 @@ test('内部任务-349 归因写：journal 写失败 fail-open（账本成功即
   }
 });
 
-test('内部任务-349 归因写：缓存键含生效根与状态缝（同进程切换不得串味）', async (t) => {
+test('DEV-349 归因写：缓存键含生效根与状态缝（同进程切换不得串味）', async (t) => {
   const fx = await journalFixture();
   if (fx.skip) { t.skip('git 不可用'); return; }
   try {

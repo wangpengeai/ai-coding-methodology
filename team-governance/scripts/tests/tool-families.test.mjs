@@ -18,7 +18,7 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..'
 test('工具族内容断言：词表成员、大小写归一、未识别与空名一律 other 且不抛', () => {
   assert.equal(familyOf('pwsh'), 'shell');
   assert.equal(familyOf('Bash'), 'shell', 'PascalCase 归一（ZCode/Kimi 同名工具）');
-  assert.equal(familyOf('edit'), 'edit', 'DSH/MCode 小写形态（内部未决-84 的判别面）');
+  assert.equal(familyOf('edit'), 'edit', 'DSH/MCode 小写形态（OPEN-84 的判别面）');
   assert.equal(familyOf('write'), 'edit');
   assert.equal(familyOf('Edit'), 'edit');
   assert.equal(familyOf('Write'), 'edit');

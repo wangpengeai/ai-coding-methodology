@@ -71,7 +71,7 @@ test('残留：待办标记词边界——TODOS 不命中，TODO 命中（防误
     const r = run([dir]);
     assert.equal(r.status, 1);
     assert.match(r.stderr, /todo\.md:1/);
-    assert.match(r.stderr, /内部接口-8/);
+    assert.match(r.stderr, /IF-COLLAB-8/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

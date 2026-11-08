@@ -9,7 +9,7 @@
 // 作者：wangp  创建：2026-09-28  版权：MIT（见仓库 LICENSE）
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
@@ -39,6 +39,8 @@ import { apply } from '../src/index.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..', '..');
+// 公开包守卫（内部任务-365）：命令文档在公开包内按散文面改写，frontmatter 断言仅源仓执行。
+const IS_SOURCE_REPO = existsSync(join(REPO_ROOT, '.deliver'));
 const ROOTS = {
   workflow: join(REPO_ROOT, 'workflow'),
   'spec-gate': join(REPO_ROOT, 'spec-gate'),
@@ -163,7 +165,7 @@ test('loadCommand：argument-hint 的方括号占位符形态不得导致整条�
   for (const [file, hint] of [
     ['a.md', '[特性描述]'],
     ['b.md', '[项目根目录，缺省当前目录]'],
-    ['c.md', '[--task-id TASK-n] [--plan 内部计划] [--plan-check-block]'],
+    ['c.md', '[--task-id TASK-n] [--plan docs/plans/x.md] [--plan-check-block]'],
     // 真实资产里唯一的非方括号形态（spec-gate/commands/evidence.md）：角度括号 + 前置 `--`
     ['d.md', '-- <验证命令及参数>'],
   ]) {
@@ -172,7 +174,7 @@ test('loadCommand：argument-hint 的方括号占位符形态不得导致整条�
   }
 });
 
-test('真实 6 条 argument-hint 全形态原样保留（不做任何去括号/归一）', () => {
+test('真实 6 条 argument-hint 全形态原样保留（不做任何去括号/归一）', { skip: IS_SOURCE_REPO ? false : '公开包命令文档按散文面改写（源仓照跑）' }, () => {
   // 为什么"原样保留"是对的：方括号在 ZCode 里表达**可选**语义，是给用户看的占位符文案；
   // 适配层若擅自剥括号，UI 会显示成 `--task-id TASK-n] [--plan …`（第 27 批一次审计脚本
   // 的过度归一恰好演示了这个错误输出）。定位是"透传"，不是"美化"。
@@ -185,7 +187,7 @@ test('真实 6 条 argument-hint 全形态原样保留（不做任何去括号/�
   }
   // spec-gate gate 命令 argument-hint 在 内部任务-241 内部模块-05 修正为「--task-id 去外层方括号、可选参数保留方括号」；
   // 适配层定位是透传，故断言应跟随真实资产（不再期望旧的全外层方括号形态）。
-  assert.ok(hints.includes('--task-id TASK-n [--plan 内部计划] [--plan-check-block]'));
+  assert.ok(hints.includes('--task-id TASK-n [--plan docs/plans/x.md] [--plan-check-block]'));
   assert.ok(hints.includes('-- <验证命令及参数>'));
 });
 

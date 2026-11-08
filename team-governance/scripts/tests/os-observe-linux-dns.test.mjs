@@ -29,7 +29,7 @@ const SHIPPED_CONVERTER = join(HERE, '..', 'adapters', 'os-observe', 'collect-li
 // ⇒ 两个 dnsEnable 用例依赖真实 fs 权限位（实现侧 carrierOk 复核 + mode 断言），win32 真实 fs 无法
 // 取证；平台条件跳过，POSIX 宿主照常覆盖（先例 check-freeze.test.mjs:125 的 skip 选项形态）。
 const POSIX_FS_SKIP = process.platform === 'win32'
-  ? 'win32 无 POSIX 可执行位语义（chmod exec 位不可表示）——dnsEnable 真实 fs 取证仅 POSIX 宿主可跑（内部任务-284）'
+  ? 'win32 无 POSIX 可执行位语义（chmod exec 位不可表示）——dnsEnable 真实 fs 取证仅 POSIX 宿主可跑（DEV-284）'
   : false;
 
 // ── pcap 构造 helper（测试内造字节，不落二进制 fixture）──
@@ -363,7 +363,7 @@ test('dnsEnable(uid=0)：部署+双 crontab 写入复核（%%s 转义/引号形�
     // uid=0：root 面与用户面同表——单次合并双块写（防两次 read-filter-write 互相覆盖）
     assert.ok(tables.user.includes(DNS_ROOT_MARKER), '同表含保活 marker');
     assert.ok(!tables.user.includes('pgrep'), '保活不含 pgrep（sh -c 整行自匹配短路已结构性消除）');
-    assert.ok(tables.user.includes(`'${join(dnsRoot, 'keepalive.sh')}'`), '保活行调 root 属主载体（H10 迁移，内部任务-281）');
+    assert.ok(tables.user.includes(`'${join(dnsRoot, 'keepalive.sh')}'`), '保活行调 root 属主载体（H10 迁移，DEV-281）');
     const cronKeepalive = tables.user.split('\n').find((l) => l.includes('keepalive.sh'));
     assert.ok(!cronKeepalive.includes('%'), 'cron 行零 % 字符（本机 crond 不支持 %% 转义——真机实测捕获，%s 只存脚本内）');
     // 部署脚本体承载保活语义：flock 单实例 + 记账绝对路径 + -Z root + strftime %s（载体=root 属主目录）
@@ -379,7 +379,7 @@ test('dnsEnable(uid=0)：部署+双 crontab 写入复核（%%s 转义/引号形�
     assert.ok(script.includes('/dns-*.pcap 2>/dev/null'),
       '裁剪锚定 dns-*.pcap 且目录引号内不带 glob（引号内不展开）');
     assert.ok(script.includes('-W 24'), '轮转窗 -W 24 与裁剪窗 tail -n +25 同宽配对在册（ROTATE_KEEP 同源）');
-    assert.ok(script.includes('内部未决-36'), '生成脚本内实证注记在场');
+    assert.ok(script.includes('OPEN-36'), '生成脚本内实证注记在场');
     // H10 载体属主面（内部任务-281）：uid=0 直写＋显式 chmod——目录与脚本三方一致 0755（round1 E1）
     assert.equal(statSync(join(dnsRoot, 'keepalive.sh')).mode & 0o777, 0o755, 'root 载体脚本 0755（显式 chmod 防御 umask）');
     assert.equal(statSync(join(dnsRoot, 'dns-spool')).mode & 0o777, 0o755, 'spool 目录 0755（用户只读——转换器非提权消费）');

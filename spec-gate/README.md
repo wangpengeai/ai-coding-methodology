@@ -77,4 +77,4 @@ node core/validator/validate_specs.mjs --mode plan --config 内部治理状态 -
 
 ## 许可
 
-MIT（见 LICENSE）；历史派生自 sdd-methodology（MIT，wangp），自阶段4（内部决策-051 D2）起以本仓为唯一事实源；core 目录按 内部规则-9 保持基线一致。
+MIT（见 LICENSE）；core 目录按 内部规则-9 保持基线一致。

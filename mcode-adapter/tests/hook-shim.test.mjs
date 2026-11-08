@@ -39,7 +39,7 @@ import { checkFrameAgainstHost, materializeAll, removeRoot, runShim, tempRoot, w
 // （静默降级为上下文帧或零输出 ⇒ 方向偏放行）。本组用例把两处判据副本（hook-lib 的
 // translateResponse 与 hook-shim 的 blockedPrompt）钉死为「`decision==='block'` 即阻断」，
 // 且 reason 缺失时以兜底文案构因（与 kimi 侧同语义）。
-describe('内部任务-320 内部未决-281：阻断取因口径（无 reason 仍计阻断）', () => {
+describe('DEV-320 OPEN-281：阻断取因口径（无 reason 仍计阻断）', () => {
   let dataDir = '';
   let pkgRoot = '';
   let stateDir = '';
@@ -433,7 +433,7 @@ describe('真实 ZCode 钩子经 shim（物化包）', () => {
     removeRoot(stateDir);
   });
 
-  it('引擎装载不用 require(esm)：含顶层 await 的 ESM 引擎副本可装载（内部未决-58）', () => {
+  it('引擎装载不用 require(esm)：含顶层 await 的 ESM 引擎副本可装载（OPEN-58）', () => {
     // 夹具：复制真实装机包，把 plugin-core/src/engine.mjs 换成"TLA 包装器"——语义与真实现全等
     // （re-export 同目录实现），但 require(esm) 结构性不可装载（ERR_REQUIRE_ASYNC_MODULE）
     // ⇒ 在**当前 Node** 上也能判别装载机制（无需装旧版 Node）。
@@ -516,7 +516,7 @@ describe('真实 ZCode 钩子经 shim（物化包）', () => {
     const ledger = readFileSync(join(incidents, '.workflow', 'incidents.jsonl'), 'utf8');
     assert.match(ledger, /"kind":"tool-failure"/);
     assert.match(ledger, /"errorClass":"error-flag"/, '结构化 is_error → error-flag 类别');
-    assert.doesNotMatch(ledger, /mcode-probe-failing-command/, '账本只落指纹与类别，不落命令原文（内部规则-2 脱敏）');
+    assert.doesNotMatch(ledger, /mcode-probe-failing-command/, '账本只落指纹与类别，不落命令原文（R-M15-2 脱敏）');
     removeRoot(repo);
   });
 
@@ -566,7 +566,7 @@ describe('真实 ZCode 钩子经 shim（物化包）', () => {
     removeRoot(stateDir);
   });
 
-  it('状态面：写-读往返一致（原子落盘不留半文件；字典往返保留 内部任务-347）', () => {
+  it('状态面：写-读往返一致（原子落盘不留半文件；字典往返保留 DEV-347）', () => {
     const dir = tempRoot('shim-roundtrip');
     let state = emptyState();
     state = enqueuePending(state, '待投递');
@@ -583,7 +583,7 @@ describe('真实 ZCode 钩子经 shim（物化包）', () => {
 // ── 内部任务-356：合成 UPS relay-drain 投递腿（2026-11-08） ─────────────────────────────────
 // 为什么单独成 describe 且置顶层：本组检的是**已装产物**（生成期给四包补的 UPS 处理器）与载体
 // 契约，不是「真实 ZCode 钩子经 shim」的行为面——嵌进那个 describe 会把它们记到无关分组下。
-describe('内部任务-356：合成 UPS relay-drain 投递腿', () => {
+describe('DEV-356：合成 UPS relay-drain 投递腿', () => {
   let dataDir = '';
   let pkgRoot = '';
   let upsScript = '';
@@ -672,7 +672,7 @@ describe('内部任务-356：合成 UPS relay-drain 投递腿', () => {
 });
 
 // ── 内部任务-356：relay-drain 载体契约（提前退会让宿主写管道 EPIPE，必须读到 end） ──────────────
-describe('内部任务-356：relay-drain 载体契约', () => {
+describe('DEV-356：relay-drain 载体契约', () => {
   const drainPath = join(REPO_ROOT, 'mcode-adapter', 'mcode', 'relay-drain.mjs');
 
   it('读 stdin 至 end 才退 0，且零 stdout 零 stderr', async () => {
@@ -697,7 +697,7 @@ describe('内部任务-356：relay-drain 载体契约', () => {
 // ── 运行观测能力域声明（2026-10-24 内部任务-192 P2 步骤 12；内部接口-1 MCode 列） ───────────────
 // 用例用 `it(` 以纳入本适配层 README 的「测试计数与实测逐文件一致」契约（只统计 `it(`）；
 // 计数与规格面已随本批刷新（README hook-shim ×33、总数 147）。
-it('内部任务-192 能力域 env：声明注入钩子子进程环境（键存在/JSON 可解析/既有键不变）', () => {
+it('DEV-192 能力域 env：声明注入钩子子进程环境（键存在/JSON 可解析/既有键不变）', () => {
   // hook-lib 装载即声明（shim 随后以 `{...process.env}` 构造子进程 env）⇒ 当前进程 env 可见。
   assert.ok(Object.hasOwn(process.env, 'WF_OBSERVATION_CAPABILITIES'), 'env 键存在（shim 子进程继承面）');
   const caps = JSON.parse(process.env.WF_OBSERVATION_CAPABILITIES);
@@ -710,7 +710,7 @@ it('内部任务-192 能力域 env：声明注入钩子子进程环境（键存�
   const DECLARATION_TO_REGISTRY = { none: 'unavailable', degraded: 'degraded', relay: 'degraded', selftest: 'degraded' };
   for (const domain of Object.keys(caps)) {
     assert.ok(Object.hasOwn(DECLARATION_TO_REGISTRY, caps[domain]), `${domain}: 声明值 ${caps[domain]} 未登记映射（新增声明形态须同批补映射）`);
-    assert.equal(mirror[domain], DECLARATION_TO_REGISTRY[caps[domain]], `${domain}: 声明 ${caps[domain]} ↔ 能力登记 ${mirror[domain]} 不一致（内部接口-1 MCode 列）`);
+    assert.equal(mirror[domain], DECLARATION_TO_REGISTRY[caps[domain]], `${domain}: 声明 ${caps[domain]} ↔ 能力登记 ${mirror[domain]} 不一致（IF-HOST-1 MCode 列）`);
   }
   assert.deepEqual(Object.keys(caps).sort(), ['failureFacts', 'hookFailure', 'injection', 'selfCheck'], '键集＝四能力域');
   // 既有键不变：注入只增一键，不覆盖/删除 shim 既有环境（ZCODE_PLUGIN_ROOT/ZCODE_PROJECT_DIR/MCODE_HOOK_EVENT 等）。

@@ -137,6 +137,6 @@ test('exemptionQuoteMatches：trim 全等、内部空白保留、大小写敏感
 
 test('摘要分离：quoteSha 与 record digest 各自单源', () => {
   assert.equal(exemptQuoteDigest('abc'), sha12('abc'));
-  assert.equal(exemptionRecordDigest('内部任务-1', 'abc'), sha12('内部任务-1|abc'));
-  assert.notEqual(exemptQuoteDigest('abc'), exemptionRecordDigest('内部任务-1', 'abc'));
+  assert.equal(exemptionRecordDigest('DEV-1', 'abc'), sha12('DEV-1|abc'));
+  assert.notEqual(exemptQuoteDigest('abc'), exemptionRecordDigest('DEV-1', 'abc'));
 });

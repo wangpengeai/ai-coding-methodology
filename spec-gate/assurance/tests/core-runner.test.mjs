@@ -10,7 +10,7 @@ const tmp = () => realpathSync(mkdtempSync(join(tmpdir(), 'dev151-runner-')));
 function repoWithSuite() {
   const dir = tmp();
   mkdirSync(join(dir, '.sdd'), { recursive: true });
-  writeFileSync(join(dir, '内部治理状态'), '{}');
+  writeFileSync(join(dir, '.sdd/suite.json'), '{}');
   return dir;
 }
 function stub(dir, name, body) {

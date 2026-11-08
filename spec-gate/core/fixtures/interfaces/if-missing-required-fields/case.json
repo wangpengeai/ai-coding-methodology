@@ -1,5 +1,5 @@
 {
-  "caseId": "FX-内部接口-001",
+  "caseId": "FX-IF-MISSING-001",
   "input": "input/spec.json",
   "mode": "baseline"
 }

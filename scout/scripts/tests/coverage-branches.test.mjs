@@ -35,29 +35,29 @@ test('mode-state 读侧分支：损坏 JSON/v1 legacy/非法 expiry/v2 迁移/�
     assert.equal(readStatus(root).reason, 'corrupt');
     writeMode(root, { mode: 'explore', expiry: '2999-01-01' });
     assert.equal(readStatus(root).reason, 'legacy');
-    writeMode(root, { schemaVersion: 3, mode: 'nope', expiry: '2999-01-01', taskId: '内部任务-1', transactionId: 't' });
+    writeMode(root, { schemaVersion: 3, mode: 'nope', expiry: '2999-01-01', taskId: 'DEV-1', transactionId: 't' });
     assert.equal(readStatus(root).reason, 'corrupt');
-    writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: 'bad', taskId: '内部任务-1', transactionId: 't' });
+    writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: 'bad', taskId: 'DEV-1', transactionId: 't' });
     assert.equal(readStatus(root).reason, 'corrupt');
-    writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: '2000-01-01', taskId: '内部任务-1', transactionId: 't' });
+    writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: '2000-01-01', taskId: 'DEV-1', transactionId: 't' });
     const expired = readStatus(root);
     assert.equal(expired.reason, 'expired');
     assert.equal(expired.overdue, true);
-    writeMode(root, { schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-1', transactionId: 't' });
+    writeMode(root, { schemaVersion: 2, mode: 'explore', expiry: '2999-01-01', taskId: 'DEV-1', transactionId: 't' });
     assert.equal(readStatus(root).reason, 'migratable-v2');
     // 事务待恢复：存在 .scout/transaction.json（pendingRecovery）
-    writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-1', transactionId: 't' });
+    writeMode(root, { schemaVersion: 3, mode: 'explore', expiry: '2999-01-01', taskId: 'DEV-1', transactionId: 't' });
     mkdirSync(join(root, '.scout', 'transactions'), { recursive: true });
     writeFileSync(join(root, '.scout', 'transactions', 'journal.json'), JSON.stringify({ schemaVersion: 1, transactionId: 'tx1', op: 'open' }), 'utf8');
     assert.equal(readStatus(root).reason, 'pending-recovery');
     // 坏 ledger 行：readLedger 容忍坏行、不抛且只返回可解析条目（真断言：坏行被丢弃）
     mkdirSync(join(root, '.scout'), { recursive: true });
-    writeFileSync(join(root, '.scout', 'ledger.jsonl'), `{bad\n${JSON.stringify({ event: 'open', taskId: '内部任务-1' })}\n`, 'utf8');
+    writeFileSync(join(root, '.scout', 'ledger.jsonl'), `{bad\n${JSON.stringify({ event: 'open', taskId: 'DEV-1' })}\n`, 'utf8');
     const { events: ledger, dropped } = readLedger(root);
     assert.ok(Array.isArray(ledger), 'readLedger 须返回 events 数组');
     assert.equal(dropped, 1, `坏行须计入 dropped（实际 ${dropped}）`);
     assert.equal(ledger.length, 1, `坏行须被丢弃，仅保留 1 条可解析行（实际 ${ledger.length}）`);
-    assert.equal(ledger[0].taskId, '内部任务-1', '可解析行内容须保真');
+    assert.equal(ledger[0].taskId, 'DEV-1', '可解析行内容须保真');
     // 提供方候选：env 注入可见 + bridgeAvailable 布尔
     const prev = process.env.SCOUT_TX_PROVIDER;
     process.env.SCOUT_TX_PROVIDER = join(REPO, 'spec-gate/assurance/scout-tx.mjs');
@@ -76,18 +76,18 @@ test('mode-lifecycle 导出函数负例矩阵：open/renew/abandon/recover/migra
   const lifecycle = await import('../mode-lifecycle.mjs');
   const root = makeRoot();
   try {
-    assert.equal(lifecycle.open(root, { mode: 'nope', expiry: '2999-01-01', taskId: '内部任务-1' }).ok, false);
-    assert.equal(lifecycle.open(root, { mode: 'explore', expiry: 'bad', taskId: '内部任务-1' }).ok, false);
+    assert.equal(lifecycle.open(root, { mode: 'nope', expiry: '2999-01-01', taskId: 'DEV-1' }).ok, false);
+    assert.equal(lifecycle.open(root, { mode: 'explore', expiry: 'bad', taskId: 'DEV-1' }).ok, false);
     assert.equal(lifecycle.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'bad id' }).ok, false);
-    assert.equal(lifecycle.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-1', owner: 'x' }).ok, true);
+    assert.equal(lifecycle.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'DEV-1', owner: 'x' }).ok, true);
     // 重复 open：已有有效模式 → 拒绝
-    assert.equal(lifecycle.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-1' }).ok, false);
+    assert.equal(lifecycle.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'DEV-1' }).ok, false);
     assert.equal(lifecycle.renew(root, { taskId: 'OTHER-1', newExpiry: '2999-02-02' }).ok, false);
-    assert.equal(lifecycle.renew(root, { taskId: '内部任务-1', newExpiry: 'bad' }).ok, false);
-    assert.equal(lifecycle.renew(root, { taskId: '内部任务-1', newExpiry: '2999-02-02' }).ok, true);
+    assert.equal(lifecycle.renew(root, { taskId: 'DEV-1', newExpiry: 'bad' }).ok, false);
+    assert.equal(lifecycle.renew(root, { taskId: 'DEV-1', newExpiry: '2999-02-02' }).ok, true);
     assert.equal(lifecycle.abandon(root, { taskId: 'OTHER-1', disposition: 'x' }).ok, false);
-    assert.equal(lifecycle.abandon(root, { taskId: '内部任务-1', disposition: '' }).ok, false);
-    assert.equal(lifecycle.abandon(root, { taskId: '内部任务-1', disposition: '结束' }).ok, true);
+    assert.equal(lifecycle.abandon(root, { taskId: 'DEV-1', disposition: '' }).ok, false);
+    assert.equal(lifecycle.abandon(root, { taskId: 'DEV-1', disposition: '结束' }).ok, true);
     // recover/migrate/sync 空态幂等
     assert.equal(lifecycle.recover(root).ok, true);
     assert.equal(lifecycle.migrateV2(root).ok, false);
@@ -95,9 +95,9 @@ test('mode-lifecycle 导出函数负例矩阵：open/renew/abandon/recover/migra
     // 损坏 mode.json：status 判无效；open 以覆盖方式恢复（行为结果断言，T8 修复路径）
     writeMode(root, '{bad');
     assert.equal(lifecycle.status(root).valid, false);
-    const recoveredOpen = lifecycle.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: '内部任务-1' });
+    const recoveredOpen = lifecycle.open(root, { mode: 'explore', expiry: '2999-01-01', taskId: 'DEV-1' });
     assert.equal(recoveredOpen.ok, true, 'open 须可覆盖损坏声明（行为结果断言）');
     assert.equal(lifecycle.status(root).valid, true, 'open 后声明恢复有效');
-    assert.equal(lifecycle.status(root).taskId, '内部任务-1');
+    assert.equal(lifecycle.status(root).taskId, 'DEV-1');
   } finally { cleanup(root); }
 });

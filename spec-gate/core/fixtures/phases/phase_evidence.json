@@ -38,8 +38,8 @@
         "AC-TDD-001",
         "AC-FAST-001",
         "AC-OPT-001",
-        "AC-内部决策-001",
-        "AC-内部未决-001",
+        "AC-ADR-001",
+        "AC-OPEN-001",
         "AC-HOST-001",
         "AC-ROUTE-001"
       ]
@@ -83,7 +83,7 @@
       "status": "completed",
       "evidence": [
         "host-examples/ 建立并通过非规范性声明检查（AC-HOST-001）",
-        "fixtures/migration/migration_ledger.json 除 1 条 pending-delete（external_contract 模板物理在位且被 ATOMIC_TEMPLATES/manifest/selftest 三面锁存在——按 run_acceptance checkMig「待物理删除 N 条」如实口径保留）外全部 deleted 闭合（AC-MIG-001；内部任务-347/内部未决-143 口径勘正）",
+        "fixtures/migration/migration_ledger.json 除 1 条 pending-delete（external_contract 模板物理在位且被 ATOMIC_TEMPLATES/manifest/selftest 三面锁存在——按 run_acceptance checkMig「待物理删除 N 条」如实口径保留）外全部 deleted 闭合（AC-MIG-001；DEV-347/OPEN-143 口径勘正）",
         "fixtures/skill_evals/routing_results.json 聚合三技能行为评测（AC-ROUTE-001）",
         "run_acceptance.py 19 项统一复跑（AC-SCOPE-001）",
         "插件化扩展：commands/hooks/任务台账/证据捕获/边界检查（2026-09-03）"

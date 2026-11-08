@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "verification-内部任务-86-3",
+  "receiptId": "verification-DEV-86-3",
   "kind": "verification",
-  "taskId": "内部任务-86",
+  "taskId": "DEV-86",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,7 +15,7 @@
       "documents": "117"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-18-DEV-86-runtime-unification-stage1b-production-scout-twins.md",
       "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
     },
     "algorithmVersion": "1"
@@ -25,22 +25,22 @@
   "evidenceProfile": "full",
   "evidenceRefs": [
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-bc/assurance-js.log",
       "sha256": "sha256:48200fa82e83292b6a57db2f02e0969cca6ef52838b4409d0c1cfb3269ed595c",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-bc/assurance-py.log",
       "sha256": "sha256:dcf7afee89ff04e3b3b2dbb914b494fec1761cb70049f07f607872902a2e21b6",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-bc/consistency.log",
       "sha256": "sha256:5c9fef83e9d29d8929f0df5d7058c0bbf20b8d18f2b3700ddab7484ddb662390",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-b-smoke.log",
       "sha256": "sha256:3d07553fc2b86228213ece66261370a1c315bef5eaba596dc79d5e8f9f8e0018",
       "exitCode": 0
     }

@@ -82,7 +82,7 @@ describe('relay-drain 投递腿', () => {
     }
   });
 
-  it('容量淘汰计数：队列空但本会话 droppedBySession>0 → 投递附淘汰提醒并清键（内部任务-347 分账）', () => {
+  it('容量淘汰计数：队列空但本会话 droppedBySession>0 → 投递附淘汰提醒并清键（DEV-347 分账）', () => {
     const f = fixture('drain-dropped');
     try {
       seed(f.stateDir, [], { droppedBySession: { 's:S-drop': 2 } });
@@ -97,7 +97,7 @@ describe('relay-drain 投递腿', () => {
     }
   });
 
-  it('连击预算归零：本会话 streaks>0 时不早退，UPS 后删键（内部任务-347 字典形态；归零腿为将来新增 Stop 钩子预留）', () => {
+  it('连击预算归零：本会话 streaks>0 时不早退，UPS 后删键（DEV-347 字典形态；归零腿为将来新增 Stop 钩子预留）', () => {
     const f = fixture('drain-streak');
     try {
       seed(f.stateDir, [], { streaks: { 's:S-streak': 3 } });

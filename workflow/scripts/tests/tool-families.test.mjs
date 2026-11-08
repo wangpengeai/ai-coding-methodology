@@ -35,13 +35,13 @@ test('工具族内容断言：词表成员、大小写归一、未识别与空�
   assert.ok(Array.isArray(SHELL_TOOLS) && Array.isArray(EDIT_TOOLS), '词表以数组常量导出（单源消费面）');
 });
 
-test('内部未决-89（内部任务-46）：ApplyPatch 登记为 edit 族——ZCode 别名写面工具（宿主 0.16.9 WYi 表取证）', () => {
-  assert.equal(familyOf('ApplyPatch'), 'edit', 'PascalCase 归一（内部任务-18 宿主 bundle 取证：ApplyPatch="file-write"）');
+test('OPEN-89（DEV-46）：ApplyPatch 登记为 edit 族——ZCode 别名写面工具（宿主 0.16.9 WYi 表取证）', () => {
+  assert.equal(familyOf('ApplyPatch'), 'edit', 'PascalCase 归一（DEV-18 宿主 bundle 取证：ApplyPatch="file-write"）');
   assert.equal(familyOf('applypatch'), 'edit', '小写形态同族');
   assert.ok(EDIT_TOOLS.includes('applypatch'), '词表成员（单源）');
 });
 
-test('跨资产等值（内部任务-59/内部未决-84）：team-governance 侧同款表与 workflow 侧逐词等值且判定一致', () => {
+test('跨资产等值（DEV-59/OPEN-84）：team-governance 侧同款表与 workflow 侧逐词等值且判定一致', () => {
   // 两插件各自独立发行（装机态各落独立 cache 目录 ⇒ 跨插件相对导入不成立），故各持一份副本；
   // 本断言即两副本的漂移把守：任一侧改词表（增/删/改名）而未同步另一侧即红。
   assert.deepEqual(TG_SHELL_TOOLS, SHELL_TOOLS, 'shell 词表逐词等值');
@@ -117,7 +117,7 @@ test('对拍断言：hostToolInventory 四宿主列逐词分族，分类清单�
 
 // ── 内部任务-352（2026-11-08）：ask 族归一谓词（内部模块-8 内部规则-8/内部验收-47）──
 
-test('isAskUserQuestionTool：跨宿主 ask 族归一（内部任务-352）', async () => {
+test('isAskUserQuestionTool：跨宿主 ask 族归一（DEV-352）', async () => {
   const { isAskUserQuestionTool } = await import('../lib/tool-families.mjs');
   for (const name of ['AskUserQuestion', 'ask_user_question', 'askUserQuestion', 'ASKUSERQUESTION', 'ask-user-question']) {
     assert.equal(isAskUserQuestionTool(name), true, `${name} 必须命中 ask 族`);

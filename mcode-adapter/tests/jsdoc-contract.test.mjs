@@ -5,11 +5,14 @@
 //       ③ README 必须写明四个面的形态与已知降级（形态说明的单一事实源在此）。
 // 作者：wangp  创建：2026-09-30  版权：MIT（见 workflow/LICENSE）
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { ADAPTER_ROOT } from './helpers.mjs';
+
+// 公开包守卫（内部任务-365）：README 在公开包内按散文面改写；源仓照跑。
+const IS_SOURCE_REPO = existsSync(join(ADAPTER_ROOT, '..', '.deliver'));
 
 /** 生产面源文件（测试固件整面豁免，与仓库 lint 第 9/12 块同款姿态）。 */
 function productionFiles() {
@@ -69,7 +72,7 @@ describe('JSDoc 契约', () => {
   });
 
   it('生产面源文件数量固定（新增文件须同步本用例覆盖面）', () => {
-    assert.equal(productionFiles().length, 1 + 9 + 3, 'cli.mjs + src/9（含 host-presence.mjs，内部决策-048）+ mcode/3（hook-shim/hook-lib/relay-drain）');
+    assert.equal(productionFiles().length, 1 + 9 + 3, 'cli.mjs + src/9（含 host-presence.mjs，ADR-048）+ mcode/3（hook-shim/hook-lib/relay-drain）');
   });
 });
 
@@ -100,8 +103,8 @@ describe('README 契约', () => {
     assert.equal(Number(installTotal[1]), count, 'install.test.mjs 的「N 项」写法与实测不符');
   });
 
-  it('形态说明齐备：四个面、命令面处置、降级登记、agent 面默认关', () => {
-    for (const needle of ['钩子面', 'skill 面', '命令面', 'agent 面', '待投递', '连击上限', '默认关闭', '内部未决-48']) {
+  it('形态说明齐备：四个面、命令面处置、降级登记、agent 面默认关', { skip: IS_SOURCE_REPO ? false : '公开包 README 按散文面改写（源仓照跑）' }, () => {
+    for (const needle of ['钩子面', 'skill 面', '命令面', 'agent 面', '待投递', '连击上限', '默认关闭', 'OPEN-48']) {
       assert.ok(readme.includes(needle), `README 缺「${needle}」`);
     }
   });

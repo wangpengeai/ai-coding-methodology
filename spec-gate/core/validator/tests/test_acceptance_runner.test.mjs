@@ -11,8 +11,8 @@ const RUNNER = join(CORE_ROOT, 'validator/run_acceptance.mjs');
 // 独立 oracle：期望集合写死，不与被测实现的 ALL_ACS 同源
 const ALL_ACS = [
   'AC-CORE-001', 'AC-RULE-001', 'AC-GATE-001', 'AC-SCHEMA-001', 'AC-DDD-001', 'AC-TDD-001',
-  'AC-FAST-001', 'AC-OPT-001', 'AC-VAL-001', 'AC-RO-001', 'AC-PATH-001', 'AC-内部决策-001',
-  'AC-内部未决-001', 'AC-IF-001', 'AC-IF-002', 'AC-PACK-001', 'AC-HOST-001', 'AC-ROUTE-001',
+  'AC-FAST-001', 'AC-OPT-001', 'AC-VAL-001', 'AC-RO-001', 'AC-PATH-001', 'AC-ADR-001',
+  'AC-OPEN-001', 'AC-IF-001', 'AC-IF-002', 'AC-PACK-001', 'AC-HOST-001', 'AC-ROUTE-001',
   'AC-MIG-001', 'AC-MD-001', 'AC-SCOPE-001', 'AC-PLUG-001', 'AC-PLUG-002', 'AC-PLUG-003',
 ];
 function run(args, env = {}) {

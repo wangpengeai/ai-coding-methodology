@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "verification-内部任务-78-1",
+  "receiptId": "verification-DEV-78-1",
   "kind": "verification",
-  "taskId": "内部任务-78",
+  "taskId": "DEV-78",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -22,7 +22,7 @@
   "evidenceProfile": "full",
   "evidenceRefs": [
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-78/operation-record.md",
       "sha256": "sha256:262f592fc098238fdf550b57d28c7544630e511e0d4533b81b8d16266d752c1d",
       "exitCode": 0
     }

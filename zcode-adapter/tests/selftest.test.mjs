@@ -40,7 +40,7 @@ test('mkBumpFixture/runBumpTest 导出夹具：参数闸与成功/回滚路径�
     const bad = runBumpTest(repo, { version: '9.9', note: 'x' });
     assert.equal(bad.exit, 1, '非法版本须拒');
     assert.match(bad.log, /版本/);
-    const ok = runBumpTest(repo, { version: '0.2.0', note: '内部任务-209 达阈夹具', checks: () => ({ ok: true, log: '' }) });
+    const ok = runBumpTest(repo, { version: '0.2.0', note: 'DEV-209 达阈夹具', checks: () => ({ ok: true, log: '' }) });
     assert.equal(ok.exit, 0, `合法 bump 应成功：${ok.log.slice(0, 400)}`);
     const same = runBumpTest(repo, { version: '0.2.0', note: 'x' });
     assert.equal(same.exit, 1, '同版本须拒');

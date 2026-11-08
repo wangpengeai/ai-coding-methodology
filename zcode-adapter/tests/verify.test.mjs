@@ -284,7 +284,7 @@ test('resolveMarketRoot：只认 directory 源并按市场名过滤（url 诱饵
 
 // ── 内部任务-276 D4/D5：读面守护族 ──────────────────────────────────────────────
 
-test('symlink 三形态：目录链接跳过/文件链接按目标哈希/悬挂链接不产条目不抛（内部任务-276 D4）', (t) => {
+test('symlink 三形态：目录链接跳过/文件链接按目标哈希/悬挂链接不产条目不抛（DEV-276 D4）', (t) => {
   const root = tempRoot('dev276-symlink');
   try {
     writeFile(join(root, 'real', 'a.txt'), 'A');
@@ -307,7 +307,7 @@ test('symlink 三形态：目录链接跳过/文件链接按目标哈希/悬挂�
   }
 });
 
-test('期望树读面失败折叠：市场插件目录被同名文件占用→F2 面红、七面报告完整（内部任务-276 D4）', () => {
+test('期望树读面失败折叠：市场插件目录被同名文件占用→F2 面红、七面报告完整（DEV-276 D4）', () => {
   const w = freshWorld();
   try {
     rmSync(join(w.market, 'plugins', 'workflow'), { recursive: true, force: true });
@@ -322,7 +322,7 @@ test('期望树读面失败折叠：市场插件目录被同名文件占用→F2
   }
 });
 
-test('F3 镜像清单不可读：镜像 marketplace.json 被同名目录占用→F3 面红（内部任务-276 D5）', () => {
+test('F3 镜像清单不可读：镜像 marketplace.json 被同名目录占用→F3 面红（DEV-276 D5）', () => {
   const w = freshWorld();
   try {
     rmSync(join(w.zhome.mirrorRoot, 'marketplace.json'), { force: true });
@@ -336,13 +336,13 @@ test('F3 镜像清单不可读：镜像 marketplace.json 被同名目录占用�
   }
 });
 
-test('IGNORED：.publish-backups 段命中（内部任务-276 D20）', () => {
+test('IGNORED：.publish-backups 段命中（DEV-276 D20）', () => {
   assert.equal(IGNORED('.publish-backups/20261101000000-1/workflow'), true);
 });
 
 // ── 内部任务-276 D20：verify 负分支与 --json 输出面 ─────────────────────────────
 
-test('verify 负分支四例：F1 目录缺失/F1 清单不可读/F2 清单不可读/F3 镜像插件目录缺失（内部任务-276 D20）', () => {
+test('verify 负分支四例：F1 目录缺失/F1 清单不可读/F2 清单不可读/F3 镜像插件目录缺失（DEV-276 D20）', () => {
   const cases = [
     { name: 'F1 仓库源目录缺失', face: 'F1', text: '仓库源目录缺失', break: (w) => rmSync(join(w.repo, 'workflow'), { recursive: true, force: true }) },
     { name: 'F1 仓库清单不可读', face: 'F1', text: '仓库清单不可读', break: (w) => writeFileSync(join(w.repo, 'workflow', '.zcode-plugin', 'plugin.json'), '{bad') },
@@ -364,7 +364,7 @@ test('verify 负分支四例：F1 目录缺失/F1 清单不可读/F2 清单不�
   }
 });
 
-test('verify --json 输出面：全绿夹具退 0 且 JSON 含七面与探测键（内部任务-276 D20）', () => {
+test('verify --json 输出面：全绿夹具退 0 且 JSON 含七面与探测键（DEV-276 D20）', () => {
   const w = freshWorld();
   try {
     const r = runMain(['verify', '--repo-root', w.repo, '--zcode-home', w.zhome.home, '--marketplace', w.market, '--json']);

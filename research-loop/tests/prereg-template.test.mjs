@@ -46,7 +46,7 @@ function sectionBody(text, n) {
   return text.slice(from, next ? from + next.index : text.length);
 }
 
-test('模板在场（assets 下预注册卡模板唯一，内部规则-4 单一事实源）', () => {
+test('模板在场（assets 下预注册卡模板唯一，R-M19-4 单一事实源）', () => {
   assert.ok(existsSync(TPL), `缺失 ${TPL}`);
   const tmplFiles = readdirSync(join(here, '..', 'assets')).filter((f) => f.includes('prereg') || f.includes('预注册'));
   assert.deepEqual(tmplFiles, ['prereg-card-template.md'], 'assets 下预注册卡模板须唯一（插件内单一事实源）');

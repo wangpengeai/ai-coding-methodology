@@ -42,7 +42,7 @@ test('ADR fixture ≥5 且 oracle 含 expectedRuleIds', () => {
   }
 });
 
-test('F-16：ADR 非对象形态产 RULE-内部决策-001 而非抛错', () => {
-  assert.equal(checkAdr(null, 'x.json')[0].ruleId, 'RULE-内部决策-001');
-  assert.equal(checkAdr([], 'x.json')[0].ruleId, 'RULE-内部决策-001');
+test('F-16：ADR 非对象形态产 RULE-ADR-001 而非抛错', () => {
+  assert.equal(checkAdr(null, 'x.json')[0].ruleId, 'RULE-ADR-001');
+  assert.equal(checkAdr([], 'x.json')[0].ruleId, 'RULE-ADR-001');
 });

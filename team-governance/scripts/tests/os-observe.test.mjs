@@ -32,7 +32,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 // ── classify（纯函数，用户规则作参数传入，内置清单函数内建）──
 
-test('分类三态与优先级矩阵（内部验收-6）', () => {
+test('分类三态与优先级矩阵（A-M14-6）', () => {
   assert.equal(classifyDomain('zcode.z.ai', {}).class, 'allowed');            // builtin-allow 精确
   assert.equal(classifyDomain('api.z.ai', {}).basis.rule, 'builtin-allow');   // *.z.ai 后缀
   assert.equal(classifyDomain('oss-cn-beijing.aliyuncs.com', {}).class, 'suspicious');
@@ -70,7 +70,7 @@ test('buildDomainIndex 只取 A/AAAA 且同 ip 取字典序最小（确定性）
   assert.equal(idx.size, 1);
 });
 
-test('classifySample：tcp 经 viaDomain 判定，无 viaDomain 归 unknown（内部验收-6）', () => {
+test('classifySample：tcp 经 viaDomain 判定，无 viaDomain 归 unknown（A-M14-6）', () => {
   const idx = new Map([['203.0.113.7', 'oss-cn-beijing.aliyuncs.com']]);
   const suspiciousTcp = classifySample(
     { kind: 'tcp', ip: '203.0.113.7', port: 443, processName: 'zcode.exe' }, {}, idx);
@@ -98,7 +98,7 @@ test('classifySample：dns 行 endpoint=domain 且 process 恒 null（已知限�
   assert.equal(dns.idInput, 'win-dns-cache-poll||example.com'); // process 空串参与 id 输入
 });
 
-test('classifySample：dnsq 行 source=win-sysmon 带进程归因（内部任务-SYSMON-1，内部规则-9）', () => {
+test('classifySample：dnsq 行 source=win-sysmon 带进程归因（TASK-SYSMON-1，R-M14-9）', () => {
   const q = classifySample({ kind: 'dnsq', domain: 'example.com', data: '203.0.113.20', qtype: 1, processName: 'node' }, {}, new Map());
   assert.equal(q.source, 'win-sysmon');
   assert.equal(q.process, 'node');
@@ -124,7 +124,7 @@ test('classifySample：dnsq 行 source=win-sysmon 带进程归因（内部任务
   assert.equal(bare.idInput, 'win-sysmon||a.example');
 });
 
-test('classifySample：样本自带 source 优先、缺省按 kind 旧映射（内部任务-OBSO-LINUX-1，内部规则-10）', () => {
+test('classifySample：样本自带 source 优先、缺省按 kind 旧映射（TASK-OBSO-LINUX-1，R-M14-10）', () => {
   const lin = classifySample({ kind: 'tcp', ip: '203.0.113.7', port: 443, processName: 'zcode', source: 'linux-net-tcp-poll' }, {}, new Map());
   assert.equal(lin.source, 'linux-net-tcp-poll');
   assert.ok(lin.idInput.startsWith('linux-net-tcp-poll|'), `idInput 应以 linux 后端开头（收到 ${lin.idInput}）`);
@@ -137,7 +137,7 @@ test('classifySample：样本自带 source 优先、缺省按 kind 旧映射（�
   assert.ok(legacy.idInput.startsWith('win-net-tcp-poll|'));
 });
 
-test('classifyEndpoint：IP/CIDR 规则三态与优先级（内部任务-OBSO-LINUX-1，内部验收-16）', () => {
+test('classifyEndpoint：IP/CIDR 规则三态与优先级（TASK-OBSO-LINUX-1，A-M14-16）', () => {
   const cidr = classifySample({ kind: 'tcp', ip: '203.0.113.99', port: 443 }, { userAllow: ['203.0.113.0/24'], userSuspicious: [] }, new Map());
   assert.equal(cidr.class, 'allowed');
   assert.deepEqual(cidr.basis, { rule: 'user-allow-ip', pattern: '203.0.113.0/24' });
@@ -263,7 +263,7 @@ test('appendFinding 秘密兜底：白名单字段值命中秘密模式转 parse
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('readRawSince：游标增量推进、只读新行（内部验收-7）', () => {
+test('readRawSince：游标增量推进、只读新行（A-M14-7）', () => {
   const home = tmpHome('os-observe-');
   try {
     const raw = join(home, 'raw');
@@ -361,7 +361,7 @@ test('digestOf：sha256 前 16 位', () => {
 
 // ── registry（后端注册表，内部决策-029 决策 2 载体）──
 
-test('BACKENDS 恰六项且字段齐（内置-扩展分列 + Linux/darwin 增补，内部任务-OBSO-LINUX-1/内部任务-OBSO-DARWIN-1）', () => {
+test('BACKENDS 恰六项且字段齐（内置-扩展分列 + Linux/darwin 增补，TASK-OBSO-LINUX-1/TASK-OBSO-DARWIN-1）', () => {
   assert.equal(BACKENDS.length, 6);
   const ids = BACKENDS.map((b) => b.id);
   assert.deepEqual(ids, ['win-net-tcp-poll', 'win-dns-cache-poll', 'win-sysmon', 'linux-net-tcp-poll', 'linux-dns-tcpdump', 'darwin-net-tcp-poll']);
@@ -420,7 +420,7 @@ test('probeBackend：平台匹配可用、跨平台 unavailable 且指引不含�
   }
 });
 
-test('capabilityAvailability：按平台过滤内置后端集（内部任务-OBSO-LINUX-1 语义修订）', () => {
+test('capabilityAvailability：按平台过滤内置后端集（TASK-OBSO-LINUX-1 语义修订）', () => {
   assert.equal(capabilityAvailability({ platform: 'win32' }).availability, 'available'); // 双 win builtin，linux 项不拖累
   const lin = capabilityAvailability({ platform: 'linux' });
   assert.equal(lin.availability, 'available'); // linux builtin 单枚即足，win 项不在平台集
@@ -453,7 +453,7 @@ function appendRaw(home, lines, day = '20260919') {
   appendFileSync(join(home, 'raw', `samples-${day}.jsonl`), `${lines.join('\n')}\n`, 'utf8');
 }
 
-test('pipeline：首轮全量、同批同 id 去重、firstSeen/lastSeen 取样本时间、返回计数（内部验收-7）', () => {
+test('pipeline：首轮全量、同批同 id 去重、firstSeen/lastSeen 取样本时间、返回计数（A-M14-7）', () => {
   const home = tmpHome('os-observe-');
   try {
     writeRaw(home, [
@@ -502,7 +502,7 @@ test('pipeline：节流三档（allowed 24h / unknown 1h / suspicious 每轮刷�
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('pipeline：类别翻转不受目标类节流（allow 后下一轮即重分类，内部任务-ALLOWCLI-1）', () => {
+test('pipeline：类别翻转不受目标类节流（allow 后下一轮即重分类，TASK-ALLOWCLI-1）', () => {
   const home = tmpHome('os-observe-');
   try {
     const t0 = Date.parse('2026-09-21T10:00:00.000Z');
@@ -576,7 +576,7 @@ test('pipeline：raw 坏行降级 parse-error finding（fail-toward-alert 不丢
 // 平台注入：本组断言的是 win32 语义，一律显式 platform:'win32'——不注入时非 Windows 宿主落到实现的
 // unavailable 分支（taskQuery 恒 installed:false），验证集在非 Windows 机必红（2026-09-20 实测）。
 
-test('install：部署到稳定路径/播种幂等/schtasks 参数数组/参数白名单（内部验收-8）', () => {
+test('install：部署到稳定路径/播种幂等/schtasks 参数数组/参数白名单（A-M14-8）', () => {
   const home = tmpHome('os-observe-');
   const prev = process.env.OS_OBSERVE_HOME;
   process.env.OS_OBSERVE_HOME = home;
@@ -728,7 +728,7 @@ test('adapter：非 win32 → unavailable + unverified，summary 不含未实测
   } finally { rmSync(home, { recursive: true, force: true }); }
 });
 
-test('pipeline：真实采集样本方言回归（内部任务-OSOBS-1 实测回落 fixture）', () => {
+test('pipeline：真实采集样本方言回归（TASK-OSOBS-1 实测回落 fixture）', () => {
   // 实测 2026-09-19 本机 collect.ps1 输出：键序与 ps1 ConvertTo-Json 实际形态一致（与合成夹具不同序）
   const fixture = readFileSync(join(HERE, 'fixtures', 'os-observe', 'real-sample-line.jsonl'), 'utf8');
   const samples = fixture.trim().split('\n').map((l) => JSON.parse(l));
@@ -851,7 +851,7 @@ test('opportunisticCollect：脚本超时/抛错 fail-open，后续脚本照跑'
   }
 });
 
-test('isValidRulePattern：域名 glob/IP/CIDR 受纳，注入面拒绝（内部任务-ALLOWCLI-1）', () => {
+test('isValidRulePattern：域名 glob/IP/CIDR 受纳，注入面拒绝（TASK-ALLOWCLI-1）', () => {
   assert.equal(isValidRulePattern('*.aliyuncs.com'), true);
   assert.equal(isValidRulePattern('dashscope.aliyuncs.com'), true);
   assert.equal(isValidRulePattern('2408:400a:3e::1'), true);
@@ -865,7 +865,7 @@ test('isValidRulePattern：域名 glob/IP/CIDR 受纳，注入面拒绝（内部
   assert.equal(isValidRulePattern(' 1.2.3.4'), false); // 首尾空白在 IP 分支也不得漏过（终审正确性 3）
 });
 
-test('appendUserRule：幂等追加/字段保留/deny 映射/坏形态失败可见（内部任务-ALLOWCLI-1）', () => {
+test('appendUserRule：幂等追加/字段保留/deny 映射/坏形态失败可见（TASK-ALLOWCLI-1）', () => {
   const home = tmpHome('os-observe-');
   mkdirSync(home, { recursive: true });
   writeFileSync(join(home, 'config.json'), JSON.stringify({ schemaVersion: 1, allow: ['keep.example.com'], suspicious: [], pollMinutes: 15, surfaceDetail: true }), 'utf8');

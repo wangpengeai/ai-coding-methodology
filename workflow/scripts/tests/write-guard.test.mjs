@@ -23,7 +23,7 @@ const { projectKey } = await import('../../hooks/routing-lib.mjs');
 const { requiredProjectSkills } = await import('../../scripts/lib/project-skills.mjs');
 
 // ── 内部任务-308 / 内部未决-283：基线快照预算 env 缝（钩层透传既有 gitTimeoutMs 缝） ──
-test('内部未决-283：WF_WRITE_AUDIT_BASELINE_BUDGET_MS 解析与钩层接线', async () => {
+test('OPEN-283：WF_WRITE_AUDIT_BASELINE_BUDGET_MS 解析与钩层接线', async () => {
   const { resolveBaselineBudget } = await import('../../scripts/lib/write-audit.mjs');
   assert.equal(resolveBaselineBudget({}), undefined, '未设置 → 保持库缺省预算');
   assert.equal(resolveBaselineBudget({ WF_WRITE_AUDIT_BASELINE_BUDGET_MS: '30000' }), 30000, '合法正整数 → 透传');
@@ -69,14 +69,14 @@ const edit = (toolInput, toolName = 'Edit') => ({ tool_name: toolName, tool_inpu
 function seedLease(state, opts = {}) {
   const root = opts.root ?? REPO;
   const prev = process.env.WF_ROUTING_STATE_DIR;
-  const claimFile = join(root, 'docs', 'plans', 'claims', '内部任务-261.json');
+  const claimFile = join(root, 'docs', 'plans', 'claims', 'DEV-261.json');
   const claimBefore = existsSync(claimFile) ? readFileSync(claimFile, 'utf8') : null;
   process.env.WF_ROUTING_STATE_DIR = state;
   try {
     const ch = issueChallenge(projectKey(root), opts.sessionId ? { sessionId: opts.sessionId } : {});
     const act = activateLease(projectKey(root), {
       leaseId: ch.leaseId,
-      taskId: '内部任务-261',
+      taskId: 'DEV-261',
       skill: 'plan-execution',
       ...(opts.planPath !== undefined ? { planPath: opts.planPath } : {}),
       ...(opts.planRoot !== undefined ? { planRoot: opts.planRoot } : {}),
@@ -115,7 +115,7 @@ function seedChallengeOnly(state, opts = {}) {
   }
 }
 
-test('内部任务-261 写仓闸：shadow 期 C1 记 would-deny（信封零输出）', () => {
+test('DEV-261 写仓闸：shadow 期 C1 记 would-deny（信封零输出）', () => {
   const state = makeState();
   try {
     const r = run(shell('echo hi > probe.txt'), state, { WF_WRITE_GUARD_MODE: 'shadow' });
@@ -143,11 +143,11 @@ function assertDenyDecision(r) {
   return env;
 }
 
-test('内部任务-261 写仓闸：C1 重定向写文件 deny（enforce，exit 2＋完整声明命令）', () => {
+test('DEV-261 写仓闸：C1 重定向写文件 deny（enforce，exit 2＋完整声明命令）', () => {
   const state = makeState();
   try {
     // 带 planPath 的 plan-execution 租约：deny 文案须自动补 --plan（否则照抄不可执行）
-    const leaseId = seedLease(state, { sessionId: 's1', planPath: '内部计划', planRoot: REPO });
+    const leaseId = seedLease(state, { sessionId: 's1', planPath: 'docs/plans/2026-10-31-DEV-261-hard-rule-9-mechanical-enforcement-plan.md', planRoot: REPO });
     const r = enforce(shell('echo hi > probe.txt'), state);
     const env = assertDenyDecision(r);
     const msg = env.hookSpecificOutput.systemMessage ?? '';
@@ -160,7 +160,7 @@ test('内部任务-261 写仓闸：C1 重定向写文件 deny（enforce，exit 2
   }
 });
 
-test('内部任务-261 写仓闸：C2/C3/C4 enforce 同档 deny', () => {
+test('DEV-261 写仓闸：C2/C3/C4 enforce 同档 deny', () => {
   const state = makeState();
   try {
     for (const cmd of [
@@ -175,7 +175,7 @@ test('内部任务-261 写仓闸：C2/C3/C4 enforce 同档 deny', () => {
   }
 });
 
-test('内部任务-261 写仓闸：C5 enforce 仍不阻断（恒 shadow）', () => {
+test('DEV-261 写仓闸：C5 enforce 仍不阻断（恒 shadow）', () => {
   const state = makeState();
   try {
     const r = enforce(shell('cp a.txt b.txt'), state);
@@ -187,7 +187,7 @@ test('内部任务-261 写仓闸：C5 enforce 仍不阻断（恒 shadow）', () 
   }
 });
 
-test('内部任务-261 写仓闸：enforce fail-open（坏负载/崩溃注入不落 deny）', () => {
+test('DEV-261 写仓闸：enforce fail-open（坏负载/崩溃注入不落 deny）', () => {
   const state = makeState();
   try {
     assert.equal(enforce('{bad json', state).status, 0, '坏负载 fail-open');
@@ -199,7 +199,7 @@ test('内部任务-261 写仓闸：enforce fail-open（坏负载/崩溃注入不
   }
 });
 
-test('内部任务-261 写仓闸：C5 shadow 零阻断', () => {
+test('DEV-261 写仓闸：C5 shadow 零阻断', () => {
   const state = makeState();
   try {
     const r = run(shell('cp a.txt b.txt'), state);
@@ -215,7 +215,7 @@ test('内部任务-261 写仓闸：C5 shadow 零阻断', () => {
   }
 });
 
-test('C1 仓外目标负例：tmp 重定向不记 C1（内部决策-066 D4/D10）', () => {
+test('C1 仓外目标负例：tmp 重定向不记 C1（ADR-066 D4/D10）', () => {
   const state = makeState();
   try {
     const outside = join(tmpdir(), `write-guard-outside-target-${process.pid}.log`);
@@ -276,7 +276,7 @@ test('fail-open：载荷不可解析 / 崩溃注入 → exit 0 且 hook-errors �
   }
 });
 
-test('内部任务-261 写仓闸：声明放行（租约 scriptWrites）与旧租约拒', () => {
+test('DEV-261 写仓闸：声明放行（租约 scriptWrites）与旧租约拒', () => {
   const state = makeState();
   try {
     // 旧租约（无 scriptWrites）→ 仍 deny（向后兼容的安全方向）
@@ -285,7 +285,7 @@ test('内部任务-261 写仓闸：声明放行（租约 scriptWrites）与旧�
     // 新租约带 scriptWrites → 同类命令 allow（exit 0 零输出）
     const state2 = makeState();
     try {
-      seedLease(state2, { sessionId: 's1', scriptWrites: [{ reason: '内部任务-261 P3 声明式脚本写测试' }] });
+      seedLease(state2, { sessionId: 's1', scriptWrites: [{ reason: 'DEV-261 P3 声明式脚本写测试' }] });
       const r = enforce(shell('echo hi > probe.txt'), state2);
       assert.equal(r.status, 0, `声明后须放行（实际 ${r.status}）`);
       assert.equal(r.stdout.trim(), '', '放行零输出');
@@ -297,12 +297,12 @@ test('内部任务-261 写仓闸：声明放行（租约 scriptWrites）与旧�
   }
 });
 
-test('内部任务-261 写仓闸：deny→declare→retry 集成（同一命令第二次放行）', () => {
+test('DEV-261 写仓闸：deny→declare→retry 集成（同一命令第二次放行）', () => {
   const state = makeState();
   try {
     const cmd = 'echo hi > probe.txt';
     assertDenyDecision(enforce(shell(cmd), state)); // 未声明 → deny
-    seedLease(state, { sessionId: 's1', scriptWrites: [{ reason: '内部任务-261 deny→declare→retry 集成证据' }] });
+    seedLease(state, { sessionId: 's1', scriptWrites: [{ reason: 'DEV-261 deny→declare→retry 集成证据' }] });
     const retry = enforce(shell(cmd), state); // 声明后重试 → 放行
     assert.equal(retry.status, 0, '声明后重试须放行');
     assert.equal(retry.stdout.trim(), '');
@@ -314,7 +314,7 @@ test('内部任务-261 写仓闸：deny→declare→retry 集成（同一命令�
   }
 });
 
-test('内部任务-261 写仓闸：无活跃租约时 deny 文案用本轮挑战令牌（非 [object Object]）', () => {
+test('DEV-261 写仓闸：无活跃租约时 deny 文案用本轮挑战令牌（非 [object Object]）', () => {
   const state = makeState();
   try {
     const token = seedChallengeOnly(state, { sessionId: 's1' });
@@ -334,7 +334,7 @@ test('--selftest 退出 0 且输出 OK/PASS（enforce 阶段可见）', () => {
   assert.match(r.stdout, /enforce=true/, '阶段旗标须可见');
 });
 
-test('内部任务-261 写仓闸：edit 缺目标 unknown 行；baseline 已存在不覆盖；坏状态根 deny 占位', () => {
+test('DEV-261 写仓闸：edit 缺目标 unknown 行；baseline 已存在不覆盖；坏状态根 deny 占位', () => {
   const state = makeState();
   const badState = join(tmpdir(), `wf-badstate-${process.pid}-${Date.now()}`);
   try {
@@ -410,7 +410,7 @@ function rmAliasFixture(fx) {
 
 const shellAt = (cwd, command, extra = {}) => ({ tool_name: 'Bash', tool_input: { command }, cwd, session_id: 's1', ...extra });
 
-test('内部任务-285 受检路径：C1 重定向受检直接拒绝（即便已声明 scriptWrites）；非受检保持现行为', () => {
+test('DEV-285 受检路径：C1 重定向受检直接拒绝（即便已声明 scriptWrites）；非受检保持现行为', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -433,7 +433,7 @@ test('内部任务-285 受检路径：C1 重定向受检直接拒绝（即便已
   }
 });
 
-test('内部任务-285 受检路径：C2 受检目标只认 --script-edit-code（通用 scriptWrites 不足）', () => {
+test('DEV-285 受检路径：C2 受检目标只认 --script-edit-code（通用 scriptWrites 不足）', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -461,7 +461,7 @@ test('内部任务-285 受检路径：C2 受检目标只认 --script-edit-code�
   }
 });
 
-test('内部任务-285 受检路径：子目录 cwd 按执行目录解析（`../` 目标不得错位成非受检）', () => {
+test('DEV-285 受检路径：子目录 cwd 按执行目录解析（`../` 目标不得错位成非受检）', () => {
   const state = makeState();
   const repo = makeGitFixture();
   const sub = join(repo, 'services', 'deep');
@@ -477,7 +477,7 @@ test('内部任务-285 受检路径：子目录 cwd 按执行目录解析（`../
 });
 
 // ── 内部任务-339（内部未决-254①）：混合形态重定向受检目标逐目标恒拒（与宿主类无关） ─────────────
-test('内部任务-339 受检混合形态：重定向受检目标逐目标恒拒', () => {
+test('DEV-339 受检混合形态：重定向受检目标逐目标恒拒', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -516,7 +516,7 @@ test('内部任务-339 受检混合形态：重定向受检目标逐目标恒拒
 });
 
 // ── 内部任务-339（内部未决-254③④）：shadow 观测补漏＋core.ignorecase 折叠门控 ─────────────────
-test('内部任务-339 shadow 观测：generic 声明＋受检 C2 的 wouldBeDeny=true 且 journal 含 trackedTierViolation', () => {
+test('DEV-339 shadow 观测：generic 声明＋受检 C2 的 wouldBeDeny=true 且 journal 含 trackedTierViolation', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -527,14 +527,14 @@ test('内部任务-339 shadow 观测：generic 声明＋受检 C2 的 wouldBeDen
     assert.equal(row.decision, 'record');
     assert.equal(row.reason, 'tracked-shadow');
     assert.equal(row.wouldBeDeny, true, 'enforce 档会拦（generic 对受检不足）⇒ wouldBeDeny 须 true');
-    assert.equal(row.trackedTierViolation, true, '受检分级违例须入 journal（内部未决-254③）');
+    assert.equal(row.trackedTierViolation, true, '受检分级违例须入 journal（OPEN-254③）');
   } finally {
     rmSync(state, { recursive: true, force: true });
     rmSync(repo, { recursive: true, force: true });
   }
 });
 
-test('内部任务-339 折叠门控：core.ignorecase=false 时不折叠（大写目标判 untracked 走 generic 通道）', () => {
+test('DEV-339 折叠门控：core.ignorecase=false 时不折叠（大写目标判 untracked 走 generic 通道）', () => {
   const state = makeState();
   const repo = makeGitFixture(['tracked-root.txt'], { ignorecase: 'false' });
   try {
@@ -550,7 +550,7 @@ test('内部任务-339 折叠门控：core.ignorecase=false 时不折叠（大�
   }
 });
 
-test('内部任务-285 受检路径：win32/darwin 大小写变体按受检拒绝（code-review r2 证据层）', { skip: !(process.platform === 'win32' || process.platform === 'darwin') }, () => {
+test('DEV-285 受检路径：win32/darwin 大小写变体按受检拒绝（code-review r2 证据层）', { skip: !(process.platform === 'win32' || process.platform === 'darwin') }, () => {
   const state = makeState();
   // 索引保留原大小写；目标用小写——折叠缺失时会误判 untracked 而放行
   const repo = makeGitFixture(['Tracked-Root.txt']);
@@ -564,7 +564,7 @@ test('内部任务-285 受检路径：win32/darwin 大小写变体按受检拒�
   }
 });
 
-test('内部任务-285 受检路径：tool_input.workdir 显式基准优先于 payload.cwd（code-review r1）', () => {
+test('DEV-285 受检路径：tool_input.workdir 显式基准优先于 payload.cwd（code-review r1）', () => {
   const state = makeState();
   const repo = makeGitFixture();
   const sub = join(repo, 'services', 'deep');
@@ -583,7 +583,7 @@ test('内部任务-285 受检路径：tool_input.workdir 显式基准优先于 p
   }
 });
 
-test('内部任务-311 F5b 受检路径预算缝：env=1 确定性降级可观测；剥离 env 时同旧行为（1500）', () => {
+test('DEV-311 F5b 受检路径预算缝：env=1 确定性降级可观测；剥离 env 时同旧行为（1500）', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -604,7 +604,7 @@ test('内部任务-311 F5b 受检路径预算缝：env=1 确定性降级可观�
   }
 });
 
-test('内部任务-285 受检路径：git 不可用记 degraded（不冒充 clean）；trackedTier=shadow 只记录', () => {
+test('DEV-285 受检路径：git 不可用记 degraded（不冒充 clean）；trackedTier=shadow 只记录', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -635,7 +635,7 @@ test('内部任务-285 受检路径：git 不可用记 degraded（不冒充 clea
 });
 
 // ── 内部任务-332：受检判定归一锚（canonical vs 原始符号链接形态；alias 夹具判别与宿主 tmpdir 形态无关） ──
-test('内部任务-332 受检判定：alias 形态 cwd 下相对受检目标仍按 tracked 拒绝（不冒充非受检）', (t) => {
+test('DEV-332 受检判定：alias 形态 cwd 下相对受检目标仍按 tracked 拒绝（不冒充非受检）', (t) => {
   const state = makeState();
   const fx = makeAliasGitFixture();
   if (fx === null) { t.skip('当前环境不支持 symlink/junction（形态分裂用例不判红，登记跳过）'); return; }
@@ -654,7 +654,7 @@ test('内部任务-332 受检判定：alias 形态 cwd 下相对受检目标仍�
   }
 });
 
-test('内部任务-332 受检判定：realpath 形态 cwd 对拍同果（归一锚一致性）', (t) => {
+test('DEV-332 受检判定：realpath 形态 cwd 对拍同果（归一锚一致性）', (t) => {
   const state = makeState();
   const fx = makeAliasGitFixture();
   if (fx === null) { t.skip('当前环境不支持 symlink/junction（登记跳过）'); return; }
@@ -671,7 +671,7 @@ test('内部任务-332 受检判定：realpath 形态 cwd 对拍同果（归一�
   }
 });
 
-test('内部任务-332 受检判定：alias cwd＋git 不可用记 degraded（不冒充 clean）', (t) => {
+test('DEV-332 受检判定：alias cwd＋git 不可用记 degraded（不冒充 clean）', (t) => {
   const state = makeState();
   const fx = makeAliasGitFixture();
   if (fx === null) { t.skip('当前环境不支持 symlink/junction（登记跳过）'); return; }
@@ -688,7 +688,7 @@ test('内部任务-332 受检判定：alias cwd＋git 不可用记 degraded（�
   }
 });
 
-test('内部任务-332 execDir 归一失败（workdir 不存在）fail-open 不崩', () => {
+test('DEV-332 execDir 归一失败（workdir 不存在）fail-open 不崩', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -705,7 +705,7 @@ test('内部任务-332 execDir 归一失败（workdir 不存在）fail-open 不�
 
 // ── 内部任务-342：归因 taskId own-only（null 桶租约不归因）＋journal execDir ──
 
-test('内部任务-342 归因 taskId：无本会话具名租约时 journal taskId=null（null 桶租约不归因）', () => {
+test('DEV-342 归因 taskId：无本会话具名租约时 journal taskId=null（null 桶租约不归因）', () => {
   const state = makeState();
   try {
     seedLease(state); // 无 sessionId → null 桶租约（闸可见但不可归因）
@@ -719,7 +719,7 @@ test('内部任务-342 归因 taskId：无本会话具名租约时 journal taskI
   }
 });
 
-test('内部任务-342 journal execDir：shell 行携带执行目录', () => {
+test('DEV-342 journal execDir：shell 行携带执行目录', () => {
   const state = makeState();
   try {
     seedLease(state, { sessionId: 's1' });
@@ -732,20 +732,20 @@ test('内部任务-342 journal execDir：shell 行携带执行目录', () => {
   }
 });
 
-test('内部任务-342 归因 taskId：本会话具名租约时 journal taskId=该任务号（正例）', () => {
+test('DEV-342 归因 taskId：本会话具名租约时 journal taskId=该任务号（正例）', () => {
   const state = makeState();
   try {
     seedLease(state, { sessionId: 's1' });
     const r = run(shell('echo hi'), state);
     assert.equal(r.status, 0);
     const row = journal(state).filter((x) => x.tool === 'shell' && x.shape === 'command').at(-1);
-    assert.equal(row.taskId, '内部任务-261', '本会话具名桶租约的 taskId 须归因');
+    assert.equal(row.taskId, 'DEV-261', '本会话具名桶租约的 taskId 须归因');
   } finally {
     rmSync(state, { recursive: true, force: true });
   }
 });
 
-test('内部任务-342 子目录 cwd 绝对 file_path：edit 行只归一一次（不二次解析）', () => {
+test('DEV-342 子目录 cwd 绝对 file_path：edit 行只归一一次（不二次解析）', () => {
   const state = makeState();
   const repo = makeGitFixture();
   try {
@@ -765,7 +765,7 @@ test('内部任务-342 子目录 cwd 绝对 file_path：edit 行只归一一次�
 });
 
 
-test('内部任务-341 项目 skill 缺 ack：shell 写（C1–C4）deny/C5 恒 shadow 不触发/只读与无必载零变化', () => {
+test('DEV-341 项目 skill 缺 ack：shell 写（C1–C4）deny/C5 恒 shadow 不触发/只读与无必载零变化', () => {
   const proj = mkdtempSync(join(tmpdir(), 'write-guard-dev341-'));
   mkdirSync(join(proj, '.git'));
   mkdirSync(join(proj, '.agents', 'skills', 'project-conventions'), { recursive: true });
@@ -776,10 +776,10 @@ test('内部任务-341 项目 skill 缺 ack：shell 写（C1–C4）deny/C5 恒 
   const state = makeState();
   const stateAck = makeState();
   try {
-    const scriptEditCode = [{ reason: '内部任务-341 夹具窄声明理由' }];
-    const scriptWrites = [{ reason: '内部任务-341 夹具脚本写声明理由' }];
+    const scriptEditCode = [{ reason: 'DEV-341 夹具窄声明理由' }];
+    const scriptWrites = [{ reason: 'DEV-341 夹具脚本写声明理由' }];
     seedLease(state, { root: proj, scriptEditCode, scriptWrites, projectSkills: [] });
-    seedLease(stateAck, { root: proj, scriptEditCode, scriptWrites, projectSkills: [{ name: 'project-conventions', root: '项目级技能' }] });
+    seedLease(stateAck, { root: proj, scriptEditCode, scriptWrites, projectSkills: [{ name: 'project-conventions', root: '.agents/skills' }] });
     const payload = (command) => ({ tool_name: 'Bash', tool_input: { command, workdir: proj }, cwd: proj, session_id: 's1' });
     // 已声明 C2 但缺 ack → deny(2)，文案含加载指引与 ack 旗标
     const denied = run(payload("sed -i 's/a/b/' file.txt"), state);
@@ -792,7 +792,7 @@ test('内部任务-341 项目 skill 缺 ack：shell 写（C1–C4）deny/C5 恒 
     assert.equal(allowed.status, 0, 'ack 后应放行');
     // C5 恒 shadow：不受本义务影响
     const c5 = run(payload('cp a b'), state);
-    assert.equal(c5.status, 0, 'C5 不受项目 skill 义务影响（内部决策-066 D8）');
+    assert.equal(c5.status, 0, 'C5 不受项目 skill 义务影响（ADR-066 D8）');
     // shadow 档 C1：记录态不 deny
     const shadow = run(payload('echo x > out.txt'), state, { WF_WRITE_GUARD_MODE: 'shadow' });
     assert.equal(shadow.status, 0, 'shadow 记录态不 deny');

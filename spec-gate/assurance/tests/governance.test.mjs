@@ -52,7 +52,7 @@ test('recomputeBinding：subject 五要素结构＋refs/inventory 形态＋排�
   }
 });
 
-test('recomputeBinding 排除面：docs/plans 全树不入 subject（内部未决-135，内部接口-18 §3 口径）', () => {
+test('recomputeBinding 排除面：docs/plans 全树不入 subject（OPEN-135，IF-COLLAB-18 §3 口径）', () => {
   const root = setupGovernanceFixture(tmpRoot('dev222-gov-'));
   try {
     mkdirSync(join(root, 'docs', 'plans'), { recursive: true });
@@ -203,13 +203,13 @@ test('safeRel 链接出根拒绝（../ 与 symlink 逃逸）', (t) => {
   }
 });
 
-test('DEFAULT_ALLOWED_MODELS 与 capability-matrix hosts 对拍（内部规则-9）', () => {
+test('DEFAULT_ALLOWED_MODELS 与 capability-matrix hosts 对拍（R-M12-9）', () => {
   const matrixPath = resolve(import.meta.dirname, '../../../plugin-core/capability-matrix.json');
   const matrix = JSON.parse(readFileSync(matrixPath, 'utf8'));
   assert.deepEqual(DEFAULT_ALLOWED_MODELS.map((item) => item.provider), matrix.hosts);
 });
 
-test('changeSetDigest：resources 含非字符串项→digest null（fail-closed；内部任务-241 wp3 复审）', () => {
+test('changeSetDigest：resources 含非字符串项→digest null（fail-closed；DEV-241 wp3 复审）', () => {
   const root = tmpRoot('dev241-gov-cs-');
   try {
     mkdirSync(join(root, '.ai-governance', 'runtime'), { recursive: true });

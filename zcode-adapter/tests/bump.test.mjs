@@ -44,11 +44,11 @@ function makeBumpFixture(opts = {}) {
     ...PLUGINS.map((p) => `| ${p} | ${version} | \`${p}/.zcode-plugin/plugin.json\` | sha256:${hashes[p].plugin} | \`sha256sum ${p}/.zcode-plugin/plugin.json\` |`),
     ...HOOKED_PLUGINS.map((p) => `| ${p} hooks 声明 | ${version} | \`${p}/hooks/hooks.json\` | sha256:${hashes[p].hooks} | \`sha256sum ${p}/hooks/hooks.json\` |`),
   ];
-  writeFile(join(repo, 'specs', 'interfaces', '内部接口-1.md'), [
+  writeFile(join(repo, 'specs', 'interfaces', 'IF-HOST-1.md'), [
     '---', 'documentType: interface', 'validationMode: draft', '---', '',
-    '# 接口 内部接口-1（测试）', '',
-    `## 激活登记（2026-01-01，六插件统一 ${version} 版本折叠刷新，内部决策-017）`, '',
-    `lifecycle 维持 active；契约工件哈希实测登记（${PLUGINS.join('/')} 统一折叠 ${version}——套件版本即插件版本（内部决策-017）；${version} 内容=夹具初版；hooks.json 均未动（五哈希沿 0.1.0 值；research-loop 零钩子无 hooks 登记行）；取代 2025-12-31 0.0.9 登记（0.0.9 内容=夹具前版））：`, '',
+    '# 接口 IF-HOST-1（测试）', '',
+    `## 激活登记（2026-01-01，六插件统一 ${version} 版本折叠刷新，ADR-017）`, '',
+    `lifecycle 维持 active；契约工件哈希实测登记（${PLUGINS.join('/')} 统一折叠 ${version}——套件版本即插件版本（ADR-017）；${version} 内容=夹具初版；hooks.json 均未动（五哈希沿 0.1.0 值；research-loop 零钩子无 hooks 登记行）；取代 2025-12-31 0.0.9 登记（0.0.9 内容=夹具前版））：`, '',
     '| 工件 | 版本 | 路径 | sha256（前 16 位） | 漂移检查 |', '|---|---|---|---|---|',
     ...rows, '',
   ].join('\n'));
@@ -87,7 +87,7 @@ function runBump(repo, args) {
   return { status: r.status, stdout: (r.stdout ?? '') + (r.stderr ?? '') };
 }
 
-test('成功路径：十五文件十六处更新（六 manifest + 六物化 plugin.json + 内部接口-1 + DSH package.json + lock 两处）、hooks 行版本列随折叠、哈希实算、hooks.json 不触碰、research-loop 无 hooks 行', () => {
+test('成功路径：十五文件十六处更新（六 manifest + 六物化 plugin.json + IF-HOST-1 + DSH package.json + lock 两处）、hooks 行版本列随折叠、哈希实算、hooks.json 不触碰、research-loop 无 hooks 行', () => {
   const f = makeBumpFixture();
   try {
     const r = runBump(f.repo, ['--version', '0.2.0', '--note', '测试批次']);
@@ -99,7 +99,7 @@ test('成功路径：十五文件十六处更新（六 manifest + 六物化 plug
     for (const p of HOOKED_PLUGINS) {
       assert.ok(readFileSync(join(f.repo, p, 'hooks', 'hooks.json'), 'utf8') === '{"hooks":[]}\n', `${p} hooks.json 不触碰`);
     }
-    const host = readFileSync(join(f.repo, 'specs', 'interfaces', '内部接口-1.md'), 'utf8');
+    const host = readFileSync(join(f.repo, 'specs', 'interfaces', 'IF-HOST-1.md'), 'utf8');
     assert.ok(host.includes('0.2.0 内容=测试批次'), 'prose 取代链接织入');
     assert.ok(host.includes('| workflow hooks 声明 | 0.2.0 |'), 'hooks 行版本列随折叠');
     assert.ok(host.includes('| research-loop | 0.2.0 |'), 'research-loop 清单行在表');
@@ -117,7 +117,7 @@ test('成功路径：十五文件十六处更新（六 manifest + 六物化 plug
   }
 });
 
-test('DSH 写面负例（内部未决-57，内部任务-44）：严格闸 / 缺失 / 自愈滞后 / 互异 / 坏 JSON / 撞值', () => {
+test('DSH 写面负例（OPEN-57，DEV-44）：严格闸 / 缺失 / 自愈滞后 / 互异 / 坏 JSON / 撞值', () => {
   // ①package.json 版号≠套件当前版 ⇒ 退 1 且拒因为分支专属文案（严格闸）、零写入
   const f1 = makeBumpFixture({ dshVersion: '0.0.9' });
   try {
@@ -211,14 +211,14 @@ test('后置自检失败：回滚字节一致（桩 check-repo-consistency 触�
   try {
     writeFileSync(join(f.repo, '.bump-fail-checker'), 'x');
     const before = readFileSync(join(f.repo, 'workflow', '.zcode-plugin', 'plugin.json'), 'utf8');
-    const hostBefore = readFileSync(join(f.repo, 'specs', 'interfaces', '内部接口-1.md'), 'utf8');
+    const hostBefore = readFileSync(join(f.repo, 'specs', 'interfaces', 'IF-HOST-1.md'), 'utf8');
     const dshBefore = readFileSync(join(f.repo, 'ai-coding-methodology', 'package.json'), 'utf8');
     const lockBefore = readFileSync(join(f.repo, 'ai-coding-methodology', 'package-lock.json'), 'utf8');
     const r = runBump(f.repo, ['--version', '0.3.0', '--note', '测试批次']);
     assert.equal(r.status, 1, '自检失败退 1');
     assert.ok(r.stdout.includes('已回滚'), '回滚明示');
     assert.equal(readFileSync(join(f.repo, 'workflow', '.zcode-plugin', 'plugin.json'), 'utf8'), before, '字节一致回滚');
-    assert.equal(readFileSync(join(f.repo, 'specs', 'interfaces', '内部接口-1.md'), 'utf8'), hostBefore, '登记面字节一致回滚');
+    assert.equal(readFileSync(join(f.repo, 'specs', 'interfaces', 'IF-HOST-1.md'), 'utf8'), hostBefore, '登记面字节一致回滚');
     assert.equal(readFileSync(join(f.repo, 'ai-coding-methodology', 'package.json'), 'utf8'), dshBefore, 'DSH package.json 字节一致回滚');
     assert.equal(readFileSync(join(f.repo, 'ai-coding-methodology', 'package-lock.json'), 'utf8'), lockBefore, 'DSH lock 字节一致回滚');
   } finally {
@@ -229,7 +229,7 @@ test('后置自检失败：回滚字节一致（桩 check-repo-consistency 触�
 test('登记形态篡改：执行拒绝退 1 且零写入（形态闸）', () => {
   const f = makeBumpFixture();
   try {
-    const hostPath = join(f.repo, 'specs', 'interfaces', '内部接口-1.md');
+    const hostPath = join(f.repo, 'specs', 'interfaces', 'IF-HOST-1.md');
     writeFileSync(hostPath, readFileSync(hostPath, 'utf8').replace('| workflow |', '| workflow-x |'));
     const r = runBump(f.repo, ['--version', '0.2.0', '--note', 'x']);
     assert.equal(r.status, 1, '形态闸拒绝');
@@ -241,7 +241,7 @@ test('登记形态篡改：执行拒绝退 1 且零写入（形态闸）', () =>
 
 // ── 内部任务-276 D1：--repo-root 接线与缺省上溯推导 ──────────────────────────────
 
-test('bump --repo-root 透传：作用于旗标指向的仓库而非 cwd（内部任务-276 D1）', () => {
+test('bump --repo-root 透传：作用于旗标指向的仓库而非 cwd（DEV-276 D1）', () => {
   const f = makeBumpFixture();
   try {
     const r = spawnSync(process.execPath, [CLI, 'bump', '--repo-root', f.repo, '--version', '0.2.0', '--note', 'x', '--dry-run'],
@@ -254,7 +254,7 @@ test('bump --repo-root 透传：作用于旗标指向的仓库而非 cwd（内�
   }
 });
 
-test('bump 缺省上溯推导：无仓库根参数时作用于本 CLI 所在仓库而非 cwd（内部任务-276 D1，只读 dry-run）', (t) => {
+test('bump 缺省上溯推导：无仓库根参数时作用于本 CLI 所在仓库而非 cwd（DEV-276 D1，只读 dry-run）', (t) => {
   // 只读依赖真仓（dry-run 零写）；真仓处于版本折叠中途/DSH 版号漂移时 planBump 会拒绝——
   // 那是真仓状态的信号而非本用例要断言的行为，按要求 skip。
   const r = spawnSync(process.execPath, [CLI, 'bump', '--version', '9.9.9', '--note', 'x', '--dry-run'],
@@ -264,7 +264,7 @@ test('bump 缺省上溯推导：无仓库根参数时作用于本 CLI 所在仓�
   assert.ok(r.stdout.includes('[bump] dry-run：未写入任何文件'), 'dry-run 零写');
 });
 
-test('生成物不可读拒绝：缺物化 plugin.json 时 bump 执行拒绝退 1 且零写（内部任务-276 D7）', () => {
+test('生成物不可读拒绝：缺物化 plugin.json 时 bump 执行拒绝退 1 且零写（DEV-276 D7）', () => {
   const f = makeBumpFixture();
   try {
     rmSync(join(f.repo, 'workflow', '.zcode-plugin', 'plugin.json'), { force: true });
@@ -278,7 +278,7 @@ test('生成物不可读拒绝：缺物化 plugin.json 时 bump 执行拒绝退 
   }
 });
 
-test('生成物不可读拒绝：plugin.json 为同名目录时 bump 退 1 且零写（内部任务-276 D7/评审 correctness-2）', () => {
+test('生成物不可读拒绝：plugin.json 为同名目录时 bump 退 1 且零写（DEV-276 D7/评审 correctness-2）', () => {
   const f = makeBumpFixture();
   try {
     const pj = join(f.repo, 'workflow', '.zcode-plugin', 'plugin.json');
@@ -294,7 +294,7 @@ test('生成物不可读拒绝：plugin.json 为同名目录时 bump 退 1 且�
   }
 });
 
-test('note 内容闸：结构分隔子串/超长/全角括号不闭均退 2 且零写（内部任务-276 D20）', () => {
+test('note 内容闸：结构分隔子串/超长/全角括号不闭均退 2 且零写（DEV-276 D20）', () => {
   const f = makeBumpFixture();
   try {
     const pj = join(f.repo, 'workflow', '.zcode-plugin', 'plugin.json');

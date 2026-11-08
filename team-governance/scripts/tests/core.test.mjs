@@ -124,7 +124,7 @@ test('redaction：第五类裸令牌前缀命中（2026-09-19 评审修复——
 test('RunManifest：begin→finalize 不可变；unavailable 诚实；digest 失效', () => {
   const root = tmpProj();
   try {
-    const run = runBegin(root, { taskId: '内部任务-1', initiator: 'wangp', agentRole: 'implementer',
+    const run = runBegin(root, { taskId: 'TASK-1', initiator: 'wangp', agentRole: 'implementer',
       policyRef: 'p1@1', model: { observation: 'unavailable' } });
     assert.ok(run.runId);
     const fin = runFinalize(root, run.runId, { repoHead: 'a'.repeat(40), diffDigest: 'sha256:' + 'b'.repeat(64),
@@ -173,7 +173,7 @@ test('Policy：strict 档模型不可观察 deny；relaxed 档 warning；fallbac
   assert.equal(r4.decision, 'allow');
 });
 
-test('Policy：provider 不在允许集 → deny（relaxed 亦拒；多宿主默认政策防线，内部任务-2 回归钉）', () => {
+test('Policy：provider 不在允许集 → deny（relaxed 亦拒；多宿主默认政策防线，DEV-2 回归钉）', () => {
   const p = { riskLevel: 'medium', allowedModels: [{ provider: 'x', capabilities: ['code'] }],
     fallbacks: [], enforcement: 'relaxed' };
   const r = preflight(p, { modelObserved: { provider: 'other', capabilities: ['code'] }, requiredCapability: 'code' });
@@ -193,7 +193,7 @@ test('ContextTrust：untrusted 作 instruction 拒；无 digest 远程进高风�
   const d2 = checkContexts(ctxs2, { riskLevel: 'high' });
   assert.ok(d2.some((x) => /digest/.test(x.message)), '高风险 run 无 digest 远程内容拒');
   const ctxs3 = [];
-  registerContext(ctxs3, { source: '内部规格', digest: 'sha256:' + 'b'.repeat(64), retrievedAt: '2026-09-13T00:00:00Z', trust: 'repository' });
+  registerContext(ctxs3, { source: 'specs/x.md', digest: 'sha256:' + 'b'.repeat(64), retrievedAt: '2026-09-13T00:00:00Z', trust: 'repository' });
   assert.deepEqual(checkContexts(ctxs3, { riskLevel: 'high' }), [], 'repository 上下文合法');
 });
 
@@ -285,13 +285,13 @@ test('Lease：过期后 renew 拒（不可复活）且过期后重取单胜', ()
     assert.ok(b.ok, '过期不构成冲突：他人可重取');
     const beforeRenew = readFileSync(stateFile, 'utf8');
     const renew = renewLease(root, { leaseId: a.lease.leaseId, revision: a.lease.revision });
-    assert.equal(renew.ok, false, '过期 holder 旧 token 写入必须被拒（内部规则-2）');
+    assert.equal(renew.ok, false, '过期 holder 旧 token 写入必须被拒（R-M13-2）');
     assert.match(String(renew.error), /过期/);
     assert.equal(readFileSync(stateFile, 'utf8'), beforeRenew, '拒绝路径不得改写台账');
     const after = JSON.parse(readFileSync(stateFile, 'utf8'));
     const live = Object.values(after.leases).filter(
       (l) => l.state === 'held' && l.expiresAt >= Date.now() && l.resource === 'path:main:src/**');
-    assert.equal(live.length, 1, '同资源同时至多一个有效 holder（内部接口-15 §3）');
+    assert.equal(live.length, 1, '同资源同时至多一个有效 holder（IF-COLLAB-15 §3）');
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
@@ -322,7 +322,7 @@ test('Lease：过期记录保留 release 清理通道（不自动终态）', () 
     st.leases[a.lease.leaseId].expiresAt = Date.now() - 1000;
     writeFileSync(stateFile, JSON.stringify(st, null, 2) + '\n');
     const rel = releaseLease(root, { leaseId: a.lease.leaseId, revision: a.lease.revision });
-    assert.equal(rel.ok, true, '过期记录允许 release（审计清理通道；内部规则-2 的写入拒绝面＝renew）');
+    assert.equal(rel.ok, true, '过期记录允许 release（审计清理通道；R-M13-2 的写入拒绝面＝renew）');
     const after = JSON.parse(readFileSync(stateFile, 'utf8')).leases[a.lease.leaseId];
     assert.equal(after.state, 'released', '过期记录经 release 进入终态');
   } finally { rmSync(root, { recursive: true, force: true }); }
@@ -622,7 +622,7 @@ test('change-set：digest 稳定且语义坏件点名', () => {
   }
 });
 
-test('json-schema：SchemaError → 工具错误退 2（本批仅此面；eval suite 形态另锚 内部验收-1）', () => {
+test('json-schema：SchemaError → 工具错误退 2（本批仅此面；eval suite 形态另锚 A-M14-1）', () => {
   const root = tmpProj();
   try {
     const suite = { suiteId: 's-schema', caseSetVersion: 'v1', cases: [{
@@ -720,15 +720,15 @@ test('run-manifest：client 字段单源派生（plugin 版本读 manifest，hos
     // env 探测：仅 ZCODE_ 前缀 → zcode
     for (const k of Object.keys(process.env)) if (/^(DSH_|KIMI_|MCODE_|ZCODE_)/.test(k)) delete process.env[k];
     process.env.ZCODE_PROJECT_DIR = root;
-    const m1 = runBegin(root, { taskId: '内部任务-CLIENT-1' });
+    const m1 = runBegin(root, { taskId: 'TASK-CLIENT-1' });
     assert.equal(m1.client.host, 'zcode', 'ZCODE_ 前缀探测为 zcode');
     assert.equal(m1.client.plugin, `team-governance@${pluginVersion}`, 'plugin 版本读 plugin.manifest.json 单源（不得硬编码 0.1.0）');
     // 显式参数优先
-    const m2 = runBegin(root, { taskId: '内部任务-CLIENT-2', clientHost: 'mcode' });
+    const m2 = runBegin(root, { taskId: 'TASK-CLIENT-2', clientHost: 'mcode' });
     assert.equal(m2.client.host, 'mcode', '显式 clientHost 优先于环境探测');
     // 未知环境 → unknown（不冒充 zcode）
     for (const k of Object.keys(process.env)) if (/^(DSH_|KIMI_|MCODE_|ZCODE_)/.test(k)) delete process.env[k];
-    const m3 = runBegin(root, { taskId: '内部任务-CLIENT-3' });
+    const m3 = runBegin(root, { taskId: 'TASK-CLIENT-3' });
     assert.equal(m3.client.host, 'unknown', '无宿主环境变量落 unknown');
   } finally {
     process.env = savedEnv;
@@ -744,15 +744,15 @@ test('run-manifest：host 探测 ZCODE_ 末位（DSH/Kimi/MCode 同时注入 ZCO
     // 适配层事实：DSH/Kimi/MCode 也会注入 ZCODE_*，探测必须让 DSH_ 优先
     process.env.ZCODE_PROJECT_DIR = root;
     process.env.DSH_SESSION_ID = 'sess-1';
-    const mDsh = runBegin(root, { taskId: '内部任务-Z-1' });
+    const mDsh = runBegin(root, { taskId: 'TASK-Z-1' });
     assert.equal(mDsh.client.host, 'dsh', 'DSH_ 与 ZCODE_ 并存时判 dsh（ZCODE_ 末位）');
     delete process.env.DSH_SESSION_ID;
     process.env.KIMI_CODE_HOME = root;
-    const mKimi = runBegin(root, { taskId: '内部任务-Z-2' });
+    const mKimi = runBegin(root, { taskId: 'TASK-Z-2' });
     assert.equal(mKimi.client.host, 'kimi', 'KIMI_ 与 ZCODE_ 并存时判 kimi');
     delete process.env.KIMI_CODE_HOME;
     process.env.MCODE_DATA_DIR = root;
-    const mMcode = runBegin(root, { taskId: '内部任务-Z-3' });
+    const mMcode = runBegin(root, { taskId: 'TASK-Z-3' });
     assert.equal(mMcode.client.host, 'mcode', 'MCODE_ 与 ZCODE_ 并存时判 mcode');
   } finally {
     process.env = savedEnv;
@@ -767,10 +767,10 @@ test('run-manifest：host 探测空串视同未设置', () => {
     for (const k of Object.keys(process.env)) if (/^(DSH_|KIMI_|MCODE_|ZCODE_)/.test(k)) delete process.env[k];
     process.env.ZCODE_PROJECT_DIR = '';
     process.env.DSH_SESSION_ID = 'x';
-    const m = runBegin(root, { taskId: '内部任务-Z-4' });
+    const m = runBegin(root, { taskId: 'TASK-Z-4' });
     assert.equal(m.client.host, 'dsh', '空串前缀不参与探测（值非空才命中），继续走下一前缀');
     process.env.DSH_SESSION_ID = '';
-    const m2 = runBegin(root, { taskId: '内部任务-Z-5' });
+    const m2 = runBegin(root, { taskId: 'TASK-Z-5' });
     assert.equal(m2.client.host, 'unknown', '空串/空值不命中任何前缀 → unknown');
   } finally {
     process.env = savedEnv;

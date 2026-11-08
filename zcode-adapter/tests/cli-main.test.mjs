@@ -35,7 +35,7 @@ function run(argv) {
 test('cli main：用法/未知参数/未知子命令/值旗标缺值均退 2 且打印用法', () => {
   assert.equal(run([]).code, 2, '无参数退 2 并打印用法');
   assert.equal(run(['--help']).code, 0, '--help 退 0');
-  assert.equal(run(['-h']).code, 0, '-h 别名同 --help 退 0（FLAG_DEFS alias 分支，内部任务-334）');
+  assert.equal(run(['-h']).code, 0, '-h 别名同 --help 退 0（FLAG_DEFS alias 分支，DEV-334）');
   assert.equal(run(['--bogus']).code, 2, '未知旗标退 2');
   assert.equal(run(['nope']).code, 2, '未知子命令退 2');
   assert.equal(run(['--repo-root']).code, 2, '值旗标缺值退 2');
@@ -44,11 +44,11 @@ test('cli main：用法/未知参数/未知子命令/值旗标缺值均退 2 且
   assert.equal(run(['verify', '--zcode-home', join(tmpdir(), 'dev209-no-such-zcode-home')]).code, 2, '市场源不可解析退 2');
   // 内部任务-333：入口退出纪律源扫描（kimi cli:1169 内部任务-241 先例）——回归 process.exit(main 即红
   const cliSrc = readFileSync(new URL('../cli.mjs', import.meta.url), 'utf8');
-  assert.ok(!cliSrc.includes('process.exit(main'), 'cli.mjs 入口不得 process.exit(main（管道截断；内部任务-241 纪律）');
+  assert.ok(!cliSrc.includes('process.exit(main'), 'cli.mjs 入口不得 process.exit(main（管道截断；DEV-241 纪律）');
   assert.ok(cliSrc.includes('process.exitCode'), 'cli.mjs 入口须以 exitCode 赋值退出');
 });
 
-test('参数面错配通用校验：旗标-子命令错配逐格退 2 且 stderr 指认旗标与子命令（R-za-1/内部未决-154，内部任务-275；内部任务-334 补全格）', () => {
+test('参数面错配通用校验：旗标-子命令错配逐格退 2 且 stderr 指认旗标与子命令（R-za-1/OPEN-154，DEV-275；DEV-334 补全格）', () => {
   const cells = [
     ['verify', '--bootstrap'],
     ['verify', '--dry-run'],
@@ -130,13 +130,13 @@ test('client-state：zcode-home/市场源/尾分隔符/客户端状态读取分�
 
 // ── 内部任务-276 D1/D2/D3：参数面收紧 ────────────────────────────────────────────
 
-test('bump 仓库根互斥：--repo-root 与位置参数同给退 2（内部任务-276 D1）', () => {
+test('bump 仓库根互斥：--repo-root 与位置参数同给退 2（DEV-276 D1）', () => {
   const r = run(['bump', '/tmp/dev276-a', '--repo-root', '/tmp/dev276-b', '--version', '1.0.0', '--note', 'x']);
   assert.equal(r.code, 2, r.err);
   assert.ok(r.err.includes('互斥'), r.err);
 });
 
-test('位置参数仅 bump：verify/publish/install 收到位置参数退 2（内部任务-276 D2）', () => {
+test('位置参数仅 bump：verify/publish/install 收到位置参数退 2（DEV-276 D2）', () => {
   for (const cmd of ['verify', 'publish', 'install']) {
     const r = run([cmd, '/tmp/dev276-positional']);
     assert.equal(r.code, 2, `${cmd} 应退 2：${r.err}`);
@@ -145,7 +145,7 @@ test('位置参数仅 bump：verify/publish/install 收到位置参数退 2（�
   assert.ok(run(['nope', 'x']).err.includes('未知子命令'), '未知子命令仍报未知子命令（拦截限已知子命令）');
 });
 
-test('--selftest 独立形态：单独调用退 0；与子命令/其他参数组合退 2（内部任务-276 D3）', () => {
+test('--selftest 独立形态：单独调用退 0；与子命令/其他参数组合退 2（DEV-276 D3）', () => {
   const solo = run(['--selftest']);
   assert.equal(solo.code, 0, `release-suite 调用形态须退 0：${solo.out.slice(-400)}${solo.err}`);
   for (const argv of [['--selftest', '--bogus'], ['verify', '--selftest'], ['--selftest', '--json'], ['--selftest', '--dry-run'], ['--selftest', '--repo-root', '/tmp/x']]) {
@@ -155,7 +155,7 @@ test('--selftest 独立形态：单独调用退 0；与子命令/其他参数组
   }
 });
 
-test('known_marketplaces marketplaces 非数组不崩：解析返回 null、verify 按不可解退 2（内部任务-276 D8）', () => {
+test('known_marketplaces marketplaces 非数组不崩：解析返回 null、verify 按不可解退 2（DEV-276 D8）', () => {
   const home = mkdtempSync(join(tmpdir(), 'dev276-km-'));
   try {
     const km = clientPath(home, 'knownMarketplaces');

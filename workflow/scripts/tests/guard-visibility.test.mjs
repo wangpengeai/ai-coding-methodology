@@ -102,7 +102,7 @@ test('本会话 workflow 失败 → 首条用户消息即注入告警（含次�
     assert.equal(r.status, 0);
     const e = env(r.stdout);
     assert.ok(e, '应注入告警');
-    assert.equal(e.hookSpecificOutput?.hookEventName, 'UserPromptSubmit', '信封事件名契约（内部规则-6）');
+    assert.equal(e.hookSpecificOutput?.hookEventName, 'UserPromptSubmit', '信封事件名契约（R-M8-6）');
     const ctx = e.hookSpecificOutput?.additionalContext ?? '';
     assert.ok(ctx.includes('护栏异常'), '告警须自报家门');
     assert.ok(ctx.includes('2'), '告警须含本会话失败次数（workflow 口径 2 次）');
@@ -146,7 +146,7 @@ test('无本会话失败（其他会话/其他插件）→ 不告警', () => {
     assert.equal(r.status, 0);
     const ctx = env(r.stdout)?.hookSpecificOutput?.additionalContext ?? '';
     assert.ok(!ctx.includes('护栏异常'), '无本会话失败则无告警');
-    assert.ok(ctx.includes('任务租约'), '任务租约行每轮必注（内部规则-8，与告警无关）');
+    assert.ok(ctx.includes('任务租约'), '任务租约行每轮必注（R-M8-8，与告警无关）');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

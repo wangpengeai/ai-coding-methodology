@@ -1,6 +1,6 @@
 {
   "expectedRuleIds": [
-    "RULE-内部未决-002"
+    "RULE-OPEN-002"
   ],
   "expectedExitCode": 1
 }

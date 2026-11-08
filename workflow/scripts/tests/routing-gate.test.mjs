@@ -98,7 +98,7 @@ function runGate(cwd, o) {
  */
 function runDeclare(cwd, skill, o) {
   const leaseId = o.leaseId ?? freshLease(cwd, o.stateDir);
-  const args = [skill, '--lease', leaseId, '--task-id', o.taskId ?? '内部任务-1'];
+  const args = [skill, '--lease', leaseId, '--task-id', o.taskId ?? 'TASK-1'];
   if (o.plan) args.push('--plan', o.plan);
   if (o.planRoot) args.push('--plan-root', o.planRoot);
   if (o.exempt !== undefined) args.push('--exempt', o.exempt);
@@ -130,12 +130,12 @@ test('无租约 → Edit/Write deny(2)：信封含声明命令与指引', () => 
       const r = runGate(proj, { stateDir, tool });
       assert.equal(r.status, 2, `${tool} 无租约必须阻断`);
       const env = JSON.parse(r.stdout.trim());
-      assert.equal(env.hookSpecificOutput?.hookEventName, 'PreToolUse', '信封事件名契约（内部规则-6）');
+      assert.equal(env.hookSpecificOutput?.hookEventName, 'PreToolUse', '信封事件名契约（R-M8-6）');
       assert.equal(env.hookSpecificOutput?.permissionDecision, 'deny');
       const msg = env.hookSpecificOutput?.systemMessage ?? '';
       assert.ok(msg.includes('routing-declare.mjs'), 'deny 文案必须给出可复制的声明命令');
-      assert.ok(msg.includes("node '"), '声明命令为单引号包裹形态（内部未决-94：bash/pwsh 双壳零展开）');
-      assert.ok(msg.includes("/hooks/routing-declare.mjs'"), '命令路径为正斜杠绝对路径形态（内部未决-13 判别半边——防回退反斜杠）');
+      assert.ok(msg.includes("node '"), '声明命令为单引号包裹形态（OPEN-94：bash/pwsh 双壳零展开）');
+      assert.ok(msg.includes("/hooks/routing-declare.mjs'"), '命令路径为正斜杠绝对路径形态（OPEN-13 判别半边——防回退反斜杠）');
       assert.ok(msg.includes('路由表'), '必须指引先查路由表');
     }
   } finally {
@@ -144,7 +144,7 @@ test('无租约 → Edit/Write deny(2)：信封含声明命令与指引', () => 
   }
 });
 
-test('内部未决-91：env 双清空时闸照常执法（自身位置兜底）——无租约 Edit 仍 deny 且文案为真路径', () => {
+test('OPEN-91：env 双清空时闸照常执法（自身位置兜底）——无租约 Edit 仍 deny 且文案为真路径', () => {
   // 行为变更钉子（收敛前 env-only 取根在 env 缺席时 :719 静默放行整闸；收敛后自身位置
   // 优先——运行中插件目录本身就是执法语义的一部分）。空串在 pluginRootDir 候选判定下
   // 等同缺席。
@@ -156,19 +156,19 @@ test('内部未决-91：env 双清空时闸照常执法（自身位置兜底）�
     const env = JSON.parse(r.stdout.trim());
     assert.equal(env.hookSpecificOutput?.permissionDecision, 'deny');
     const msg = env.hookSpecificOutput?.systemMessage ?? '';
-    assert.ok(msg.includes(`node '${join(realpathSync(resolve(HOOKS, '..')), 'hooks', 'routing-declare.mjs').replaceAll('\\', '/')}'`), `deny 文案命令须为自身位置真路径（单引号闭合形态——内部未决-94；实际：${msg.split('\n')[0] ?? ''}）`);
+    assert.ok(msg.includes(`node '${join(realpathSync(resolve(HOOKS, '..')), 'hooks', 'routing-declare.mjs').replaceAll('\\', '/')}'`), `deny 文案命令须为自身位置真路径（单引号闭合形态——OPEN-94；实际：${msg.split('\n')[0] ?? ''}）`);
   } finally {
     rmSync(proj, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
   }
 });
 
-test('内部未决-89 拦截链——ApplyPatch 无租约写面必须被闸拦（ZCode 别名写面工具，deny 同 Edit/Write 形态）', () => {
+test('OPEN-89 拦截链——ApplyPatch 无租约写面必须被闸拦（ZCode 别名写面工具，deny 同 Edit/Write 形态）', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     const r = runGate(proj, { stateDir, tool: 'ApplyPatch' });
-    assert.equal(r.status, 2, 'ApplyPatch 无租约必须阻断（词表登记前曾归 other 静默放行——内部未决-89 缺陷面）');
+    assert.equal(r.status, 2, 'ApplyPatch 无租约必须阻断（词表登记前曾归 other 静默放行——OPEN-89 缺陷面）');
     const env = JSON.parse(r.stdout.trim());
     assert.equal(env.hookSpecificOutput?.permissionDecision, 'deny', 'deny 信封同 Edit/Write 形态');
     assert.ok((env.hookSpecificOutput?.systemMessage ?? '').includes('routing-declare.mjs'), 'deny 文案给出可复制的声明命令');
@@ -184,7 +184,7 @@ test('无租约 Bash：普通命令 deny；单条声明命令 bootstrap 放行�
   try {
     assert.equal(runGate(proj, { stateDir, tool: 'Bash', command: 'printf x > file' }).status, 2);
     assert.equal(runGate(proj, { stateDir, tool: 'Bash', command: 'node -e "require(\'fs\').writeFileSync(\'x\',\'1\')"' }).status, 2);
-    const boot = runGate(proj, { stateDir, tool: 'Bash', command: `node ${DECLARE} tdd --lease abc --task-id 内部任务-1` });
+    const boot = runGate(proj, { stateDir, tool: 'Bash', command: `node ${DECLARE} tdd --lease abc --task-id TASK-1` });
     assert.equal(boot.status, 0, '严格单条声明命令必须放行（bootstrap 闭环第一环）');
     assert.equal(boot.stdout.trim(), '', '放行路径无输出');
     assert.equal(runGate(proj, { stateDir, tool: 'Bash', command: `node ${DECLARE} tdd; touch x` }).status, 2);
@@ -195,14 +195,14 @@ test('无租约 Bash：普通命令 deny；单条声明命令 bootstrap 放行�
   }
 });
 
-test('P5 无租约 Bash 链式声明（2026-10-10 内部任务-29）：双键两条纯声明拼接放行；拼接混入非声明拒', () => {
+test('P5 无租约 Bash 链式声明（2026-10-10 DEV-29）：双键两条纯声明拼接放行；拼接混入非声明拒', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
-    const A = `node ${DECLARE} brainstorming --lease t1 --task-id 内部任务-1`;
-    const B = `node ${DECLARE} code-review --lease t2 --task-id 内部任务-2`;
+    const A = `node ${DECLARE} brainstorming --lease t1 --task-id DEV-1`;
+    const B = `node ${DECLARE} code-review --lease t2 --task-id TASK-2`;
     const chain = runGate(proj, { stateDir, tool: 'Bash', command: `${A}; ${B}` });
-    assert.equal(chain.status, 0, '双键两条纯声明 ; 拼接必须放行（内部规则-9 扩，双仓工作区单条 Bash 合并声明）');
+    assert.equal(chain.status, 0, '双键两条纯声明 ; 拼接必须放行（R-M8-9 扩，双仓工作区单条 Bash 合并声明）');
     assert.equal(chain.stdout.trim(), '', '放行路径无输出');
     assert.equal(runGate(proj, { stateDir, tool: 'Bash', command: `${A} && ${B}` }).status, 0, '&& 拼接同放行');
     assert.equal(runGate(proj, { stateDir, tool: 'Bash', command: `${A}; ls` }).status, 2, '段内混入非声明命令 → deny');
@@ -285,7 +285,7 @@ test('无租约 Bash 只读白名单（2026-09-16 使用反馈批次 P8）：只
   }
 });
 
-test('只读白名单安全收口（内部任务-244 S01/S03/S06）：引号内命令替换、路径形态命令名、写/执行参数面均 deny', () => {
+test('只读白名单安全收口（DEV-244 S01/S03/S06）：引号内命令替换、路径形态命令名、写/执行参数面均 deny', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
@@ -329,12 +329,12 @@ test('声明激活后 → 本 prompt 内静默放行；输出含 skill 与 learn
     const d = runDeclare(proj, 'brainstorming', { stateDir });
     assert.equal(d.status, 0);
     assert.ok(d.stdout.includes('brainstorming'), '声明确认须回显 skill 名');
-    assert.ok(d.stdout.includes('learnings'), '激活输出须含 learnings 检索指引（内部规则-7）');
+    assert.ok(d.stdout.includes('learnings'), '激活输出须含 learnings 检索指引（R-M6-7）');
     // OPEN 检索提醒行（内部规则-21 / 内部接口-8 §7.1 消费面义务）——learnings 行同层端到端
-    assert.ok(d.stdout.includes('【OPEN 检索】'), '激活输出须含【OPEN 检索】提醒行（内部规则-21）');
-    assert.ok(d.stdout.includes('内部规格'), 'OPEN 提醒行须含登记册路径 内部规格');
-    assert.ok(d.stdout.includes('内部接口-8'), 'OPEN 提醒行须指向义务载体 内部接口-8');
-    assert.ok(d.stdout.includes('按任务域检索'), 'OPEN 提醒行须含「按任务域检索」——相关性匹配防哨位骚扰的核心限定（内部验收-23 锚点集，检查点①补）');
+    assert.ok(d.stdout.includes('【OPEN 检索】'), '激活输出须含【OPEN 检索】提醒行（R-M8-21）');
+    assert.ok(d.stdout.includes('specs/open-items.md'), 'OPEN 提醒行须含登记册路径 specs/open-items.md');
+    assert.ok(d.stdout.includes('IF-COLLAB-8'), 'OPEN 提醒行须指向义务载体 IF-COLLAB-8');
+    assert.ok(d.stdout.includes('按任务域检索'), 'OPEN 提醒行须含「按任务域检索」——相关性匹配防哨位骚扰的核心限定（A-M8-23 锚点集，检查点①补）');
     // P1 端到端（评审发现：只断言 helper 函数时，删掉 main 里的接线仍全绿——这里是
     // 「删接线即红」的那一层）
     assert.ok(
@@ -500,7 +500,7 @@ test('闸 deny 落 lease-deny incident：含 reason 与键摘要，同 reason �
     assert.equal(r1.status, 2);
     const recs1 = projIncidentsOf(proj).filter((d) => d.kind === 'lease-deny');
     assert.equal(recs1.length, 1, 'deny 必须留痕一条 lease-deny');
-    assert.ok(String(recs1[0].digest ?? '').length >= 8, '记录含键/原因摘要（内部规则-2 只存 digest）');
+    assert.ok(String(recs1[0].digest ?? '').length >= 8, '记录含键/原因摘要（R-M15-2 只存 digest）');
     assert.ok(!JSON.stringify(recs1[0]).includes('状态缺失或损坏') || String(recs1[0].reason ?? '').length > 0, '记录带失效原因');
     runGate(proj, { stateDir, tool: 'Bash', command: 'touch x' });
     const recs2 = projIncidentsOf(proj).filter((d) => d.kind === 'lease-deny');
@@ -550,20 +550,20 @@ test('指针悬空（A2 细分）：current 在但挑战文件缺失 → deny �
   }
 });
 
-test('task-id 撞号（内部未决-76 升级阻断）：异会话同 task-id 声明 → 激活失败 exit 1 含阻断文案与建议号', () => {
+test('task-id 撞号（OPEN-76 升级阻断）：异会话同 task-id 声明 → 激活失败 exit 1 含阻断文案与建议号', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     const chA = freshLease(proj, stateDir, { sessionId: 'sess-A' });
-    assert.equal(runDeclare(proj, 'brainstorming', { stateDir, leaseId: chA, taskId: '内部任务-9' }).status, 0);
+    assert.equal(runDeclare(proj, 'brainstorming', { stateDir, leaseId: chA, taskId: 'DEV-9' }).status, 0);
     const chB = freshLease(proj, stateDir, { sessionId: 'sess-B' });
-    const r = runDeclare(proj, 'code-review', { stateDir, leaseId: chB, taskId: '内部任务-9' });
-    assert.equal(r.status, 1, '撞号即阻断（内部未决-76，原「警告不阻断」形态废止）');
+    const r = runDeclare(proj, 'code-review', { stateDir, leaseId: chB, taskId: 'DEV-9' });
+    assert.equal(r.status, 1, '撞号即阻断（OPEN-76，原「警告不阻断」形态废止）');
     assert.ok(r.stderr.includes('撞号阻断'), 'stderr 含阻断文案');
-    assert.ok(r.stderr.includes('内部任务-9'), '文案点名撞号 task-id');
-    assert.ok(r.stderr.includes('延续本任务') && r.stderr.includes('取最小未用号'), '含双路指引（P8：延续同号/取最小未用号分诊——内部任务-117 稠密措辞）');
+    assert.ok(r.stderr.includes('DEV-9'), '文案点名撞号 task-id');
+    assert.ok(r.stderr.includes('延续本任务') && r.stderr.includes('取最小未用号'), '含双路指引（P8：延续同号/取最小未用号分诊——DEV-117 稠密措辞）');
     assert.ok(/声明于 \d{4}-\d{2}-\d{2}T/.test(r.stderr), '含对方声明时间证据');
-    assert.ok(r.stderr.includes('内部任务-1'), '含建议号（内部任务-117 稠密：git 源空 → 最小未用 1）');
+    assert.ok(r.stderr.includes('DEV-1'), '含建议号（DEV-117 稠密：git 源空 → 最小未用 1）');
     assert.ok(!r.stderr.includes('最新一轮用户消息的租约行'), '不附「重取 leaseId」误导句（同令牌换号即可重试）');
   } finally {
     rmSync(proj, { recursive: true, force: true });
@@ -579,13 +579,13 @@ test('bootstrap 放行 cd <绝对路径> && node 声明命令（D1：A1 死锁�
     const boot = runGate(root, {
       stateDir,
       tool: 'Bash',
-      command: `cd ${nested} && node ${DECLARE} tdd --lease ${chN} --task-id 内部任务-1`,
+      command: `cd ${nested} && node ${DECLARE} tdd --lease ${chN} --task-id TASK-1`,
     });
     assert.equal(boot.status, 0, 'cd 两段形态必须放行（声明键随进程 cwd 切到嵌套仓）');
     // 闸放行 ≠ 命令已执行：等价复现 cd 后的声明（进程 cwd=嵌套仓），再验租约生效
     const decl = spawnSync(
       process.execPath,
-      [DECLARE, 'brainstorming', '--lease', chN, '--task-id', '内部任务-1'],
+      [DECLARE, 'brainstorming', '--lease', chN, '--task-id', 'TASK-1'],
       { cwd: nested, encoding: 'utf8', env: { ...BASE_ENV, WF_ROUTING_STATE_DIR: stateDir } },
     );
     assert.equal(decl.status, 0, '嵌套仓键的声明成功（等价于 cd 后执行）');
@@ -599,7 +599,7 @@ test('bootstrap 放行 cd <绝对路径> && node 声明命令（D1：A1 死锁�
   }
 });
 
-test('内部未决-10：cd 双引号包裹的含空白目标放行（含空白仓路径的嵌套声明）', () => {
+test('OPEN-10：cd 双引号包裹的含空白目标放行（含空白仓路径的嵌套声明）', () => {
   const { root, nested } = makeNestedProject();
   const spaced = join(root, 'dir with space', 'nested'); // 含空白仓路径（Windows 常见形态）
   mkdirSync(dirname(spaced), { recursive: true });
@@ -611,18 +611,18 @@ test('内部未决-10：cd 双引号包裹的含空白目标放行（含空白�
     const boot = runGate(root, {
       stateDir,
       tool: 'Bash',
-      command: `cd "${fwd}" && node ${DECLARE} tdd --lease ${chS} --task-id 内部任务-2`,
+      command: `cd "${fwd}" && node ${DECLARE} tdd --lease ${chS} --task-id TASK-2`,
     });
-    assert.equal(boot.status, 0, '引号包裹的含空白 cd 目标必须放行（内部未决-10）');
+    assert.equal(boot.status, 0, '引号包裹的含空白 cd 目标必须放行（OPEN-10）');
     // 负例：同一目标裸写（无引号）仍拒——deny 文案须引导双引号形态而非误指复合命令
     const bare = runGate(root, {
       stateDir,
       tool: 'Bash',
-      command: `cd ${fwd} && node ${DECLARE} tdd --lease ${chS} --task-id 内部任务-2`,
+      command: `cd ${fwd} && node ${DECLARE} tdd --lease ${chS} --task-id TASK-2`,
     });
     assert.equal(bare.status, 2);
     const bareMsg = JSON.parse(bare.stdout).hookSpecificOutput.systemMessage;
-    assert.ok(bareMsg.includes('双引号'), 'deny 文案含双引号指引（内部未决-10 hint 分支）');
+    assert.ok(bareMsg.includes('双引号'), 'deny 文案含双引号指引（OPEN-10 hint 分支）');
   } finally {
     rmSync(root, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
@@ -637,8 +637,8 @@ test('declare 参数校验：缺 skill/缺 --lease/缺 --task-id/坏 leaseId →
     const badInvocations = [
       [DECLARE],
       [DECLARE, 'Not A Name!'],
-      [DECLARE, 'brainstorming', '--task-id', '内部任务-1'], // 缺 --lease
-      [DECLARE, 'brainstorming', '--lease', 'zzzz', '--task-id', '内部任务-1'], // 坏 leaseId
+      [DECLARE, 'brainstorming', '--task-id', 'TASK-1'], // 缺 --lease
+      [DECLARE, 'brainstorming', '--lease', 'zzzz', '--task-id', 'TASK-1'], // 坏 leaseId
       [DECLARE, 'brainstorming', '--lease', leaseId], // 缺 --task-id
     ];
     for (const argv of badInvocations) {
@@ -665,7 +665,7 @@ test('漏写 skill：--lease 的 hex 值（首字符 a-f 恰配 SKILL_NAME_RE）
     // 无位置参数、leaseId 为合法 hex 形态：现实现 find(!startsWith('--')) 会把
     // '--lease' 的值 'f12abc0000000000' 误当 skill 继续走激活流程（报租约激活失败
     // 而非缺 skill）；正确行为是走缺 skill 报错路径
-    const r = spawnSync(process.execPath, [DECLARE, '--lease', 'f12abc0000000000', '--task-id', '内部任务-1'], {
+    const r = spawnSync(process.execPath, [DECLARE, '--lease', 'f12abc0000000000', '--task-id', 'TASK-1'], {
       cwd: proj,
       encoding: 'utf8',
       env: { ...BASE_ENV, WF_ROUTING_STATE_DIR: stateDir },
@@ -675,7 +675,7 @@ test('漏写 skill：--lease 的 hex 值（首字符 a-f 恰配 SKILL_NAME_RE）
     assert.equal(runGate(proj, { stateDir }).status, 2, '失败的声明不得解锁闸');
     // 对照：正常形态（skill 在旗标前）不受解析改动影响
     const leaseId = freshLease(proj, stateDir);
-    const ok = spawnSync(process.execPath, [DECLARE, 'brainstorming', '--lease', leaseId, '--task-id', '内部任务-1'], {
+    const ok = spawnSync(process.execPath, [DECLARE, 'brainstorming', '--lease', leaseId, '--task-id', 'TASK-1'], {
       cwd: proj,
       encoding: 'utf8',
       env: { ...BASE_ENV, WF_ROUTING_STATE_DIR: stateDir },
@@ -697,19 +697,19 @@ test('漏写 skill：--lease 的 hex 值（首字符 a-f 恰配 SKILL_NAME_RE）
 function writeV2Artifact(proj, o = {}) {
   const dir = join(proj, 'docs', 'plans');
   mkdirSync(dir, { recursive: true });
-  const planRel = '内部计划';
-  writeFileSync(join(proj, planRel), '---\nspecRefs: [内部需求-1]\n---\n# 计划\n');
+  const planRel = 'docs/plans/feature-x.md';
+  writeFileSync(join(proj, planRel), '---\nspecRefs: [FR-wf-1]\n---\n# 计划\n');
   if (o.legacy) {
     writeFileSync(join(proj, 'docs', 'plans', 'feature-x-review.md'), '# 评审记录\n\n结论：通过\n');
     return planRel;
   }
   const fm = [
-    '---', 'schemaVersion: 2', `taskId: ${o.taskId ?? '内部任务-7'}`, `planPath: ${planRel}`,
+    '---', 'schemaVersion: 2', `taskId: ${o.taskId ?? 'TASK-7'}`, `planPath: ${planRel}`,
     `planSha256: ${planSha256(join(proj, planRel))}`, 'reviewedAt: 2026-09-13T00:00:00+08:00',
     `reviewMode: ${o.reviewMode ?? 'self'}`, `reviewInstances: ${o.reviewInstances ?? 0}`, 'reviewReason: "routing-gate 夹具"', '---', '',
   ].join('\n');
   writeFileSync(join(proj, 'docs', 'plans', 'feature-x-review.md'), `${fm}结论：${o.pass === false ? '不通过' : '通过'}\n`);
-  if (o.mutatePlanAfter) writeFileSync(join(proj, planRel), '---\nspecRefs: [内部需求-1]\n---\n# 计划改\n');
+  if (o.mutatePlanAfter) writeFileSync(join(proj, planRel), '---\nspecRefs: [FR-wf-1]\n---\n# 计划改\n');
   return planRel;
 }
 
@@ -717,9 +717,9 @@ function writeV2Artifact(proj, o = {}) {
 function writeV3Artifact(proj, o = {}) {
   const dir = join(proj, 'docs', 'plans');
   mkdirSync(dir, { recursive: true });
-  const planRel = '内部计划';
-  writeFileSync(join(proj, planRel), '---\nspecRefs: [内部需求-1]\n---\n# 计划\n');
-  const taskId = o.taskId ?? '内部任务-7';
+  const planRel = 'docs/plans/feature-x.md';
+  writeFileSync(join(proj, planRel), '---\nspecRefs: [FR-wf-1]\n---\n# 计划\n');
+  const taskId = o.taskId ?? 'TASK-7';
   const chain = `plan:${planRel}`;
   const prov = [
     { role: 'engineering', instance: 'eng-1', chain, state: 'fresh' },
@@ -740,7 +740,7 @@ test('plan-execution 无 --plan → 拒绝（不再扫描任意通过记录）',
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     writeV2Artifact(proj);
-    const r = runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-7' });
+    const r = runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-7' });
     assert.notEqual(r.status, 0, '缺显式计划必须拒绝');
     assert.ok(r.stderr.includes('--plan'), '拒绝文案须指出 --plan 要求');
   } finally {
@@ -754,7 +754,7 @@ test('v2 sidecar 一致 → 放行且租约绑定计划哈希', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     const planRel = writeV2Artifact(proj);
-    const r = runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-7', plan: planRel });
+    const r = runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-7', plan: planRel });
     assert.equal(r.status, 0, 'v2 凭据一致应放行');
     assert.ok(r.stdout.includes('计划凭据已绑定'), '确认输出须回显绑定');
     assert.equal(runGate(proj, { stateDir }).status, 0);
@@ -764,16 +764,16 @@ test('v2 sidecar 一致 → 放行且租约绑定计划哈希', () => {
   }
 });
 
-test('内部任务-191：v3 sidecar（round1 + provenance）→ 放行；v2 independent → 拒绝并给 v3 迁移文案', () => {
+test('DEV-191：v3 sidecar（round1 + provenance）→ 放行；v2 independent → 拒绝并给 v3 迁移文案', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     let planRel = writeV3Artifact(proj);
-    const ok = runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-7', plan: planRel });
+    const ok = runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-7', plan: planRel });
     assert.equal(ok.status, 0, `v3 凭据应放行（stderr：${ok.stderr}）`);
     assert.ok(ok.stdout.includes('计划凭据已绑定'));
     planRel = writeV2Artifact(proj, { reviewMode: 'independent', reviewInstances: 2 });
-    const bad = runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-7', plan: planRel });
+    const bad = runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-7', plan: planRel });
     assert.notEqual(bad.status, 0, 'v2 independent 必须拒绝');
     assert.match(bad.stderr, /schemaVersion: 3|reviewProvenance/);
   } finally {
@@ -787,20 +787,20 @@ test('评审后计划被修改 / legacy sidecar / 结论不通过 / taskId 不�
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     let planRel = writeV2Artifact(proj, { mutatePlanAfter: true });
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-7', plan: planRel }).status, 0, '哈希失配须拒');
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-7', plan: planRel }).status, 0, '哈希失配须拒');
     planRel = writeV2Artifact(proj, { legacy: true });
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-7', plan: planRel }).status, 0, 'legacy 须拒');
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-7', plan: planRel }).status, 0, 'legacy 须拒');
     planRel = writeV2Artifact(proj, { pass: false });
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-7', plan: planRel }).status, 0, '不通过须拒');
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-7', plan: planRel }).status, 0, '不通过须拒');
     planRel = writeV2Artifact(proj, {});
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-8', plan: planRel }).status, 0, 'taskId 不符须拒');
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-8', plan: planRel }).status, 0, 'taskId 不符须拒');
   } finally {
     rmSync(proj, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
   }
 });
 
-test('--exempt 引文正形与 scope 必填（内部规则-12）：旧理由摘要/缺 scope 拒；逐字流程引文+scope 放行；仅限 plan-execution', () => {
+test('--exempt 引文正形与 scope 必填（R-M1-12）：旧理由摘要/缺 scope 拒；逐字流程引文+scope 放行；仅限 plan-execution', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
@@ -907,7 +907,7 @@ test('--exempt + scope plan：租约含 exemptScope/引文，审计 v2 落盘', 
   try {
     const r = runDeclare(proj, 'plan-execution', {
       stateDir,
-      taskId: '内部任务-7',
+      taskId: 'TASK-7',
       exempt: '不用写计划，直接修',
       exemptSrc: 'user',
       exemptScope: 'plan',
@@ -929,7 +929,7 @@ test('--exempt + scope plan：租约含 exemptScope/引文，审计 v2 落盘', 
     }
     const auditText = readFileSync(join(proj, '.workflow', 'wf-exemptions.jsonl'), 'utf8');
     const audit = auditText.split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l))
-      .filter((x) => x.taskId === '内部任务-7');
+      .filter((x) => x.taskId === 'TASK-7');
     assert.equal(audit.length, 1, '豁免审计恰好一条');
     assert.equal(audit[0].schemaVersion, 2);
     assert.equal(audit[0].src, 'user');
@@ -948,13 +948,13 @@ test('--exempt-revoke：用户撤销原话+已评审计划；租约回普通 pla
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
-    const planRel = writeV2Artifact(proj, { taskId: '内部任务-9' });
+    const planRel = writeV2Artifact(proj, { taskId: 'TASK-9' });
     const ex = runDeclare(proj, 'plan-execution', {
-      stateDir, taskId: '内部任务-9', exempt: '不用写计划，直接修', exemptSrc: 'user', exemptScope: 'plan',
+      stateDir, taskId: 'TASK-9', exempt: '不用写计划，直接修', exemptSrc: 'user', exemptScope: 'plan',
     });
     assert.equal(ex.status, 0, '先有合法豁免声明');
     const rv = runDeclare(proj, 'plan-execution', {
-      stateDir, taskId: '内部任务-9', exemptRevoke: true,
+      stateDir, taskId: 'TASK-9', exemptRevoke: true,
       exempt: '撤销计划豁免，按正常评审计划走', exemptSrc: 'user', plan: planRel,
     });
     assert.equal(rv.status, 0, '显式退役应成功');
@@ -973,16 +973,16 @@ test('--exempt-revoke：用户撤销原话+已评审计划；租约回普通 pla
     }
     const audit = readFileSync(join(proj, '.workflow', 'wf-exemptions.jsonl'), 'utf8')
       .split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l))
-      .filter((x) => x.taskId === '内部任务-9');
+      .filter((x) => x.taskId === 'TASK-9');
     const revoked = audit.filter((x) => x.scope === 'revoked');
     assert.equal(revoked.length, 1, '退役记录恰好一条');
     assert.equal(revoked[0].src, 'user');
     assert.equal(revoked[0].reason, '撤销计划豁免，按正常评审计划走');
     assert.equal(revoked[0].schemaVersion, 2);
     // 负例：缺计划/带 scope/src 非法
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-9', exemptRevoke: true, exempt: '撤销计划豁免', exemptSrc: 'user' }).status, 0);
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-9', exemptRevoke: true, exempt: '撤销计划豁免', exemptSrc: 'user', plan: planRel, exemptScope: 'plan' }).status, 0);
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: '内部任务-9', exemptRevoke: true, exempt: '撤销计划豁免', exemptSrc: 'bogus', plan: planRel }).status, 0);
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-9', exemptRevoke: true, exempt: '撤销计划豁免', exemptSrc: 'user' }).status, 0);
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-9', exemptRevoke: true, exempt: '撤销计划豁免', exemptSrc: 'user', plan: planRel, exemptScope: 'plan' }).status, 0);
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, taskId: 'TASK-9', exemptRevoke: true, exempt: '撤销计划豁免', exemptSrc: 'bogus', plan: planRel }).status, 0);
   } finally {
     rmSync(proj, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
@@ -1003,13 +1003,13 @@ test('--exempt scope 与引文声明矩阵：目标引文拒/scope 必填/review
     assert.notEqual(dangling.status, 0, '悬空 scope（无 --exempt）拒');
     assert.match(dangling.stderr, /--exempt-scope 必须与 --exempt/, '悬空 scope 拒因须点名成对约束');
     assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, exempt: '跳过评审直接做', exemptSrc: 'user', exemptScope: 'review' }).status, 0, 'review 缺计划拒');
-    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, exempt: '不用写计划，直接修', exemptSrc: 'user', exemptScope: 'plan', plan: '内部计划' }).status, 0, 'plan 带计划拒');
+    assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, exempt: '不用写计划，直接修', exemptSrc: 'user', exemptScope: 'plan', plan: 'docs/plans/x.md' }).status, 0, 'plan 带计划拒');
     assert.notEqual(runDeclare(proj, 'plan-execution', { stateDir, exempt: '不用写计划，直接修', exemptSrc: 'user', exemptScope: 'plan', planRoot: proj }).status, 0, 'plan 带 plan-root 拒');
     const plansDir = join(proj, 'docs', 'plans');
     mkdirSync(plansDir, { recursive: true });
-    writeFileSync(join(plansDir, 'review-plan.md'), '---\nspecRefs: [内部需求-1]\n---\n# P\n\n豁免引文：跳过评审直接做\n');
+    writeFileSync(join(plansDir, 'review-plan.md'), '---\nspecRefs: [FR-wf-1]\n---\n# P\n\n豁免引文：跳过评审直接做\n');
     const review = runDeclare(proj, 'plan-execution', {
-      stateDir, exempt: '跳过评审直接做', exemptSrc: 'user', exemptScope: 'review', plan: '内部计划',
+      stateDir, exempt: '跳过评审直接做', exemptSrc: 'user', exemptScope: 'review', plan: 'docs/plans/review-plan.md',
     });
     assert.equal(review.status, 0, review.stderr || 'review scope + 计划 marker 放行');
     const prev = process.env.WF_ROUTING_STATE_DIR;
@@ -1017,7 +1017,7 @@ test('--exempt scope 与引文声明矩阵：目标引文拒/scope 必填/review
     try {
       const d = readActiveLease(projectKey(proj));
       assert.equal(d.lease.exemptScope, 'review');
-      assert.equal(d.lease.planPath, '内部计划');
+      assert.equal(d.lease.planPath, 'docs/plans/review-plan.md');
     } finally {
       if (prev === undefined) delete process.env.WF_ROUTING_STATE_DIR;
       else process.env.WF_ROUTING_STATE_DIR = prev;
@@ -1027,7 +1027,7 @@ test('--exempt scope 与引文声明矩阵：目标引文拒/scope 必填/review
     const blocker = join(proj, 'blocker');
     writeFileSync(blocker, 'x');
     const failed = runDeclare(proj, 'plan-execution', {
-      stateDir: failStateDir, taskId: '内部任务-2', exempt: '不用写计划，直接修', exemptSrc: 'user', exemptScope: 'plan', exemptRoot: blocker,
+      stateDir: failStateDir, taskId: 'TASK-2', exempt: '不用写计划，直接修', exemptSrc: 'user', exemptScope: 'plan', exemptRoot: blocker,
     });
     assert.notEqual(failed.status, 0, '审计写失败 fail-closed');
     assert.match(failed.stderr, /豁免审计失败|无留痕不豁免/, '拒因须点名审计失败/无留痕不豁免');
@@ -1052,7 +1052,7 @@ test('--exempt-scope 前置解析：旗标在 skill 前不把 scope 值当 skill
   try {
     const leaseId = freshLease(proj, stateDir);
     const r = spawnSync(process.execPath, [
-      DECLARE, '--exempt-scope', 'plan', 'plan-execution', '--lease', leaseId, '--task-id', '内部任务-1',
+      DECLARE, '--exempt-scope', 'plan', 'plan-execution', '--lease', leaseId, '--task-id', 'TASK-1',
     ], {
       cwd: proj,
       encoding: 'utf8',
@@ -1087,7 +1087,7 @@ function writeLegacyMismatchState(proj, stateDir, mutateActive) {
   const digest = createHash('sha256').update(projectKey(proj)).digest('hex').slice(0, 16);
   const now = Date.now();
   const challenge = { leaseId: 'legacy0000000001', projectKey: projectKey(proj), sessionId: 'sess-1', promptEpoch: 3, issuedAt: now, expiresAt: now + 3600000 };
-  const active = { leaseId: 'legacy0000000001', projectKey: projectKey(proj), sessionId: 'sess-1', taskId: '内部任务-9', skill: 'tdd', promptEpoch: 3, declaredAt: now, issuedAt: now, expiresAt: now + 3600000 };
+  const active = { leaseId: 'legacy0000000001', projectKey: projectKey(proj), sessionId: 'sess-1', taskId: 'TASK-9', skill: 'tdd', promptEpoch: 3, declaredAt: now, issuedAt: now, expiresAt: now + 3600000 };
   if (mutateActive) mutateActive(active);
   mkdirSync(stateDir, { recursive: true });
   writeFileSync(join(stateDir, `wf-lease-challenge-${digest}.json`), JSON.stringify(challenge));
@@ -1103,8 +1103,8 @@ test('会话不匹配（legacy 路径）→ deny 明示重复声明无效+诊断
     const r = runGate(proj, { stateDir, sessionId: 'sess-2' });
     assert.equal(r.status, 2, '他会话租约必须拦截');
     const msg = JSON.parse(r.stdout.trim()).hookSpecificOutput.systemMessage;
-    assert.ok(msg.includes('重复声明无效'), '内部决策-016：必须明示同令牌重声明无效');
-    assert.ok(msg.includes('skill=tdd') && msg.includes('内部任务-9') && msg.includes('declaredAt='), '必须附诊断字段 skill/taskId/declaredAt');
+    assert.ok(msg.includes('重复声明无效'), 'ADR-016：必须明示同令牌重声明无效');
+    assert.ok(msg.includes('skill=tdd') && msg.includes('TASK-9') && msg.includes('declaredAt='), '必须附诊断字段 skill/taskId/declaredAt');
     assert.ok(!msg.includes('routing-declare.mjs'), '不得再给注定无效的声明命令指引');
   } finally {
     rmSync(proj, { recursive: true, force: true });
@@ -1161,8 +1161,8 @@ test('双会话端到端：A、B 各自声明后写操作同时放行；A 的新
   try {
     const chA = freshLease(proj, stateDir, { sessionId: 'sess-A' });
     const chB = freshLease(proj, stateDir, { sessionId: 'sess-B' });
-    assert.equal(runDeclare(proj, 'brainstorming', { stateDir, leaseId: chA, taskId: '内部任务-1' }).status, 0);
-    assert.equal(runDeclare(proj, 'code-review', { stateDir, leaseId: chB, taskId: '内部任务-2' }).status, 0);
+    assert.equal(runDeclare(proj, 'brainstorming', { stateDir, leaseId: chA, taskId: 'TASK-1' }).status, 0);
+    assert.equal(runDeclare(proj, 'code-review', { stateDir, leaseId: chB, taskId: 'TASK-2' }).status, 0);
     // 双方同时持有效租约：各自的闸都放行
     assert.equal(runGate(proj, { stateDir, tool: 'Bash', command: 'touch x', sessionId: 'sess-A' }).status, 0, 'A 写放行');
     assert.equal(runGate(proj, { stateDir, tool: 'Bash', command: 'touch x', sessionId: 'sess-B' }).status, 0, 'B 写同时放行');
@@ -1176,7 +1176,7 @@ test('双会话端到端：A、B 各自声明后写操作同时放行；A 的新
   }
 });
 
-test('null 桶端到端（内部决策-018 修正案 2026-09-22）：轮换后闸放行（扫描回退，内部任务-LEASEGATE-1）', () => {
+test('null 桶端到端（ADR-018 修正案 2026-09-22）：轮换后闸放行（扫描回退，TASK-LEASEGATE-1）', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
@@ -1263,7 +1263,7 @@ test('Bash cwd 落嵌套仓 → deny 含跨键诊断（当前键 vs 最近成功
   }
 });
 
-test('挑战未激活 + 跨键诊断挂载（内部任务-LEASEATT-1）：嵌套键已签发未声明 → deny 家族呈现双键指引', () => {
+test('挑战未激活 + 跨键诊断挂载（TASK-LEASEATT-1）：嵌套键已签发未声明 → deny 家族呈现双键指引', () => {
   const { root, nested } = makeNestedProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
@@ -1300,27 +1300,27 @@ test('本键从未签发过挑战 → deny 提示签发 hook 未运行（不指�
 });
 
 // ── 内部任务-103 F2（内部任务-111 修复）：具名桶租约 + 无/异会话标识 → deny 不误指「从未签发」 ──
-test('具名桶租约 + 无/异 session_id → deny 会话隔离诊断（不误指从未签发）；真无签发仍原文案（内部任务-103 F2）', () => {
+test('具名桶租约 + 无/异 session_id → deny 会话隔离诊断（不误指从未签发）；真无签发仍原文案（DEV-103 F2）', () => {
   const proj = makeProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     const leaseId = freshLease(proj, stateDir, { sessionId: 'sess-holder' });
-    const d = runDeclare(proj, 'brainstorming', { stateDir, leaseId, taskId: '内部任务-911' });
+    const d = runDeclare(proj, 'brainstorming', { stateDir, leaseId, taskId: 'DEV-911' });
     assert.equal(d.status, 0, '播种：持有会话声明成功（具名桶租约在场）');
     // 形态 a：负载无 session_id（内部任务-103 探针 g4/g5 同形态）
     const a = runGate(proj, { stateDir, tool: 'Bash', command: 'touch x' });
     assert.equal(a.status, 2, '保护面不变：会话隔离照旧 deny（RC-1）');
     const msgA = JSON.parse(a.stdout.trim()).hookSpecificOutput.systemMessage;
-    assert.ok(!msgA.includes('从未签发过任务挑战'), '不得误指从未签发（租约一直在，内部任务-103 F2）');
+    assert.ok(!msgA.includes('从未签发过任务挑战'), '不得误指从未签发（租约一直在，DEV-103 F2）');
     assert.ok(msgA.includes('未携带会话标识'), '须给会话标识缺失诊断');
-    assert.ok(msgA.includes('task=内部任务-911'), '须渲染持有租约的任务号（leaseNote 接线钉，内部任务-111 评审发现 1）');
+    assert.ok(msgA.includes('task=DEV-911'), '须渲染持有租约的任务号（leaseNote 接线钉，DEV-111 评审发现 1）');
     // 形态 b：负载带他会话标识
     const b = runGate(proj, { stateDir, tool: 'Bash', command: 'touch x', sessionId: 'sess-other' });
     assert.equal(b.status, 2);
     const msgB = JSON.parse(b.stdout.trim()).hookSpecificOutput.systemMessage;
     assert.ok(!msgB.includes('从未签发过任务挑战'), '桶不一致形态同样不得误指从未签发');
     assert.ok(msgB.includes('与租约所在会话桶不一致'), '须给会话桶不一致诊断');
-    assert.ok(msgB.includes('task=内部任务-911'), '桶不一致形态同样渲染 leaseNote（内部任务-111 评审发现 1）');
+    assert.ok(msgB.includes('task=DEV-911'), '桶不一致形态同样渲染 leaseNote（DEV-111 评审发现 1）');
     // 负例：真·无签发（独立项目零播种）仍走原文案
     const proj2 = makeProject();
     const stateDir2 = mkdtempSync(join(tmpdir(), 'rgate-state-'));
@@ -1341,7 +1341,7 @@ test('具名桶租约 + 无/异 session_id → deny 会话隔离诊断（不误�
 });
 
 // ── 内部任务-103 F2（内部任务-111）：扫描失败态不变量——recentKey undefined 时两门同闭，键控诊断整体不出 ──
-test('state 根不可读（ENOTDIR）→ deny 照常且零键控诊断（扫描失败不出诊断，内部任务-103 F2）', () => {
+test('state 根不可读（ENOTDIR）→ deny 照常且零键控诊断（扫描失败不出诊断，DEV-103 F2）', () => {
   const proj = makeProject();
   const stateFile = join(tmpdir(), 'rgate-state-file-'); // 文件占位状态根：readdir ENOTDIR → recentDeclaredProjectKey 返 undefined
   try {
@@ -1359,13 +1359,13 @@ test('state 根不可读（ENOTDIR）→ deny 照常且零键控诊断（扫描�
 
 // ── 内部任务-24 D3：双/多键工作区 deny 逐键声明状态清单 ──
 
-test('内部任务-24 D3：双仓工作区无有效态 deny 附逐键状态清单；单仓不附', () => {
+test('DEV-24 D3：双仓工作区无有效态 deny 附逐键状态清单；单仓不附', () => {
   const { root, nested } = makeNestedProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     // 主仓声明成功、嵌套仓仅签发未声明（同会话 sess-D3 视角）
     const chM = freshLease(root, stateDir, { sessionId: 'sess-D3' });
-    assert.equal(runDeclare(root, 'brainstorming', { stateDir, leaseId: chM, taskId: '内部任务-1' }).status, 0);
+    assert.equal(runDeclare(root, 'brainstorming', { stateDir, leaseId: chM, taskId: 'TASK-1' }).status, 0);
     freshLease(nested, stateDir, { sessionId: 'sess-D3' });
     const r = runGate(nested, { stateDir, tool: 'Bash', command: 'touch x', sessionId: 'sess-D3' });
     assert.equal(r.status, 2);
@@ -1397,7 +1397,7 @@ test('内部任务-24 D3：双仓工作区无有效态 deny 附逐键状态清�
 
 // ── 内部任务-247 F1/F2：纯 cd 逃生通道与多键 deny 头部执法键提示 ──
 
-test('纯 cd 无租约 Bash 放行（内部任务-247 逃生通道）', () => {
+test('纯 cd 无租约 Bash 放行（DEV-247 逃生通道）', () => {
   const { root, nested } = makeNestedProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   const incidentRoot = mkdtempSync(join(tmpdir(), 'rgate-inc-'));
@@ -1418,7 +1418,7 @@ test('纯 cd 无租约 Bash 放行（内部任务-247 逃生通道）', () => {
       // 在测试进程带该 env 时会读错账本（误红/真空通过）。
       readIncidentsAt(incidentRoot, nested).filter((rec) => rec.kind === 'lease-deny').length,
       0,
-      '放行路径不落 lease-deny 留痕（内部验收-35）',
+      '放行路径不落 lease-deny 留痕（A-M8-35）',
     );
     // 对照：复合/相对形态仍 deny(2)
     assert.equal(runGate(nested, { stateDir, incidentRoot, tool: 'Bash', command: `${cdTarget} && pwd` }).status, 2, '复合形态拒');
@@ -1431,13 +1431,13 @@ test('纯 cd 无租约 Bash 放行（内部任务-247 逃生通道）', () => {
   }
 });
 
-test('多键 deny 头部窗口含执法键提示与 --project-root（内部任务-247）', () => {
+test('多键 deny 头部窗口含执法键提示与 --project-root（DEV-247）', () => {
   const { root, nested } = makeNestedProject();
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
     // 复用 D3 场景：主仓已声明、嵌套仓已签发未声明（本操作执法键=嵌套仓）
     const chM = freshLease(root, stateDir, { sessionId: 'sess-F2' });
-    assert.equal(runDeclare(root, 'brainstorming', { stateDir, leaseId: chM, taskId: '内部任务-1' }).status, 0);
+    assert.equal(runDeclare(root, 'brainstorming', { stateDir, leaseId: chM, taskId: 'TASK-1' }).status, 0);
     freshLease(nested, stateDir, { sessionId: 'sess-F2' });
     const r = runGate(nested, { stateDir, tool: 'Bash', command: 'touch x', sessionId: 'sess-F2' });
     assert.equal(r.status, 2);
@@ -1478,12 +1478,12 @@ test('Bash 声明命令带管道/链式 → deny 追加「严格解析声明命�
     const r = runGate(proj, {
       stateDir,
       tool: 'Bash',
-      command: `node ${DECLARE} tdd --lease abc --task-id 内部任务-1 | tail`,
+      command: `node ${DECLARE} tdd --lease abc --task-id TASK-1 | tail`,
     });
     assert.equal(r.status, 2);
     const msg = JSON.parse(r.stdout.trim()).hookSpecificOutput.systemMessage;
     assert.ok(msg.includes('管道') || msg.includes('链式'), '须明示被拒原因是附加了管道/链式');
-    assert.ok(msg.includes('严格解析') && msg.includes('顺序拼接'), '须给出可执行提示（2026-10-10 内部任务-29：旧「纯净单命令」措辞随链式放行面扩而废止）');
+    assert.ok(msg.includes('严格解析') && msg.includes('顺序拼接'), '须给出可执行提示（2026-10-10 DEV-29：旧「纯净单命令」措辞随链式放行面扩而废止）');
     // 非声明命令含元字符：主因是无租约而非元字符，不追加「去管道即可过闸」的死路指引
     const r2 = runGate(proj, { stateDir, tool: 'Bash', command: 'ls | grep x' });
     const msg2 = JSON.parse(r2.stdout.trim()).hookSpecificOutput.systemMessage;
@@ -1653,7 +1653,7 @@ test('lease-loop 不误报：无振荡历史（resolved <2）的 deny 不升级'
   }
 });
 
-test('deny 留痕根=执法键（cwd 非仓而文件在仓：incident 落文件仓，非仓 cwd 零垃圾，内部决策-022）', () => {
+test('deny 留痕根=执法键（cwd 非仓而文件在仓：incident 落文件仓，非仓 cwd 零垃圾，ADR-022）', () => {
   const proj = makeProject();
   const outside = mkdtempSync(join(tmpdir(), 'rgate-outside2-')); // cwd：非仓
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
@@ -1685,14 +1685,14 @@ test('写面判定：面内放行（根级/子目录/相对路径按 cwd 解析�
       '面子目录文件按条目目录前缀放行',
     );
     assert.equal(
-      runGate(proj, { stateDir, tool: 'Write', filePath: '内部计划' }).status,
+      runGate(proj, { stateDir, tool: 'Write', filePath: 'docs/plans/z.md' }).status,
       0,
       '相对 file_path 须按负载 cwd 解析到面内放行',
     );
     const r = runGate(proj, { stateDir, tool: 'Edit', filePath: join(proj, 'workflow', 'hooks', 'z.mjs') });
     assert.equal(r.status, 2, '超面写必须拦截');
     const env = JSON.parse(r.stdout.trim());
-    assert.equal(env.hookSpecificOutput?.permissionDecision, 'deny', '信封仍走 deny 契约（内部规则-6）');
+    assert.equal(env.hookSpecificOutput?.permissionDecision, 'deny', '信封仍走 deny 契约（R-M8-6）');
     const msg = env.hookSpecificOutput?.systemMessage ?? '';
     assert.ok(msg.includes('写面'), 'deny 文案须含写面提示（scopeHint）');
     assert.ok(msg.includes('--change-scope'), '须给出以 --change-scope 重声明写面的出路');
@@ -1801,7 +1801,7 @@ function makePlanProject(name = 'rgate-plan-') {
   mkdirSync(join(proj, 'docs', 'superpowers', 'plans', 'deep'), { recursive: true });
   mkdirSync(join(proj, 'specs'), { recursive: true });
   mkdirSync(join(proj, 'src'), { recursive: true });
-  writeFileSync(join(proj, '仓库维护说明'), '# agents\n');
+  writeFileSync(join(proj, 'AGENTS.md'), '# agents\n');
   return proj;
 }
 
@@ -1828,7 +1828,7 @@ function writeLegacyPlanState(proj, stateDir, skill) {
   const digest = createHash('sha256').update(projectKey(proj)).digest('hex').slice(0, 16);
   const now = Date.now();
   const challenge = { leaseId: 'legacy0000000001', projectKey: projectKey(proj), sessionId: 'sess-L1', promptEpoch: 3, issuedAt: now, expiresAt: now + 3600000 };
-  const active = { leaseId: 'legacy0000000001', projectKey: projectKey(proj), sessionId: 'sess-L1', taskId: '内部任务-5', skill, promptEpoch: 3, declaredAt: now, issuedAt: now, expiresAt: now + 3600000 };
+  const active = { leaseId: 'legacy0000000001', projectKey: projectKey(proj), sessionId: 'sess-L1', taskId: 'TASK-5', skill, promptEpoch: 3, declaredAt: now, issuedAt: now, expiresAt: now + 3600000 };
   mkdirSync(stateDir, { recursive: true });
   writeFileSync(join(stateDir, `wf-lease-challenge-${digest}.json`), JSON.stringify(challenge));
   writeFileSync(join(stateDir, `wf-lease-active-${digest}.json`), JSON.stringify(active));
@@ -1851,7 +1851,7 @@ test('A组 规划租约合法面（守卫）：PLAN_DIRS 下 .md 放行——根
       assert.equal(runGate(proj, { stateDir, tool, filePath: fp, incidentRoot: iso.incidentRoot }).status, 0, `${tool} 面内 ${fp} 须放行`);
     }
     assert.equal(
-      runGate(proj, { stateDir, tool: 'Write', filePath: '内部计划', incidentRoot: iso.incidentRoot }).status,
+      runGate(proj, { stateDir, tool: 'Write', filePath: 'docs/plans/rel.md', incidentRoot: iso.incidentRoot }).status,
       0,
       '相对 file_path 按负载 cwd 解析到面内放行',
     );
@@ -1862,7 +1862,7 @@ test('A组 规划租约合法面（守卫）：PLAN_DIRS 下 .md 放行——根
   }
 });
 
-test('A组 规划租约越界拒绝：AGENTS/内部规格非md/目录/面外md → exit 2 信封点名目标与三段流向，无扩面尾句', () => {
+test('A组 规划租约越界拒绝：AGENTS/specs/src/非md/目录/面外md → exit 2 信封点名目标与三段流向，无扩面尾句', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   const iso = makeIsoRoots('rgate-iso-a2-');
   const projects = [];
@@ -1873,8 +1873,8 @@ test('A组 规划租约越界拒绝：AGENTS/内部规格非md/目录/面外md �
       const d = runDeclare(p, skill, { stateDir, incidentRoot: iso.incidentRoot, exemptRoot: iso.exemptRoot });
       assert.equal(d.status, 0, `${skill} 声明应成功`);
       const targets = [
-        join(p, '仓库维护说明'),
-        join(p, 'specs', '内部接口-1.md'),
+        join(p, 'AGENTS.md'),
+        join(p, 'specs', 'IF-COLLAB-1.md'),
         join(p, 'src', 'a.ts'),
         join(p, 'docs', 'plans', 'notes.txt'),
         join(p, 'docs', 'other.md'),
@@ -1886,13 +1886,13 @@ test('A组 规划租约越界拒绝：AGENTS/内部规格非md/目录/面外md �
           assert.equal(r.status, 2, `${skill} ${tool} 越界目标须 deny：${fp}`);
         }
       }
-      const r = runGate(p, { stateDir, tool: 'Edit', filePath: join(p, '仓库维护说明'), incidentRoot: iso.incidentRoot });
+      const r = runGate(p, { stateDir, tool: 'Edit', filePath: join(p, 'AGENTS.md'), incidentRoot: iso.incidentRoot });
       assert.equal(r.status, 2, '信封取证前提：越界 deny');
       const env = JSON.parse(r.stdout.trim());
-      assert.equal(env.hookSpecificOutput?.hookEventName, 'PreToolUse', '信封事件名契约（内部规则-6）');
+      assert.equal(env.hookSpecificOutput?.hookEventName, 'PreToolUse', '信封事件名契约（R-M8-6）');
       assert.equal(env.hookSpecificOutput?.permissionDecision, 'deny');
       const msg = env.hookSpecificOutput?.systemMessage ?? '';
-      assert.ok(msg.includes('仓库维护说明'), `专属文案须点名越界目标路径（skill=${skill}）`);
+      assert.ok(msg.includes('AGENTS.md'), `专属文案须点名越界目标路径（skill=${skill}）`);
       assert.ok(
         msg.includes('plan-writing') && msg.includes('plan-review') && msg.includes('plan-execution'),
         `文案须给出 plan-writing→plan-review→plan-execution 流向指引（skill=${skill}）`,
@@ -2093,7 +2093,7 @@ test('A组 链接逃逸拒绝：docs/plans 下 symlink/junction 指向面外 →
 test('A组 嵌套仓隔离：主仓规划租约不放行嵌套仓计划文件；嵌套仓自身上界照常', () => {
   const { root, nested } = makeNestedProject();
   mkdirSync(join(nested, 'docs', 'plans'), { recursive: true });
-  writeFileSync(join(nested, '仓库维护说明'), '# a\n');
+  writeFileSync(join(nested, 'AGENTS.md'), '# a\n');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   const iso = makeIsoRoots('rgate-iso-a7-');
   try {
@@ -2110,7 +2110,7 @@ test('A组 嵌套仓隔离：主仓规划租约不放行嵌套仓计划文件；
       '嵌套仓自身声明后面内放行',
     );
     assert.equal(
-      runGate(nested, { stateDir, tool: 'Edit', filePath: join(nested, '仓库维护说明'), incidentRoot: iso.incidentRoot }).status,
+      runGate(nested, { stateDir, tool: 'Edit', filePath: join(nested, 'AGENTS.md'), incidentRoot: iso.incidentRoot }).status,
       2,
       '嵌套仓规划租约的 AGENTS 目标须拒',
     );
@@ -2127,7 +2127,7 @@ test('A组 上界 deny 复用留痕（隔离根零污染）；--exempt 对规划
   const iso = makeIsoRoots('rgate-iso-a8-');
   try {
     assert.equal(runDeclare(proj, 'plan-writing', { stateDir, incidentRoot: iso.incidentRoot, exemptRoot: iso.exemptRoot }).status, 0);
-    const r = runGate(proj, { stateDir, tool: 'Edit', filePath: join(proj, '仓库维护说明'), incidentRoot: iso.incidentRoot });
+    const r = runGate(proj, { stateDir, tool: 'Edit', filePath: join(proj, 'AGENTS.md'), incidentRoot: iso.incidentRoot });
     assert.equal(r.status, 2, '越界目标 deny');
     const recs = readIncidentsAt(iso.incidentRoot, proj);
     assert.ok(recs.length >= 1, '上界 deny 须复用 deny 留痕面（隔离根可读）');
@@ -2149,7 +2149,7 @@ test('A组 上界 deny 复用留痕（隔离根零污染）；--exempt 对规划
 
 // ── 内部任务-8（2026-10-07，内部规则-17）：钩内工具族分流——字面三工具闸退役 ──
 
-test('内部任务-8 任务 2.2：工具族分流——shell/edit 族（含 DSH 原生小写名）走租约判定，other 族零输出', () => {
+test('DEV-8 任务 2.2：工具族分流——shell/edit 族（含 DSH 原生小写名）走租约判定，other 族零输出', () => {
   const proj = makeProject('rgate-dev8-fam-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-dev8-fam-state-'));
   const iso = makeIsoRoots('rgate-dev8-fam-iso-');
@@ -2169,7 +2169,7 @@ test('内部任务-8 任务 2.2：工具族分流——shell/edit 族（含 DSH 
     // other 族（只读工具）→ exit 0 零输出
     const other = runGate(proj, { stateDir, tool: 'Read', filePath: join(proj, 'src', 'a.ts'), incidentRoot: iso.incidentRoot });
     assert.equal(other.status, 0, 'other 族静默放行');
-    assert.equal(other.stdout.trim(), '', 'other 族零输出（内部规则-6 信封契约）');
+    assert.equal(other.stdout.trim(), '', 'other 族零输出（R-M8-6 信封契约）');
     // 声明后 shell/edit 族放行（deny 语义不变的正向对照：null 桶声明 + null 观察侧）
     assert.equal(runDeclare(proj, 'brainstorming', { stateDir, incidentRoot: iso.incidentRoot, exemptRoot: iso.exemptRoot }).status, 0, '声明激活');
     assert.equal(
@@ -2190,7 +2190,7 @@ test('内部任务-8 任务 2.2：工具族分流——shell/edit 族（含 DSH 
 });
 
 // ── 内部任务-8 阶段 5（内部规则-19 ⑥）：deny 拒因与 LEASE_REASONS 单一来源 ──
-test('内部任务-8 任务 5.1：deny 拒因短语与 LEASE_REASONS 逐字同源（端到端两态 + 常量引用锚）', () => {
+test('DEV-8 任务 5.1：deny 拒因短语与 LEASE_REASONS 逐字同源（端到端两态 + 常量引用锚）', () => {
   const proj = makeProject('rgate-dev8-reason-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-dev8-reason-state-'));
   const iso = makeIsoRoots('rgate-dev8-reason-iso-');
@@ -2229,7 +2229,7 @@ test('内部任务-8 任务 5.1：deny 拒因短语与 LEASE_REASONS 逐字同�
   }
 });
 
-test('内部任务-8 门禁实例1 F1：无 tool_name 的写面负载静默放行（设计语义锁定：族不可判即不定键）', () => {
+test('DEV-8 门禁实例1 F1：无 tool_name 的写面负载静默放行（设计语义锁定：族不可判即不定键）', () => {
   const proj = makeProject('rgate-dev8-notool-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-dev8-notool-state-'));
   try {
@@ -2239,7 +2239,7 @@ test('内部任务-8 门禁实例1 F1：无 tool_name 的写面负载静默放�
       env: { ...BASE_ENV, WF_ROUTING_STATE_DIR: stateDir, ZCODE_PLUGIN_ROOT: resolve(HOOKS, '..') },
     });
     assert.equal(r.status, 0, '族不可判（无 tool_name）→ fail-open 放行（判据依赖键控维度，无法定键不猜测）');
-    assert.equal(String(r.stdout).trim(), '', '零输出（内部规则-6 信封契约）');
+    assert.equal(String(r.stdout).trim(), '', '零输出（R-M8-6 信封契约）');
     // 对照：同一负载带上 shell 族名 → 走整闸并因无租约 deny
     assert.equal(
       runGate(proj, { stateDir, tool: 'pwsh', toolInput: { command: 'echo probe > out.txt' } }).status,
@@ -2252,7 +2252,7 @@ test('内部任务-8 门禁实例1 F1：无 tool_name 的写面负载静默放�
   }
 });
 
-test('内部任务-8 门B-F3：闸侧心跳接线——放行一次后 active.expiresAt 顺延（删接线即红）', () => {
+test('DEV-8 门B-F3：闸侧心跳接线——放行一次后 active.expiresAt 顺延（删接线即红）', () => {
   const proj = makeProject('rgate-dev8-hb-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-dev8-hb-state-'));
   const iso = makeIsoRoots('rgate-dev8-hb-iso-');
@@ -2278,7 +2278,7 @@ test('内部任务-8 门B-F3：闸侧心跳接线——放行一次后 active.ex
   }
 });
 
-test('内部任务-27 坑4：单域仓 deny 文案内联建议号，零域仓默认域兜底内联（内部任务-75）', () => {
+test('DEV-27 坑4：单域仓 deny 文案内联建议号，零域仓默认域兜底内联（DEV-75）', () => {
   const proj = makeProject('rgate-d27-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   let bare = '';
@@ -2289,14 +2289,14 @@ test('内部任务-27 坑4：单域仓 deny 文案内联建议号，零域仓默
     const r = runGate(proj, { stateDir, tool: 'Bash', command: 'node -e "require(\'fs\').writeFileSync(\'x\',\'1\')"' });
     assert.equal(r.status, 2);
     const msg = JSON.parse(r.stdout.trim()).hookSpecificOutput?.systemMessage ?? '';
-    assert.ok(msg.includes('--task-id 内部任务-1'), '单域仓 deny 文案内联建议号（与租约行同源）');
+    assert.ok(msg.includes('--task-id DEV-1'), '单域仓 deny 文案内联建议号（与租约行同源）');
     // 零域仓：默认域兜底内联 内部任务-1（内部任务-75/IMP-4——旧「占位符保持」形态废止，接线断言=删兜底即红）
     bare = makeProject('rgate-d27b-');
     const stateDir2 = mkdtempSync(join(tmpdir(), 'rgate-state-'));
     const r2 = runGate(bare, { stateDir: stateDir2, tool: 'Bash', command: 'node -e "require(\'fs\').writeFileSync(\'x\',\'1\')"' });
     assert.equal(r2.status, 2);
     const msg2 = JSON.parse(r2.stdout.trim()).hookSpecificOutput?.systemMessage ?? '';
-    assert.ok(msg2.includes('--task-id 内部任务-1'), '零域仓默认域兜底内联建议号（内部任务-75）');
+    assert.ok(msg2.includes('--task-id DEV-1'), '零域仓默认域兜底内联建议号（DEV-75）');
     rmSync(stateDir2, { recursive: true, force: true });
   } finally {
     rmSync(proj, { recursive: true, force: true });
@@ -2305,7 +2305,7 @@ test('内部任务-27 坑4：单域仓 deny 文案内联建议号，零域仓默
   }
 });
 
-test('内部未决-103：deny 文案建议号排除观察会话自身占用（claim 在场＋active 失效形态，内部任务-52）', () => {
+test('OPEN-103：deny 文案建议号排除观察会话自身占用（claim 在场＋active 失效形态，DEV-52）', () => {
   const proj = makeProject('rgate-o103-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-state-'));
   try {
@@ -2318,7 +2318,7 @@ test('内部未决-103：deny 文案建议号排除观察会话自身占用（cl
     try {
       const key = projectKey(proj);
       const ch = issueChallenge(key, { sessionId: 'sess-o103' });
-      const r = activateLease(key, { leaseId: ch.leaseId, taskId: '内部任务-7', skill: 'tdd' });
+      const r = activateLease(key, { leaseId: ch.leaseId, taskId: 'DEV-7', skill: 'tdd' });
       assert.ok(r.ok, `种子声明须成功：${r.reason}`);
       rmSync(join(stateDir, `wf-lease-active-${ch.leaseId}.json`), { force: true });
     } finally {
@@ -2329,8 +2329,8 @@ test('内部未决-103：deny 文案建议号排除观察会话自身占用（cl
     const g = runGate(proj, { stateDir, tool: 'Bash', command: 'node -e "require(\'fs\').writeFileSync(\'x\',\'1\')"', sessionId: 'sess-o103' });
     assert.equal(g.status, 2);
     const msg = JSON.parse(g.stdout.trim()).hookSpecificOutput?.systemMessage ?? '';
-    assert.ok(msg.includes('--task-id 内部任务-1'), '排除自身后建议回到空态取号（照抄即延续同号）');
-    assert.ok(!msg.includes('--task-id 内部任务-8'), '未接线排除时会被自身占用顶成 内部任务-8——删接线即红');
+    assert.ok(msg.includes('--task-id DEV-1'), '排除自身后建议回到空态取号（照抄即延续同号）');
+    assert.ok(!msg.includes('--task-id DEV-8'), '未接线排除时会被自身占用顶成 DEV-8——删接线即红');
   } finally {
     rmSync(proj, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
@@ -2339,7 +2339,7 @@ test('内部未决-103：deny 文案建议号排除观察会话自身占用（cl
 
 // ── 内部任务-41（2026-10-11，FIX-3 承接）：事故序列回归（验收不变量）+ deny 头窗前置 ──
 
-test('内部任务-41 实录 A 序列：复合声明被拒后，当轮令牌单条声明必须成功（deny 不杀新鲜挑战）', () => {
+test('DEV-41 实录 A 序列：复合声明被拒后，当轮令牌单条声明必须成功（deny 不杀新鲜挑战）', () => {
   const proj = makeProject('dev41-a-');
   const stateDir = mkdtempSync(join(tmpdir(), 'dev41-a-state-'));
   try {
@@ -2349,10 +2349,10 @@ test('内部任务-41 实录 A 序列：复合声明被拒后，当轮令牌单�
       ttlMs: '5000',
       tool: 'Bash',
       sessionId: 'sess-e2e',
-      command: `node "${DECLARE}" tdd --lease ${leaseId} --task-id 内部任务-41 2>/dev/null || true`,
+      command: `node "${DECLARE}" tdd --lease ${leaseId} --task-id DEV-41 2>/dev/null || true`,
     });
     assert.equal(denied.status, 2, '复合（重定向+链式混非声明命令）整条拒');
-    const single = runDeclare(proj, 'verification', { stateDir, leaseId, taskId: '内部任务-41', ttlMs: '5000' });
+    const single = runDeclare(proj, 'verification', { stateDir, leaseId, taskId: 'DEV-41', ttlMs: '5000' });
     assert.equal(single.status, 0, 'deny 之后当轮令牌单条声明必须成功');
   } finally {
     rmSync(proj, { recursive: true, force: true });
@@ -2360,7 +2360,7 @@ test('内部任务-41 实录 A 序列：复合声明被拒后，当轮令牌单�
   }
 });
 
-test('内部任务-41 实录 B 序列：双键同轮签发，deny 后嵌套仓与主仓当轮令牌声明均成功', () => {
+test('DEV-41 实录 B 序列：双键同轮签发，deny 后嵌套仓与主仓当轮令牌声明均成功', () => {
   const main = makeProject('dev41-b-main-');
   const nested = join(main, 'docs', 'design-repo');
   mkdirSync(join(nested, '.git'), { recursive: true });
@@ -2373,12 +2373,12 @@ test('内部任务-41 实录 B 序列：双键同轮签发，deny 后嵌套仓�
       ttlMs: '5000',
       tool: 'Bash',
       sessionId: 'sess-e2e',
-      command: `cd "${nested}" && node "${DECLARE}" tdd --lease ${leaseNested} --task-id 内部任务-42 && cd "${main}" && git status`,
+      command: `cd "${nested}" && node "${DECLARE}" tdd --lease ${leaseNested} --task-id DEV-42 && cd "${main}" && git status`,
     });
     assert.equal(denied.status, 2, 'cwd 键控主仓的复合命令整条拒');
-    const actNested = runDeclare(main, 'verification', { stateDir, leaseId: leaseNested, taskId: '内部任务-42', ttlMs: '5000', projectRoot: nested });
+    const actNested = runDeclare(main, 'verification', { stateDir, leaseId: leaseNested, taskId: 'DEV-42', ttlMs: '5000', projectRoot: nested });
     assert.equal(actNested.status, 0, '嵌套仓当轮令牌声明成功（实录 B 步骤 2）');
-    const actMain = runDeclare(main, 'verification', { stateDir, leaseId: leaseMain, taskId: '内部任务-43', ttlMs: '5000' });
+    const actMain = runDeclare(main, 'verification', { stateDir, leaseId: leaseMain, taskId: 'DEV-43', ttlMs: '5000' });
     assert.equal(actMain.status, 0, '主仓当轮令牌声明成功（事故中失败的应是旧轮令牌）');
   } finally {
     rmSync(main, { recursive: true, force: true });
@@ -2386,7 +2386,7 @@ test('内部任务-41 实录 B 序列：双键同轮签发，deny 后嵌套仓�
   }
 });
 
-test('内部任务-41 #2 声明命令元字符指引落在 deny 文案头部窗口（P7 截断教训）', () => {
+test('DEV-41 #2 声明命令元字符指引落在 deny 文案头部窗口（P7 截断教训）', () => {
   const proj = makeProject('dev41-c-');
   const stateDir = mkdtempSync(join(tmpdir(), 'dev41-c-state-'));
   try {
@@ -2395,7 +2395,7 @@ test('内部任务-41 #2 声明命令元字符指引落在 deny 文案头部窗�
       ttlMs: '5000',
       tool: 'Bash',
       sessionId: 'sess-e2e',
-      command: `node "${DECLARE}" tdd --lease ${'c'.repeat(32)} --task-id 内部任务-41 | tail -5`,
+      command: `node "${DECLARE}" tdd --lease ${'c'.repeat(32)} --task-id DEV-41 | tail -5`,
     });
     assert.equal(denied.status, 2);
     const msg = JSON.parse(denied.stdout.trim()).hookSpecificOutput.systemMessage;
@@ -2411,7 +2411,7 @@ test('内部任务-41 #2 声明命令元字符指引落在 deny 文案头部窗�
 
 // 内部任务-75/IMP-3（内部规则-20 基线写面）：映射表形态锁——SKILL_WRITE_FLOOR 单源导出于
 // routing-lib（与 PLAN_DIRS 同模块），root-cause-debugging 条目=PLAN_DIRS 引用不复制。
-test('内部任务-75 SKILL_WRITE_FLOOR 映射表形态：恰 root-cause-debugging 条目=PLAN_DIRS', async () => {
+test('DEV-75 SKILL_WRITE_FLOOR 映射表形态：恰 root-cause-debugging 条目=PLAN_DIRS', async () => {
   const { SKILL_WRITE_FLOOR, PLAN_DIRS } = await import('../../hooks/routing-lib.mjs');
   assert.deepEqual(Object.keys(SKILL_WRITE_FLOOR), ['root-cause-debugging'], '首批恰一 skill 条目');
   assert.equal(SKILL_WRITE_FLOOR['root-cause-debugging'], PLAN_DIRS, '条目引用 PLAN_DIRS（不复制，防双源漂移）');
@@ -2421,11 +2421,11 @@ test('内部任务-75 SKILL_WRITE_FLOOR 映射表形态：恰 root-cause-debuggi
 // 内部任务-75/IMP-3（内部规则-20 基线写面）：root-cause-debugging 声明下——无 changeScope 时
 // docs/plans .md 放行、src/内部规格 拒（信封含「基线写面」与 --change-scope 指引、
 // cmd 模板渲染当前租约实际 taskId）；带 changeScope 时并集扩面；非映射 skill 行为不变。
-test('内部任务-75 基线写面：root-cause 无声明时 docs/plans .md 放行、src/内部规格 拒且文案含补声明指引', () => {
+test('DEV-75 基线写面：root-cause 无声明时 docs/plans .md 放行、src/specs/learnings 拒且文案含补声明指引', () => {
   const proj = makeProject('rgate-floor-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-floor-state-'));
   try {
-    const d = runDeclare(proj, 'root-cause-debugging', { stateDir, taskId: '内部任务-90001' });
+    const d = runDeclare(proj, 'root-cause-debugging', { stateDir, taskId: 'DEV-90001' });
     assert.equal(d.status, 0, `种子声明须成功：${d.stderr}`);
     mkdirSync(join(proj, 'docs', 'plans'), { recursive: true });
     const okRun = runGate(proj, { stateDir, filePath: join(proj, 'docs', 'plans', 'DEBUG-REPORT.md') });
@@ -2435,8 +2435,8 @@ test('内部任务-75 基线写面：root-cause 无声明时 docs/plans .md 放�
     const msg = JSON.parse(denyRun.stdout.trim()).hookSpecificOutput?.systemMessage ?? '';
     assert.ok(msg.includes('基线写面'), '专属文案点名基线写面');
     assert.ok(msg.includes('--change-scope'), '补声明指引在场');
-    assert.ok(msg.includes('内部任务-90001'), 'cmd 模板渲染当前租约实际 taskId（scopeHint 先例——沿原号扩面）');
-    for (const p of [join(proj, 'specs', 'x.md'), join(proj, '经验记录')]) {
+    assert.ok(msg.includes('DEV-90001'), 'cmd 模板渲染当前租约实际 taskId（scopeHint 先例——沿原号扩面）');
+    for (const p of [join(proj, 'specs', 'x.md'), join(proj, 'learnings.md')]) {
       assert.equal(runGate(proj, { stateDir, filePath: p }).status, 2, `${p} 应拒（规格/归档面不在基线面）`);
     }
   } finally {
@@ -2445,13 +2445,13 @@ test('内部任务-75 基线写面：root-cause 无声明时 docs/plans .md 放�
   }
 });
 
-test('内部任务-75 基线写面：changeScope 并集扩面（声明 src 后 src 放行、面外仍拒、基线面半边仍放行）；宽面全仓放行', () => {
+test('DEV-75 基线写面：changeScope 并集扩面（声明 src 后 src 放行、面外仍拒、基线面半边仍放行）；宽面全仓放行', () => {
   const proj = makeProject('rgate-floor-scope-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-fs-state-'));
   const wide = makeProject('rgate-floor-wide-');
   const wideState = mkdtempSync(join(tmpdir(), 'rgate-fw-state-'));
   try {
-    const d = runDeclare(proj, 'root-cause-debugging', { stateDir, taskId: '内部任务-90002', changeScope: '["src"]' });
+    const d = runDeclare(proj, 'root-cause-debugging', { stateDir, taskId: 'DEV-90002', changeScope: '["src"]' });
     assert.equal(d.status, 0, `带写面种子声明须成功：${d.stderr}`);
     mkdirSync(join(proj, 'src'), { recursive: true });
     mkdirSync(join(proj, 'docs', 'plans'), { recursive: true });
@@ -2462,7 +2462,7 @@ test('内部任务-75 基线写面：changeScope 并集扩面（声明 src 后 s
       0,
       '基线面半边：声明代码面后过程文档仍放行（并集不是 AND——收尾评审发现 1 修复锁定，通用写面判定对映射表 skill 单点跳过）',
     );
-    const d2 = runDeclare(wide, 'root-cause-debugging', { stateDir: wideState, taskId: '内部任务-90003', changeScope: '["."]' });
+    const d2 = runDeclare(wide, 'root-cause-debugging', { stateDir: wideState, taskId: 'DEV-90003', changeScope: '["."]' });
     assert.equal(d2.status, 0, `宽面种子声明须成功：${d2.stderr}`);
     assert.equal(runGate(wide, { stateDir: wideState, filePath: join(wide, 'anywhere', 'c.md') }).status, 0, '根条目=显式宽面全仓放行');
   } finally {
@@ -2473,11 +2473,11 @@ test('内部任务-75 基线写面：changeScope 并集扩面（声明 src 后 s
   }
 });
 
-test('内部任务-75 基线写面：非映射 skill 不受影响（无声明 src 放行，向后兼容）', () => {
+test('DEV-75 基线写面：非映射 skill 不受影响（无声明 src 放行，向后兼容）', () => {
   const proj = makeProject('rgate-floor-other-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-fo-state-'));
   try {
-    const d = runDeclare(proj, 'brainstorming', { stateDir, taskId: '内部任务-90004' });
+    const d = runDeclare(proj, 'brainstorming', { stateDir, taskId: 'DEV-90004' });
     assert.equal(d.status, 0, `种子声明须成功：${d.stderr}`);
     assert.equal(runGate(proj, { stateDir, filePath: join(proj, 'src', 'a.ts') }).status, 0, '非映射 skill 无声明=全仓放行（既有语义回归）');
   } finally {
@@ -2486,7 +2486,7 @@ test('内部任务-75 基线写面：非映射 skill 不受影响（无声明 sr
   }
 });
 
-test('内部决策-045：维护者段仓 deny 文案内联三段建议号（soleTaskIdSuggestion 单源连带面）', () => {
+test('ADR-045：维护者段仓 deny 文案内联三段建议号（soleTaskIdSuggestion 单源连带面）', () => {
   const proj = makeProject('rgate-adr45-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-adr45-state-'));
   try {
@@ -2497,7 +2497,7 @@ test('内部决策-045：维护者段仓 deny 文案内联三段建议号（sole
     const r = runGate(proj, { stateDir, tool: 'Bash', command: 'node -e "require(\'fs\').writeFileSync(\'x\',\'1\')"' });
     assert.equal(r.status, 2);
     const msg = JSON.parse(r.stdout.trim()).hookSpecificOutput?.systemMessage ?? '';
-    assert.ok(msg.includes('--task-id 内部任务-WP-1'), 'deny 文案内联三段建议号（≤11 字符，与租约行同源——soleTaskIdSuggestion 单源连带）');
+    assert.ok(msg.includes('--task-id DEV-WP-1'), 'deny 文案内联三段建议号（≤11 字符，与租约行同源——soleTaskIdSuggestion 单源连带）');
   } finally {
     rmSync(proj, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
@@ -2540,7 +2540,7 @@ test('评审修复 N5：闸 deny/lease-loop 记录带 cause/ruleId/rulesVersion/
 
 // ── 内部任务-244 A01：委派会话 deny 指引（父链交付号内联 / 不可解析零具体号） ──
 
-test('内部任务-244 A01：委派 deny 文案——不可解析零具体号＋回报父会话；可解析内联继承号；顶层不变', () => {
+test('DEV-244 A01：委派 deny 文案——不可解析零具体号＋回报父会话；可解析内联继承号；顶层不变', () => {
   const proj = makeProject('rgate-deleg-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-deleg-st-'));
   const incidentRoot = mkdtempSync(join(tmpdir(), 'rgate-deleg-inc-'));
@@ -2562,12 +2562,12 @@ test('内部任务-244 A01：委派 deny 文案——不可解析零具体号＋
     mkdirSync(stateDir, { recursive: true });
     writeFileSync(
       join(stateDir, `wf-issued-${kd}.jsonl`),
-      `${JSON.stringify({ schemaVersion: 1, ts: Date.now(), taskId: '内部任务-77', sessionId: 'parent-1', inherited: false })}\n`,
+      `${JSON.stringify({ schemaVersion: 1, ts: Date.now(), taskId: 'DEV-77', sessionId: 'parent-1', inherited: false })}\n`,
     );
     const r2 = runGate(proj, base);
     const msg2 = JSON.parse(r2.stdout).hookSpecificOutput.systemMessage;
-    assert.ok(msg2.includes('父链交付任务号 内部任务-77'), `可解析内联继承号（实得：${msg2.slice(0, 240)}）`);
-    assert.ok(msg2.includes('--task-id 内部任务-77'), '声明命令内联继承号');
+    assert.ok(msg2.includes('父链交付任务号 DEV-77'), `可解析内联继承号（实得：${msg2.slice(0, 240)}）`);
+    assert.ok(msg2.includes('--task-id DEV-77'), '声明命令内联继承号');
     // 顶层（非委派）逐字节路径不变：无委派前缀
     const r3 = runGate(proj, { stateDir, tool: 'Edit', filePath: target, sessionId: 'child-1', incidentRoot });
     const msg3 = JSON.parse(r3.stdout).hookSpecificOutput.systemMessage;
@@ -2579,7 +2579,7 @@ test('内部任务-244 A01：委派 deny 文案——不可解析零具体号＋
   }
 });
 
-test('内部任务-342 归因 taskId：routing-gate deny 记录在无本会话租约时 taskId/skill=null', async () => {
+test('DEV-342 归因 taskId：routing-gate deny 记录在无本会话租约时 taskId/skill=null', async () => {
   const { mkdtempSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -2600,7 +2600,7 @@ test('内部任务-342 归因 taskId：routing-gate deny 记录在无本会话�
   }
 });
 
-test('内部任务-342 归因 taskId：routing-gate 对失效的本会话具名租约 deny 时不冒领（visible≠valid）', async () => {
+test('DEV-342 归因 taskId：routing-gate 对失效的本会话具名租约 deny 时不冒领（visible≠valid）', async () => {
   const { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
@@ -2612,7 +2612,7 @@ test('内部任务-342 归因 taskId：routing-gate 对失效的本会话具名�
     process.env.WF_ROUTING_STATE_DIR = stateDir;
     try {
       const ch = issueChallenge(projectKey(proj), { sessionId: 'sess-exp' });
-      assert.ok(activateLease(projectKey(proj), { leaseId: ch.leaseId, taskId: '内部任务-990', skill: 'plan-execution' }).ok, '夹具租约激活失败');
+      assert.ok(activateLease(projectKey(proj), { leaseId: ch.leaseId, taskId: 'DEV-990', skill: 'plan-execution' }).ok, '夹具租约激活失败');
     } finally {
       if (prev === undefined) delete process.env.WF_ROUTING_STATE_DIR;
       else process.env.WF_ROUTING_STATE_DIR = prev;
@@ -2639,7 +2639,7 @@ test('内部任务-342 归因 taskId：routing-gate 对失效的本会话具名�
 });
 
 
-test('内部任务-341 项目 skill 缺 ack：Edit/Write deny 并附修复命令/重声明恢复/Bash 只读不受影响', () => {
+test('DEV-341 项目 skill 缺 ack：Edit/Write deny 并附修复命令/重声明恢复/Bash 只读不受影响', () => {
   const proj = makeProject('rgate-dev341-');
   const stateDir = mkdtempSync(join(tmpdir(), 'rgate-dev341-st-'));
   const incidentRoot = mkdtempSync(join(tmpdir(), 'rgate-dev341-ir-'));
@@ -2654,7 +2654,7 @@ test('内部任务-341 项目 skill 缺 ack：Edit/Write deny 并附修复命令
     process.env.WF_ROUTING_STATE_DIR = stateDir;
     try {
       const ch = issueChallenge(projectKey(proj));
-      const act = activateLease(projectKey(proj), { leaseId: ch.leaseId, taskId: '内部任务-1', skill: 'verification' });
+      const act = activateLease(projectKey(proj), { leaseId: ch.leaseId, taskId: 'TASK-1', skill: 'verification' });
       assert.equal(act.ok, true, act.reason);
     } finally {
       if (prev === undefined) delete process.env.WF_ROUTING_STATE_DIR;
@@ -2666,7 +2666,7 @@ test('内部任务-341 项目 skill 缺 ack：Edit/Write deny 并附修复命令
     assert.ok(msg.includes('项目 skill'), `文案须点名项目 skill 义务：${msg}`);
     assert.ok(msg.includes('--project-skill project-conventions'), '文案须给 ack 修复命令');
     // 声明 ack 后放行（含 changeScope 覆盖目标）
-    const decl = runDeclare(proj, 'verification', { stateDir, incidentRoot, taskId: '内部任务-1', changeScope: '["a.ts"]', projectSkills: ['project-conventions'] });
+    const decl = runDeclare(proj, 'verification', { stateDir, incidentRoot, taskId: 'TASK-1', changeScope: '["a.ts"]', projectSkills: ['project-conventions'] });
     assert.equal(decl.status, 0, decl.stderr);
     assert.match(decl.stdout, /【项目 skill】已 ack：project-conventions/);
     const allowed = runGate(proj, { stateDir, incidentRoot, tool: 'Edit', filePath: join(proj, 'a.ts') });

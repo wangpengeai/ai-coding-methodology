@@ -1,6 +1,6 @@
 {
   "expectedRuleIds": [
-    "RULE-内部决策-003"
+    "RULE-ADR-003"
   ],
   "expectedExitCode": 1
 }

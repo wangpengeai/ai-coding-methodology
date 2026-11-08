@@ -12,6 +12,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const pluginRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+// 公开包守卫（内部任务-365）：specs/ 未随公开包发布；源仓资产在位时照常执行。
+const HAS_SPECS = existsSync(join(pluginRoot, '..', 'specs'));
 const manifest = JSON.parse(readFileSync(join(pluginRoot, 'plugin.manifest.json'), 'utf8'));
 
 test('manifest 基本形态 + description 零内部编号（公开受众）', () => {
@@ -77,7 +79,7 @@ test('入库策略：文档明示五件全量入库且模板无 .algo 条目', (
   assert.equal(active.some((l) => l.includes('.algo')), false, 'gitignore 模板不得忽略 .algo（全量入库前提）');
 });
 
-test('分期边界：P2/P3 资产零落地', () => {
+test('分期边界：P2/P3 资产零落地', { skip: HAS_SPECS ? false : '公开包不含内部资产 specs/（源仓照跑）' }, () => {
   const skillDirs = readdirSync(join(pluginRoot, 'skills'), { withFileTypes: true })
     .filter((e) => e.isDirectory()).map((e) => e.name).sort();
   assert.deepEqual(skillDirs, ['algo-loop'], 'P2/P3 不新增 skill（无 algo-release）');
@@ -85,8 +87,8 @@ test('分期边界：P2/P3 资产零落地', () => {
   assert.equal(scriptFiles.some((f) => /release|gate/.test(f)), false, `P2/P3 闸/发布脚本零落地（实际 ${scriptFiles.join(',')}）`);
   const hookFiles = readdirSync(join(pluginRoot, 'hooks')).filter((f) => f.endsWith('.mjs')).sort();
   assert.deepEqual(hookFiles, ['session-start.mjs'], '钩面仅 Stage 1 SessionStart（P2/P3 钩零落地）');
-  const m18 = readFileSync(join(pluginRoot, '..', 'specs', 'modules', '内部模块-18-algo-loop.md'), 'utf8');
-  assert.ok(m18.includes('P2＝门禁机械化') && m18.includes('P3＝部署决策闸'), '内部模块-18 内部规则-12 分期边界登记在位');
+  const m18 = readFileSync(join(pluginRoot, '..', 'specs', 'modules', 'M18-algo-loop.md'), 'utf8');
+  assert.ok(m18.includes('P2＝门禁机械化') && m18.includes('P3＝部署决策闸'), 'M18 R-M18-12 分期边界登记在位');
 });
 
 // —— 内部任务-269 R19：文件头齐备（批次终值 20 个 .mjs；无自动化文件头 lint，本用例即机检承载）——

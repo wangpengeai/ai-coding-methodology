@@ -56,7 +56,7 @@ const DOC_TAIL = [
  * @param {{doc?: boolean, sectionAfterStep?: boolean, extraBefore?: string, duplicateSection?: boolean, h3?: boolean}} [opts]
  */
 function planText(roleLines, opts = {}) {
-  const fm = '---\nspecRefs: [内部需求-1]\n---\n\n';
+  const fm = '---\nspecRefs: [FR-wf-1]\n---\n\n';
   const title = '# 计划：夹具计划\n\n';
   const heading = opts.h3 ? '### 设计输入' : '## 设计输入';
   const section = heading + '\n\n' + roleLines.join('\n') + '\n\n';
@@ -194,7 +194,7 @@ test('合法：CRLF 证据按 LF 归一匹配哈希 → 0', () => {
 test('违规：缺节 → missing-section（1）', () => {
   const dir = tempDir();
   try {
-    writePlan(dir, 'p.md', '---\nspecRefs: [内部需求-1]\n---\n\n# 计划\n\n' + IMPL_TAIL);
+    writePlan(dir, 'p.md', '---\nspecRefs: [FR-wf-1]\n---\n\n# 计划\n\n' + IMPL_TAIL);
     const r = run(['p.md'], { cwd: dir });
     assert.equal(r.status, 1);
     assert.ok(violation(r, 'missing-section'));
@@ -240,7 +240,7 @@ test('违规：重复节 → duplicate-section', () => {
 test('豁免：围栏内伪节不计（只有围栏伪节 → missing-section）', () => {
   const dir = tempDir();
   try {
-    const text = '---\nspecRefs: [内部需求-1]\n---\n\n# 计划\n\n```md\n## 设计输入\n- code-explorer：a｜x.md｜completed\n```\n\n' + IMPL_TAIL;
+    const text = '---\nspecRefs: [FR-wf-1]\n---\n\n# 计划\n\n```md\n## 设计输入\n- code-explorer：a｜x.md｜completed\n```\n\n' + IMPL_TAIL;
     writePlan(dir, 'p.md', text);
     assert.equal(run(['p.md'], { cwd: dir }).status, 1);
   } finally {
@@ -251,7 +251,7 @@ test('豁免：围栏内伪节不计（只有围栏伪节 → missing-section）
 test('豁免：HTML 注释内伪节不计（只有注释伪节 → missing-section）', () => {
   const dir = tempDir();
   try {
-    const text = '---\nspecRefs: [内部需求-1]\n---\n\n# 计划\n\n<!--\n## 设计输入\n- code-explorer：a｜x.md｜completed\n-->\n\n' + IMPL_TAIL;
+    const text = '---\nspecRefs: [FR-wf-1]\n---\n\n# 计划\n\n<!--\n## 设计输入\n- code-explorer：a｜x.md｜completed\n-->\n\n' + IMPL_TAIL;
     writePlan(dir, 'p.md', text);
     assert.equal(run(['p.md'], { cwd: dir }).status, 1);
   } finally {
@@ -262,10 +262,10 @@ test('豁免：HTML 注释内伪节不计（只有注释伪节 → missing-secti
 // 内部任务-348 批 D（内部未决-180⑤ 行号口径）：单源 cleanForParse 为行保形态——frontmatter 与围栏
 // 两占位同时进入判别面（S2 门评审发现 5：违规行置于围栏之后，删行实现报偏移行号即红；
 // violations.line 与原文件行号对齐；design-input 旧第三份为非行保形态）
-test('内部任务-348 行号口径：frontmatter 与围栏后的缺字段行报原文件行号（行保占位不偏移）', () => {
+test('DEV-348 行号口径：frontmatter 与围栏后的缺字段行报原文件行号（行保占位不偏移）', () => {
   const dir = tempDir();
   try {
-    const text = '---\nspecRefs: [内部需求-1]\n---\n\n# 计划\n\n## 设计输入\n\n```js\nconst x = 1;\nconst y = 2;\n```\n\n- code-explorer：e1｜x.md\n\n' + IMPL_TAIL;
+    const text = '---\nspecRefs: [FR-wf-1]\n---\n\n# 计划\n\n## 设计输入\n\n```js\nconst x = 1;\nconst y = 2;\n```\n\n- code-explorer：e1｜x.md\n\n' + IMPL_TAIL;
     writePlan(dir, 'p.md', text);
     const r = run(['p.md'], { cwd: dir });
     assert.equal(r.status, 1);

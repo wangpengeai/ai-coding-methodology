@@ -63,7 +63,7 @@ test('apply：同进程二次 apply 不抛（ensureBound 复用；既有 28 处 
   assert.equal(typeof getEngine().applyRule, 'function');
 });
 
-test('内部任务-273 步骤11 T-10：同一 ctx 二次 apply 监听器不翻倍（幂等守卫）', async () => {
+test('DEV-273 步骤11 T-10：同一 ctx 二次 apply 监听器不翻倍（幂等守卫）', async () => {
   const single = makeCtx();
   await apply(single.ctx, {});
   const countOn = () => single.calls.filter(([kind]) => kind === 'on').length;

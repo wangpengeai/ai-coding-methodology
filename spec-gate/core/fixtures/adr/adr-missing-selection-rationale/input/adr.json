@@ -3,7 +3,7 @@
   "status": "accepted",
   "date": "2026-09-01",
   "context": "需要在无状态服务间共享事件顺序约束",
-  "decision": "采用单一全局时序主编号 内部时序-1，由网关负责顺序保证",
+  "decision": "采用单一全局时序主编号 G-T1，由网关负责顺序保证",
   "alternatives": [
     {
       "name": "各模块本地重试",
@@ -23,8 +23,8 @@
     "supersededBy": null
   },
   "traceability": [
-    "内部时序-1",
-    "内部需求-1"
+    "G-T1",
+    "FR-gateway-1"
   ],
   "confirmationStatus": "confirmed",
   "isRetrofitReconstruction": false

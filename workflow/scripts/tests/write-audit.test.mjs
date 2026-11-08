@@ -35,7 +35,7 @@ import { projectKey } from '../../hooks/routing-lib.mjs';
 // 内部任务-311 F3/F5：测试夹具统一预算注入（单文件直跑；全量由 release-suite envForScope 注入同名额）。
 ensureAuditBudget();
 
-test('内部任务-311 F3：测试预算注入单点生效（机制断言，先于加固的 RED 判据）', () => {
+test('DEV-311 F3：测试预算注入单点生效（机制断言，先于加固的 RED 判据）', () => {
   const saved = process.env[AUDIT_BUDGET_ENV];
   assert.equal(ensureAuditBudget(), 60000, '未设置时 helper 写入 60000');
   assert.equal(resolveBaselineBudget(), 60000, '库读取到注入预算');
@@ -150,7 +150,7 @@ test('baseline 快照：git 仓 dirty 文件记录；缺失仓 → degraded', ()
   }
 });
 
-test('内部任务-261 归因账：四态分类与 degraded（Edit 目标绝对路径归 attributed）', () => {
+test('DEV-261 归因账：四态分类与 degraded（Edit 目标绝对路径归 attributed）', () => {
   const repo = makeGitRepo();
   if (!repo) return;
   try {
@@ -159,7 +159,7 @@ test('内部任务-261 归因账：四态分类与 degraded（Edit 目标绝对�
     writeChanged(repo.root, 'a.txt', 'two\n');
     // 真实宿主 Edit 负载是绝对路径；归因须归一后命中
     appendJournal(repo.state, PROJ, { tool: 'edit', path: join(repo.root, 'a.txt'), sid: 's1', sidDigest: SID, ts: NOW() });
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'clean', `绝对路径 Edit 归因后 clean（rows=${JSON.stringify(rep.rows)} degraded=${JSON.stringify(rep.degradedReasons)}）`);
     assert.equal(rep.attributed.edit, 1);
     assert.ok(existsSync(reportPath(repo.state, SID)), 'report 须落盘');
@@ -177,7 +177,7 @@ test('无 journal 的改动 → unattributed；baseline 内未变 → preexistin
     writeFileSync(join(repo.root, 'dirty.txt'), 'x\n');
     assert.equal(snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 }).status, 'ok');
     writeFileSync(join(repo.root, 'new.txt'), 'n\n');
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'unattributed');
     assert.ok(rep.rows.some((r) => r.path === 'new.txt' && r.state === 'unattributed'), '新文件须 unattributed');
     assert.ok(rep.rows.some((r) => r.path === 'dirty.txt' && r.state === 'preexisting'), '基线脏文件未变须 preexisting');
@@ -187,7 +187,7 @@ test('无 journal 的改动 → unattributed；baseline 内未变 → preexistin
   }
 });
 
-test('内部任务-261 归因账：受信与声明写归因（本会话），他会话行不得吸收本会话写', () => {
+test('DEV-261 归因账：受信与声明写归因（本会话），他会话行不得吸收本会话写', () => {
   const repo = makeGitRepo();
   if (!repo) return;
   try {
@@ -200,8 +200,8 @@ test('内部任务-261 归因账：受信与声明写归因（本会话），他
     writeChanged(repo.root, 'c.txt', '2\n');
     appendJournal(repo.state, PROJ, sessionRow({ cls: 'C1', trusted: true, decision: 'allow', targets: ['a.txt'] }));
     appendJournal(repo.state, PROJ, sessionRow({ cls: 'C1', declared: true, decision: 'allow', targets: ['b.txt'] }));
-    appendJournal(repo.state, PROJ, { tool: 'shell', cls: 'C1', trusted: false, decision: 'record', sid: 'other-session', sidDigest: SHA('other-session'), taskId: '内部任务-261', targets: ['c.txt'], ts: NOW() });
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    appendJournal(repo.state, PROJ, { tool: 'shell', cls: 'C1', trusted: false, decision: 'record', sid: 'other-session', sidDigest: SHA('other-session'), taskId: 'DEV-261', targets: ['c.txt'], ts: NOW() });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.trusted, 1);
     assert.equal(rep.attributed.declared, 1);
@@ -221,7 +221,7 @@ test('他会话 trusted/declared 行不吸收本会话写：external 文件须 u
     writeChanged(repo.root, 'external.txt', '2\n');
     // 旧会话 trusted 行（不同 sid、不同 taskId）——不得把本会话写归成 trusted
     appendJournal(repo.state, PROJ, { tool: 'shell', cls: 'C1', trusted: true, decision: 'allow', sid: 'old', sidDigest: SHA('old'), taskId: 'DEV-OTHER', ts: NOW() });
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'unattributed', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.trusted, 0);
   } finally {
@@ -238,11 +238,11 @@ test('B4 跨 Stop：路径无关配额不得复用（旧 trusted 行不吸收后
     snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
     writeChanged(repo.root, 'a.txt', '2\n');
     appendJournal(repo.state, PROJ, sessionRow({ cls: 'C1', trusted: true, decision: 'allow', targets: ['a.txt'] }));
-    const rep1 = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep1 = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep1.status, 'clean');
     // 第二次 Stop：上一轮 trusted 行仍在 journal；新增无记录写 b.txt，不得被 absorbing 成 trusted
     writeFileSync(join(repo.root, 'b.txt'), '3\n');
-    const rep2 = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep2 = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep2.status, 'unattributed', JSON.stringify(rep2.rows));
     assert.ok(rep2.rows.some((r) => r.path === 'b.txt' && r.state === 'unattributed'), 'b.txt 须 unattributed');
   } finally {
@@ -258,12 +258,12 @@ test('B4 delegated：taskId=null 不归因；同 taskId 且路径命中才计 de
     writeFileSync(join(repo.root, 'c.txt'), '1\n');
     snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
     writeChanged(repo.root, 'c.txt', '2\n');
-    appendJournal(repo.state, PROJ, { tool: 'shell', cls: 'C1', trusted: false, decision: 'record', sid: 'delegate', sidDigest: SHA('delegate'), taskId: '内部任务-261', targets: ['c.txt'], ts: NOW() });
+    appendJournal(repo.state, PROJ, { tool: 'shell', cls: 'C1', trusted: false, decision: 'record', sid: 'delegate', sidDigest: SHA('delegate'), taskId: 'DEV-261', targets: ['c.txt'], ts: NOW() });
     // taskId=null：不得归因
     const repNull = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: null });
     assert.equal(repNull.attributed.delegated, 0, 'taskId=null 不得计 delegated');
     // 同 taskId：路径命中才归因
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.delegated, 1);
   } finally {
@@ -282,7 +282,7 @@ test('degraded 吸收态：journal 坏行/unknown edit 不得冒充 clean；C6 �
     appendJournal(repo.state, PROJ, sessionRow({ tool: 'edit', shape: 'unknown', degraded: true }));
     appendJournal(repo.state, PROJ, sessionRow({ cls: 'C6', decision: 'skip' }));
     writeFileSync(journalPath(repo.state, PROJ), '{bad\n', { flag: 'a' });
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'degraded', JSON.stringify(rep.degradedReasons));
     assert.ok(rep.degradedReasons.some((r) => r.startsWith('journal-bad-lines')), '坏行须入 degraded');
     assert.ok(rep.degradedReasons.some((r) => r.startsWith('edit-shape-unknown')), 'unknown edit 须入 degraded');
@@ -297,7 +297,7 @@ test('degraded 吸收态：baseline 缺失 / 非 git 仓 → status 不冒充 cl
   const repo = makeGitRepo();
   if (!repo) return;
   try {
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'degraded', '无 baseline 须 degraded');
     assert.ok(rep.degradedReasons.length >= 1);
   } finally {
@@ -316,7 +316,7 @@ test('B5：baseline 失败留痕在后继成功基线之后仍须 degraded；del
     snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
     writeChanged(repo.root, 'a.txt', '2\n');
     appendJournal(repo.state, PROJ, sessionRow({ tool: 'edit', path: 'a.txt' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
     assert.equal(rep.status, 'degraded', 'baseline 失败留痕不得被后续成功掩盖');
     assert.ok(rep.degradedReasons.some((r) => r.startsWith('journal-degraded-rows')));
     // delegated 行缺 sid：不归因
@@ -325,8 +325,8 @@ test('B5：baseline 失败留痕在后继成功基线之后仍须 degraded；del
     try {
       snapshotBaseline({ stateDir: rep2State, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
       writeChanged(repo.root, 'c.txt', '2\n');
-      appendJournal(rep2State, PROJ, { tool: 'shell', cls: 'C1', taskId: '内部任务-261', targets: ['c.txt'], ts: NOW() });
-      const rep2 = buildWriteReport({ stateDir: rep2State, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-261' });
+      appendJournal(rep2State, PROJ, { tool: 'shell', cls: 'C1', taskId: 'DEV-261', targets: ['c.txt'], ts: NOW() });
+      const rep2 = buildWriteReport({ stateDir: rep2State, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-261' });
       assert.equal(rep2.attributed.delegated, 0, '无 sid 的 delegated 行不计');
       assert.ok(rep2.rows.some((r) => r.path === 'c.txt' && r.state === 'unattributed'));
     } finally {
@@ -342,7 +342,7 @@ test('parsePorcelainZ：rename/copy 对只取新路径（不产生幻影行）',
   assert.deepEqual(parsePorcelainZ(' M a.txt\0?? new.txt\0R  new2.txt\0old2.txt\0'), ['a.txt', 'new.txt', 'new2.txt']);
 });
 
-test('内部任务-261 journal 轮转：>5000 行只留尾部 2500；未超上限不动', () => {
+test('DEV-261 journal 轮转：>5000 行只留尾部 2500；未超上限不动', () => {
   const dir = mkdtempSync(join(tmpdir(), 'wf-audit-rotate-'));
   try {
     const file = journalPath(dir, PROJ);
@@ -357,7 +357,7 @@ test('内部任务-261 journal 轮转：>5000 行只留尾部 2500；未超上�
   }
 });
 
-test('内部任务-261 appendScriptWrite 入参缺失：dir/reason/record 缺一即 {ok:false} 不抛', async () => {
+test('DEV-261 appendScriptWrite 入参缺失：dir/reason/record 缺一即 {ok:false} 不抛', async () => {
   const { appendScriptWrite } = await import('../lib/script-write-store.mjs');
   assert.equal(appendScriptWrite({}).ok, false, '缺 dir');
   assert.equal(appendScriptWrite({ dir: tmpdir() }).ok, false, '缺 record');
@@ -371,7 +371,7 @@ test('内部任务-261 appendScriptWrite 入参缺失：dir/reason/record 缺一
 });
 
 // ── 内部任务-332：归一锚（canonical root vs 原始符号链接形态路径；alias 夹具判别与宿主 tmpdir 形态无关） ──
-test('内部任务-332 归一锚：alias 形态 edit 路径对 canonical root 仍归因（不落 unattributed）', (t) => {
+test('DEV-332 归一锚：alias 形态 edit 路径对 canonical root 仍归因（不落 unattributed）', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用（夹具无法建仓）'); return; }
   const real = realpathSync(repo.root); // 生产面 root＝activationRoot 恒 canonical（task-recap.mjs:80）
@@ -395,7 +395,7 @@ test('内部任务-332 归一锚：alias 形态 edit 路径对 canonical root �
     // 旧 journal（修复前会话）edit 行为 alias 形态绝对路径——journal append-only 跨修复部署，
     // 报表须兼容旧形态行（修复后 write-guard 写归一仓相对路径）
     appendJournal(repo.state, PROJ, sessionRow({ tool: 'edit', path: join(alias, 'a.txt') }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: real, taskId: '内部任务-332' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: real, taskId: 'DEV-332' });
     assert.equal(rep.status, 'clean', `alias 形态 edit 须归因（rows=${JSON.stringify(rep.rows)} degraded=${JSON.stringify(rep.degradedReasons)}）`);
     assert.equal(rep.attributed.edit, 1, '归一后须命中 porcelain 仓相对路径');
   } finally {
@@ -405,7 +405,7 @@ test('内部任务-332 归一锚：alias 形态 edit 路径对 canonical root �
   }
 });
 
-test('内部任务-332 repoRelOf：alias 形态绝对路径 canonical 命中仓相对', (t) => {
+test('DEV-332 repoRelOf：alias 形态绝对路径 canonical 命中仓相对', (t) => {
   const real = realpathSync(mkdtempSync(join(tmpdir(), 'repoRelOf-')));
   const alias = join(tmpdir(), `repoRelOf-link-${basename(real)}`);
   try {
@@ -423,7 +423,7 @@ test('内部任务-332 repoRelOf：alias 形态绝对路径 canonical 命中仓�
   }
 });
 
-test('内部任务-332 repoRelOf：空串早退／不存在尾段保字面／仓外回落原值（不依赖 symlink，恒执行）', () => {
+test('DEV-332 repoRelOf：空串早退／不存在尾段保字面／仓外回落原值（不依赖 symlink，恒执行）', () => {
   const real = realpathSync(mkdtempSync(join(tmpdir(), 'repoRelOf-plain-')));
   try {
     assert.equal(repoRelOf(real, ''), '', '空串早退原样返回');
@@ -442,7 +442,7 @@ function foreignRow(extra = {}) {
   return { sid: 'other-session', sidDigest: SHA('other-session'), ts: NOW(), ...extra };
 }
 
-test('内部任务-342 写者溯源：他会话跨任务 edit 行归 external 且 status 保持 clean', (t) => {
+test('DEV-342 写者溯源：他会话跨任务 edit 行归 external 且 status 保持 clean', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -450,7 +450,7 @@ test('内部任务-342 写者溯源：他会话跨任务 edit 行归 external �
     snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
     writeChanged(repo.root, 'a.txt', '2\n');
     appendJournal(repo.state, PROJ, foreignRow({ tool: 'edit', path: 'a.txt', taskId: 'DEV-OTHER' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.unattributed, 0, '他会话跨任务写不得落 unattributed');
     assert.equal(rep.external, 1, 'external 单列顶层计数');
@@ -463,7 +463,7 @@ test('内部任务-342 写者溯源：他会话跨任务 edit 行归 external �
   }
 });
 
-test('内部任务-342 写者溯源：同任务他会话 edit/internal 行归 delegated', (t) => {
+test('DEV-342 写者溯源：同任务他会话 edit/internal 行归 delegated', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -472,9 +472,9 @@ test('内部任务-342 写者溯源：同任务他会话 edit/internal 行归 de
     snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
     writeChanged(repo.root, 'a.txt', '2\n');
     writeChanged(repo.root, 'b.txt', '2\n');
-    appendJournal(repo.state, PROJ, foreignRow({ tool: 'edit', path: 'a.txt', taskId: '内部任务-342' }));
-    appendJournal(repo.state, PROJ, foreignRow({ tool: 'internal', shape: 'internal', targets: ['b.txt'], taskId: '内部任务-342' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    appendJournal(repo.state, PROJ, foreignRow({ tool: 'edit', path: 'a.txt', taskId: 'DEV-342' }));
+    appendJournal(repo.state, PROJ, foreignRow({ tool: 'internal', shape: 'internal', targets: ['b.txt'], taskId: 'DEV-342' }));
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.delegated, 2, '同任务他会话 edit 与 internal 行均归 delegated');
     assert.equal(rep.attributed.unattributed, 0);
@@ -484,7 +484,7 @@ test('内部任务-342 写者溯源：同任务他会话 edit/internal 行归 de
   }
 });
 
-test('内部任务-342 写者溯源：internal journal 行归 attributed/internal（owner null 记 writer=null）', (t) => {
+test('DEV-342 写者溯源：internal journal 行归 attributed/internal（owner null 记 writer=null）', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -495,7 +495,7 @@ test('内部任务-342 写者溯源：internal journal 行归 attributed/interna
     writeChanged(repo.root, 'd.txt', '2\n');
     appendJournal(repo.state, PROJ, sessionRow({ tool: 'internal', shape: 'internal', targets: ['c.txt'] }));
     appendJournal(repo.state, PROJ, { tool: 'internal', shape: 'internal', targets: ['d.txt'], sid: null, sidDigest: null, ts: NOW() });
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.internal, 2, '本会话与 owner-null internal 行均归 attributed/internal');
     assert.equal(rep.attributed.unattributed, 0);
@@ -507,7 +507,7 @@ test('内部任务-342 写者溯源：internal journal 行归 attributed/interna
   }
 });
 
-test('内部任务-342 写者溯源：本会话未声明写+他会话 target 行不得被吸收（洗白负例）', (t) => {
+test('DEV-342 写者溯源：本会话未声明写+他会话 target 行不得被吸收（洗白负例）', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -517,8 +517,8 @@ test('内部任务-342 写者溯源：本会话未声明写+他会话 target 行
     // 本会话真实写了 b.txt 但未受信/未声明（write-guard 记 record/skip 行，无 targetReason）
     appendJournal(repo.state, PROJ, sessionRow({ cls: null, decision: 'skip', targets: ['b.txt'] }));
     // 他会话同任务行也覆盖 b.txt——不得据此把本会话的写吸成 delegated
-    appendJournal(repo.state, PROJ, foreignRow({ tool: 'shell', targets: ['b.txt'], taskId: '内部任务-342' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    appendJournal(repo.state, PROJ, foreignRow({ tool: 'shell', targets: ['b.txt'], taskId: 'DEV-342' }));
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'unattributed', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.delegated, 0, 'ownTouched 命中且无归因理由 → 不得吸收为 delegated');
     assert.equal(rep.attributed.unattributed, 1, '仍是 unattributed（洗白负例）');
@@ -528,15 +528,15 @@ test('内部任务-342 写者溯源：本会话未声明写+他会话 target 行
   }
 });
 
-test('内部任务-342 写者溯源：他会话 edit 行归 delegated/external（同任务）', (t) => {
+test('DEV-342 写者溯源：他会话 edit 行归 delegated/external（同任务）', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
     writeFileSync(join(repo.root, 'a.txt'), '1\n');
     snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
     writeChanged(repo.root, 'a.txt', '2\n');
-    appendJournal(repo.state, PROJ, foreignRow({ tool: 'edit', path: 'a.txt', taskId: '内部任务-342' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    appendJournal(repo.state, PROJ, foreignRow({ tool: 'edit', path: 'a.txt', taskId: 'DEV-342' }));
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.delegated, 1, '同任务他会话 edit 行归 delegated');
   } finally {
@@ -545,7 +545,7 @@ test('内部任务-342 写者溯源：他会话 edit 行归 delegated/external�
   }
 });
 
-test('内部任务-342 写者溯源：execDir 归一——子目录 cwd 未受信写+他会话同名 target 不得洗白', (t) => {
+test('DEV-342 写者溯源：execDir 归一——子目录 cwd 未受信写+他会话同名 target 不得洗白', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -556,8 +556,8 @@ test('内部任务-342 写者溯源：execDir 归一——子目录 cwd 未受�
     // 本会话未受信写：target 为子目录相对 token，行携带 execDir=sub
     appendJournal(repo.state, PROJ, sessionRow({ cls: null, decision: 'skip', targets: ['b.txt'], execDir: join(repo.root, 'sub') }));
     // 他会话同任务写命中 sub/b.txt——不得把本会话写吸收为 delegated
-    appendJournal(repo.state, PROJ, foreignRow({ tool: 'shell', targets: ['sub/b.txt'], taskId: '内部任务-342' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    appendJournal(repo.state, PROJ, foreignRow({ tool: 'shell', targets: ['sub/b.txt'], taskId: 'DEV-342' }));
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'unattributed', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.delegated, 0, 'execDir 归一后 ownTouched 命中，不得吸收为 delegated');
   } finally {
@@ -566,7 +566,7 @@ test('内部任务-342 写者溯源：execDir 归一——子目录 cwd 未受�
   }
 });
 
-test('内部任务-342 写者溯源：他会话 unknown edit 不降级本会话（degraded 统计源分离）', (t) => {
+test('DEV-342 写者溯源：他会话 unknown edit 不降级本会话（degraded 统计源分离）', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -575,7 +575,7 @@ test('内部任务-342 写者溯源：他会话 unknown edit 不降级本会话�
     writeChanged(repo.root, 'a.txt', '2\n');
     appendJournal(repo.state, PROJ, sessionRow({ tool: 'edit', path: 'a.txt' }));
     appendJournal(repo.state, PROJ, foreignRow({ tool: 'edit', shape: 'unknown', degraded: true, taskId: 'DEV-OTHER' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.ok(!rep.degradedReasons.some((x) => String(x).startsWith('edit-shape-unknown')), '他会话 unknown edit 不得降级本会话');
   } finally {
@@ -584,7 +584,7 @@ test('内部任务-342 写者溯源：他会话 unknown edit 不降级本会话�
   }
 });
 
-test('内部任务-342 写者溯源：窗口外旧 foreign 行不参与 external 归因', (t) => {
+test('DEV-342 写者溯源：窗口外旧 foreign 行不参与 external 归因', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -592,7 +592,7 @@ test('内部任务-342 写者溯源：窗口外旧 foreign 行不参与 external
     snapshotBaseline({ stateDir: repo.state, sidDigest: SID, root: repo.root, gitTimeoutMs: 30_000 });
     writeChanged(repo.root, 'a.txt', '2\n');
     appendJournal(repo.state, PROJ, foreignRow({ tool: 'edit', path: 'a.txt', taskId: 'DEV-OTHER', ts: '2026-01-01T00:00:00.000Z' }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'unattributed', JSON.stringify(rep.rows));
     assert.equal(rep.external, 0, '窗口外旧 foreign 行不得作为 external 证据');
   } finally {
@@ -601,7 +601,7 @@ test('内部任务-342 写者溯源：窗口外旧 foreign 行不参与 external
   }
 });
 
-test('内部任务-342 写者溯源：decision=record 的声明写仍作归因理由（不能只认 allow）', (t) => {
+test('DEV-342 写者溯源：decision=record 的声明写仍作归因理由（不能只认 allow）', (t) => {
   const repo = makeGitRepo();
   if (!repo) { t.skip('git 不可用'); return; }
   try {
@@ -610,7 +610,7 @@ test('内部任务-342 写者溯源：decision=record 的声明写仍作归因�
     writeChanged(repo.root, 'a.txt', '2\n');
     // trackedTier=shadow 观测模式下，已执行的声明写记 decision='record'（非 allow、非 deny）
     appendJournal(repo.state, PROJ, sessionRow({ cls: 'C1', trusted: false, declared: true, decision: 'record', targets: ['a.txt'] }));
-    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: '内部任务-342' });
+    const rep = buildWriteReport({ stateDir: repo.state, sidDigest: SID, projDigest: PROJ, root: repo.root, taskId: 'DEV-342' });
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
     assert.equal(rep.attributed.declared, 1, 'decision=record 的声明写须计 attributed/declared');
   } finally {
@@ -646,31 +646,31 @@ function incidentAttributionRepo() {
   };
 }
 
-test('内部任务-349 异常存储内部写归因：appendIncident → attributed/internal（tracked 台账布局）', async (t) => {
+test('DEV-349 异常存储内部写归因：appendIncident → attributed/internal（tracked 台账布局）', async (t) => {
   const fx = incidentAttributionRepo();
   if (!fx.repo) { t.skip('git 不可用'); return; }
   const { root, state } = fx.repo;
   try {
     mkdirSync(join(root, '.workflow'), { recursive: true });
     writeFileSync(join(root, '.workflow', 'incidents.jsonl'), '');
-    spawnSync('git', ['add', '内部工作流状态'], { cwd: root, encoding: 'utf8' });
+    spawnSync('git', ['add', '.workflow/incidents.jsonl'], { cwd: root, encoding: 'utf8' });
     spawnSync('git', ['commit', '-q', '-m', 'seed'], { cwd: root, encoding: 'utf8' });
     const SID_RAW = 'session-abc';
     const SID_DIGEST = SHA(SID_RAW);
     const projDigest = projectDigestOf(projectKey(root));
     snapshotBaseline({ stateDir: state, sidDigest: SID_DIGEST, root, gitTimeoutMs: 30_000 });
     const { appendIncident } = await import('../lib/incident-store.mjs');
-    const a = appendIncident(root, { id: 'ri-dev349-e2e', ts: Date.now(), session: SID_RAW, taskId: '内部任务-349', kind: 'tool-failure', digest: 'd000000000000001' });
+    const a = appendIncident(root, { id: 'ri-dev349-e2e', ts: Date.now(), session: SID_RAW, taskId: 'DEV-349', kind: 'tool-failure', digest: 'd000000000000001' });
     assert.equal(a.ok, true, '账本写须成功');
-    const rep = buildWriteReport({ stateDir: state, sidDigest: SID_DIGEST, projDigest, root, taskId: '内部任务-349' });
-    const row = rep.rows.find((r) => r.path === '内部工作流状态');
+    const rep = buildWriteReport({ stateDir: state, sidDigest: SID_DIGEST, projDigest, root, taskId: 'DEV-349' });
+    const row = rep.rows.find((r) => r.path === '.workflow/incidents.jsonl');
     assert.ok(row, `须有账本行（rows=${JSON.stringify(rep.rows)}）`);
     assert.equal(row.state, 'attributed', `账本变更须已归因（row=${JSON.stringify(row)}）`);
     assert.equal(row.reason, 'internal', '内部写归 attributed/internal');
     // 判别链：journal 行自身的 sidDigest 才是归因依据（row.writer 由报表入参回填，断言它属同义反复）
     const { rows: journalRows } = readJournal(state, projDigest);
     assert.ok(journalRows.some((r) => r.sidDigest === SID_DIGEST), 'journal 行的 sidDigest 与报表同算法');
-    assert.ok(journalRows.some((r) => Array.isArray(r.targets) && r.targets[0] === '内部工作流状态'), 'journal 行 target 为账本等值路径');
+    assert.ok(journalRows.some((r) => Array.isArray(r.targets) && r.targets[0] === '.workflow/incidents.jsonl'), 'journal 行 target 为账本等值路径');
     assert.equal(rep.attributed.unattributed, 0, '不得落 unattributed');
     assert.equal(rep.status, 'clean', JSON.stringify(rep.rows));
   } finally {
@@ -678,7 +678,7 @@ test('内部任务-349 异常存储内部写归因：appendIncident → attribut
   }
 });
 
-test('内部任务-349 异常存储内部写归因：账本 gitignore 的仓零噪声（本仓形态）', async (t) => {
+test('DEV-349 异常存储内部写归因：账本 gitignore 的仓零噪声（本仓形态）', async (t) => {
   const fx = incidentAttributionRepo();
   if (!fx.repo) { t.skip('git 不可用'); return; }
   const { root, state } = fx.repo;
@@ -693,10 +693,10 @@ test('内部任务-349 异常存储内部写归因：账本 gitignore 的仓零�
     const projDigest = projectDigestOf(projectKey(root));
     snapshotBaseline({ stateDir: state, sidDigest: SID_DIGEST, root, gitTimeoutMs: 30_000 });
     const { appendIncident } = await import('../lib/incident-store.mjs');
-    const a = appendIncident(root, { id: 'ri-dev349-e2e2', ts: Date.now(), session: SID_RAW, taskId: '内部任务-349', kind: 'tool-failure', digest: 'd000000000000002' });
+    const a = appendIncident(root, { id: 'ri-dev349-e2e2', ts: Date.now(), session: SID_RAW, taskId: 'DEV-349', kind: 'tool-failure', digest: 'd000000000000002' });
     assert.equal(a.ok, true);
-    const rep = buildWriteReport({ stateDir: state, sidDigest: SID_DIGEST, projDigest, root, taskId: '内部任务-349' });
-    assert.equal(rep.rows.some((r) => r.path === '内部工作流状态'), false, 'gitignore 路径不进报表（本仓零噪声）');
+    const rep = buildWriteReport({ stateDir: state, sidDigest: SID_DIGEST, projDigest, root, taskId: 'DEV-349' });
+    assert.equal(rep.rows.some((r) => r.path === '.workflow/incidents.jsonl'), false, 'gitignore 路径不进报表（本仓零噪声）');
     assert.equal(rep.status, 'clean');
   } finally {
     fx.restore();

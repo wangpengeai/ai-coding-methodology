@@ -15,6 +15,7 @@ import test from 'node:test';
 import {
   RULES,
   buildManifest,
+  classifyRewriteSurface,
   gitHistoryFingerprint,
   loadConfigs,
   sourceSnapshot,
@@ -86,7 +87,7 @@ function makeProject(prefix = 'proj', { contract = {}, policy = {}, files = {}, 
     g('config', 'user.email', 'test@example.invalid');
     write(root, 'README.md', '# 示例交付\n\n参见 [使用指南](docs/guide.md)。\n');
     g('add', '-A');
-    g('commit', '-q', '-m', 'internal commit 内部任务-1 should never leak');
+    g('commit', '-q', '-m', 'internal commit DEV-1 should never leak');
   }
   return root;
 }
@@ -191,8 +192,8 @@ test('projection-whitelist-minimality：白名单投影与最小交付对账', (
 
     // 内部路径作为 CDM 来源 → 导出 exit 1（internal-artifact-present）
     const internalRoot = makeProject('internal');
-    write(internalRoot, '内部规格', '# 内部规格\n');
-    write(internalRoot, '.deliver/contract.json', `${JSON.stringify({ ...BASE_CONTRACT, items: [{ id: 'D-9', kind: 'file', source: '内部规格', required: true }] })}\n`);
+    write(internalRoot, 'specs/secret.md', '# 内部规格\n');
+    write(internalRoot, '.deliver/contract.json', `${JSON.stringify({ ...BASE_CONTRACT, items: [{ id: 'D-9', kind: 'file', source: 'specs/secret.md', required: true }] })}\n`);
     const r3 = exportPkg(internalRoot, join(makeTmp('internal-out'), 'pkg'));
     assert.equal(r3.status, 1);
     assert.match(`${r3.stdout}${r3.stderr}`, /internal-artifact-present/);
@@ -251,8 +252,8 @@ test('policy-user-selectable-rules：用户自选规则生效与零内置否证'
     write(root, '.deliver/policy.json', `${JSON.stringify({ ...BASE_POLICY, internal: { pathPatterns: ['specs/**'], idPatterns: ['\\bDEV-\\d+\\b'], termPatterns: [] } })}\n`);
     const out2 = join(makeTmp('selectable-out2'), 'pkg');
     assert.equal(exportPkg(root, out2, ['--no-git']).status, 0);
-    write(root, '内部规格', `${JSON.stringify({ schemaVersion: 1, visibility: { default: 'internal', overrides: { 'CUSTOM-1': 'external' } } })}\n`);
-    write(root, '.deliver/policy.json', `${JSON.stringify({ ...BASE_POLICY, internal: { pathPatterns: ['specs/**'], idPatterns: ['CUSTOM-\\d+'], termPatterns: [] }, visibilitySource: '内部规格' })}\n`);
+    write(root, 'specs/test-anchors.json', `${JSON.stringify({ schemaVersion: 1, visibility: { default: 'internal', overrides: { 'CUSTOM-1': 'external' } } })}\n`);
+    write(root, '.deliver/policy.json', `${JSON.stringify({ ...BASE_POLICY, internal: { pathPatterns: ['specs/**'], idPatterns: ['CUSTOM-\\d+'], termPatterns: [] }, visibilitySource: 'specs/test-anchors.json' })}\n`);
     const mixed = lintPkg(root, out2);
     assert.equal(mixed.status, 1);
     assert.match(mixed.stdout, /CUSTOM-2/);
@@ -269,33 +270,33 @@ test('policy-user-selectable-rules：用户自选规则生效与零内置否证'
       },
     });
     write(facetRoot, 'README.md', '# 示例交付\n\n计划约定见 `docs/plans/` 目录（方法论通用约定）。\n');
-    write(facetRoot, '.deliver/policy.json', `${JSON.stringify({ ...BASE_POLICY, internal: { pathPatterns: ['docs/**'], textPathPatterns: ['内部计划**'], idPatterns: [], termPatterns: [] } })}\n`);
+    write(facetRoot, '.deliver/policy.json', `${JSON.stringify({ ...BASE_POLICY, internal: { pathPatterns: ['docs/**'], textPathPatterns: ['docs/plans/evidence/**'], idPatterns: [], termPatterns: [] } })}\n`);
     const facetOut = join(makeTmp('text-facet-out'), 'pkg');
     const rf = exportPkg(facetRoot, facetOut, ['--no-git']);
     assert.equal(rf.status, 0, `窄 textPathPatterns 下通用约定不应拦：${rf.stdout}${rf.stderr}`);
     // 窄表命中包内文本中的具体内部文档路径 → 复核失败，且命中标签指向实际分面
-    write(facetOut, 'README.md', '# 示例交付\n\n见 内部证据 内部证据。\n');
+    write(facetOut, 'README.md', '# 示例交付\n\n见 docs/plans/evidence/DEV-1/leak.md 内部证据。\n');
     writeFileSync(join(facetOut, 'MANIFEST.sha256.json'), `${JSON.stringify(buildManifest(facetOut, loadConfigs(facetRoot).contract, { gitMode: 'none' }), null, 2)}\n`);
     const rfLint = lintPkg(facetRoot, facetOut, ['--json']);
     assert.equal(rfLint.status, 1, `窄表应命中具体内部文档路径：${rfLint.stdout}${rfLint.stderr}`);
     assert.match(rfLint.stdout, /policy\.internal\.textPathPatterns/, '命中标签须指向实际生效的文本分面');
     // 包内路径面恒用 pathPatterns（不随文本分面收窄）：包内 docs/ 路径仍 internal-artifact-present
-    write(facetOut, '内部证据', '# x\n');
+    write(facetOut, 'docs/plans/evidence/DEV-9/extra.md', '# x\n');
     writeFileSync(join(facetOut, 'MANIFEST.sha256.json'), `${JSON.stringify(buildManifest(facetOut, loadConfigs(facetRoot).contract, { gitMode: 'none' }), null, 2)}\n`);
     const rfPkg = lintPkg(facetRoot, facetOut, ['--json']);
     assert.equal(rfPkg.status, 1, '包内路径面须恒用 pathPatterns');
     assert.match(rfPkg.stdout, /internal-artifact-present/);
     // CDM 源路径面恒用 pathPatterns：源 specs/ 文件即使在窄文本分面下也拒绝
     const srcRoot = makeProject('text-facet-src', {
-      policy: { internal: { pathPatterns: ['specs/**'], textPathPatterns: ['内部计划**'], idPatterns: [], termPatterns: [] } },
+      policy: { internal: { pathPatterns: ['specs/**'], textPathPatterns: ['docs/plans/evidence/**'], idPatterns: [], termPatterns: [] } },
       contract: {
         items: [
           { id: 'D-1', kind: 'file', source: 'README.md', target: 'README.md', required: true },
-          { id: 'D-2', kind: 'file', source: '内部规格', required: false },
+          { id: 'D-2', kind: 'file', source: 'specs/secret.md', required: false },
         ],
       },
     });
-    write(srcRoot, '内部规格', '# 内部规格\n');
+    write(srcRoot, 'specs/secret.md', '# 内部规格\n');
     const rsrc = exportPkg(srcRoot, join(makeTmp('text-facet-src-out'), 'pkg'), ['--no-git']);
     assert.equal(rsrc.status, 1, `CDM 源路径须恒用 pathPatterns：${rsrc.stdout}${rsrc.stderr}`);
     assert.match(`${rsrc.stdout}${rsrc.stderr}`, /internal-artifact-present/);
@@ -310,8 +311,8 @@ test('policy-user-selectable-rules：用户自选规则生效与零内置否证'
     assert.equal(exportPkg(facetRoot, join(makeTmp('text-facet-bad-out'), 'pkg'), ['--no-git']).status, 2, 'textPathPatterns 非数组应 exit 2');
     // ── 提交信息/作者面恒用 pathPatterns（不随文本分面收窄）──
     const cmRoot = makeProject('commit-facet', {
-      policy: { internal: { pathPatterns: ['specs/**'], textPathPatterns: ['内部计划**'], idPatterns: [], termPatterns: [] } },
-      contract: { git: { freshHistory: true, author: 'Delivery Bot <delivery@example.invalid>', commitMessage: 'see 内部规格' } },
+      policy: { internal: { pathPatterns: ['specs/**'], textPathPatterns: ['docs/plans/evidence/**'], idPatterns: [], termPatterns: [] } },
+      contract: { git: { freshHistory: true, author: 'Delivery Bot <delivery@example.invalid>', commitMessage: 'see specs/open-items.md' } },
     });
     const cmOut = join(makeTmp('commit-facet-out'), 'pkg');
     const rc = exportPkg(cmRoot, cmOut);
@@ -410,7 +411,7 @@ test('manifest-license-integrity：清单与许可完整性', () => {
   }
 });
 
-test('内部任务-244 遗留项④：MANIFEST 重复 path 条目拒绝（last-wins 不得掩盖哈希矛盾）', () => {
+test('DEV-244 遗留项④：MANIFEST 重复 path 条目拒绝（last-wins 不得掩盖哈希矛盾）', () => {
   const root = makeProject('manifest-dup');
   const out = join(makeTmp('manifest-dup-out'), 'pkg');
   try {
@@ -431,7 +432,7 @@ test('内部任务-244 遗留项④：MANIFEST 重复 path 条目拒绝（last-w
 
 // ── 内部任务-348 批 D（内部未决-214③ MANIFEST 与合同绑定校验）──
 
-test('内部未决-214③：MANIFEST.contractId/deliveryDate 与合同不符即拒（绑定校验）', () => {
+test('OPEN-214③：MANIFEST.contractId/deliveryDate 与合同不符即拒（绑定校验）', () => {
   const root = makeProject('manifest-bind');
   const out = join(makeTmp('manifest-bind-out'), 'pkg');
   try {
@@ -481,7 +482,7 @@ test('fresh-git-history-deterministic：全新 git 历史、确定性与失败�
     assert.deepEqual(sourceSnapshot(root), before);
     assert.deepEqual(gitHistoryFingerprint(root), beforeGit);
     // 失败原子性：内容违规时 --out 不存在且无 staging 残留
-    write(root, 'docs/leak.md', '# 泄漏\n\n内部引用 内部任务-42。\n');
+    write(root, 'docs/leak.md', '# 泄漏\n\n内部引用 DEV-42。\n');
     write(root, '.deliver/contract.json', `${JSON.stringify({ ...BASE_CONTRACT, items: [...BASE_CONTRACT.items, { id: 'D-4', kind: 'file', source: 'docs/leak.md', required: true }] })}\n`);
     const failOut = join(outBase, 'pkg-fail');
     const rFail = exportPkg(root, failOut, ['--no-git']);
@@ -519,14 +520,14 @@ test('deliver-lint CLI 复核与退出码契约 0/1/2', () => {
 test('deliver-lint --selftest 内嵌规则矩阵', () => {
   const r = execNode([LINT_CLI, '--selftest']);
   assert.equal(r.status, 0, `${r.stdout}${r.stderr}`);
-  assert.match(r.stdout, /OK deliver-lint --selftest（15 项通过）/);
+  assert.match(r.stdout, /OK deliver-lint --selftest（19 项通过）/);
   for (const rule of [RULES.CONTRACT_MISSING, RULES.UNLISTED, RULES.INTERNAL_PATTERN, RULES.INTERNAL_ARTIFACT, RULES.DANGLING, RULES.ESCAPES_ROOT, RULES.REMOVED_DOC, RULES.MANIFEST_MISSING, RULES.MANIFEST_HASH, RULES.MANIFEST_EXTRA, RULES.LICENSE_INCOMPLETE, RULES.REWRITE_RESIDUAL]) {
     assert.equal(typeof rule, 'string');
   }
 });
 
 // ── 内部决策-062 修正案 3 / 内部任务-333 同族：CLI 直跑在管道下 stdout 完整（process.exitCode） ──
-test('cli-pipe-output-integrity：管道下 stdout 完整（内部任务-333 同族）', () => {
+test('cli-pipe-output-integrity：管道下 stdout 完整（DEV-333 同族）', () => {
   const root = makeProject('pipe', {
     files: { 'docs/leak.md': `# 泄漏\n\n${Array.from({ length: 1200 }, (_, i) => `内部引用 DEV-${i + 1}`).join('\n')}\n` },
     contract: {
@@ -548,11 +549,11 @@ test('cli-pipe-output-integrity：管道下 stdout 完整（内部任务-333 同
 });
 
 // ── 内部决策-062 修正案 4：扫描面扩展（scan.include）与 dot 前缀 token ──
-test('scan-surface-extension：scan.include 与 dot 前缀 token（内部决策-062 修正案 4）', () => {
+test('scan-surface-extension：scan.include 与 dot 前缀 token（ADR-062 修正案 4）', () => {
   const root = makeProject('scan-surface', {
     files: {
       'README.md': '# 示例\n\n参考 docs/guide.md。\n',
-      LICENSE: 'MIT\n\n内部状态见 内部治理状态\n',
+      LICENSE: 'MIT\n\n内部状态见 .sdd/suite.json\n',
     },
     contract: {
       items: [
@@ -571,7 +572,7 @@ test('scan-surface-extension：scan.include 与 dot 前缀 token（内部决策-
   // dot 前缀 token 在 md 文本面生效（旧 token 正则首字符不含 `.` → 漏报）
   const root2 = makeProject('scan-dot', {
     files: {
-      'README.md': '# 示例\n\n内部状态见 内部治理状态\n',
+      'README.md': '# 示例\n\n内部状态见 .sdd/suite.json\n',
       LICENSE: 'MIT\n',
     },
     contract: {
@@ -591,26 +592,26 @@ test('scan-surface-extension：scan.include 与 dot 前缀 token（内部决策-
   cleanup(root, root2);
 });
 
-// ── 内部决策-062 修正案 4：内容改写（文档/测试/夹具全文本面、生产代码仅注释面、零残留与确定性） ──
-test('content-rewrite：内容改写与 rewrite-residual 硬检（内部决策-062 修正案 4）', () => {
+// ── 内部决策-062 修正案 4/5：内容改写（v1 基线 + v2 面规则；见下方独立用例） ──
+test('content-rewrite：内容改写与 rewrite-residual 硬检（ADR-062 修正案 4）', () => {
   const rewritePolicy = {
     scan: { extensions: ['.md', '.json'], include: ['LICENSE'], exclude: [] },
     internal: { pathPatterns: ['nothing/**'], idPatterns: [], termPatterns: [] },
     rewrite: {
       rules: [
-        { id: 'path-evidence', pattern: '内部计划[A-Za-z0-9._/-]*', replacement: '内部证据' },
+        { id: 'path-evidence', pattern: 'docs/plans/evidence/[A-Za-z0-9._/-]*', replacement: '内部证据' },
         { id: 'dev-id', pattern: 'DEV-\\d+', replacement: '内部任务-0' },
       ],
     },
   };
   const root = makeProject('rewrite', {
     files: {
-      'LICENSE': 'MIT\n\n参考 内部证据\n',
-      'src/prod.mjs': '// 文件头：参考 内部任务-2\nconst s = "http://example.invalid/内部任务-2"; // 行尾注释 内部任务-2\nconst t = `模板 内部任务-2`;\nif (x) /内部任务-6[//]/.test(s); // 行尾 内部任务-6\nconst q = (a+b) / c; // 除法 内部任务-8\n',
-      'scripts/tool.py': '# 注释 内部任务-7\nTOKEN = "内部任务-7"\n',
-      'config/rule_registry.json': '{"ruleId":"RULE-CORE-001","note":"内部任务-9"}\n',
-      'tests/t.test.mjs': '// 测试注释 内部任务-3\ntest("内部任务-3 用例", () => {});\n',
-      'tests/fixtures/f.json': '{"ref":"内部证据"}\n',
+      'LICENSE': 'MIT\n\n参考 docs/plans/evidence/DEV-1/x.md\n',
+      'src/prod.mjs': '// 文件头：参考 DEV-2\nconst s = "http://example.invalid/DEV-2"; // 行尾注释 DEV-2\nconst t = `模板 DEV-2`;\nif (x) /DEV-6[//]/.test(s); // 行尾 DEV-6\nconst q = (a+b) / c; // 除法 DEV-8\n',
+      'scripts/tool.py': '# 注释 DEV-7\nTOKEN = "DEV-7"\n',
+      'config/rule_registry.json': '{"ruleId":"RULE-CORE-001","note":"DEV-9"}\n',
+      'tests/t.test.mjs': '// 测试注释 DEV-3\ntest("DEV-3 用例", () => {});\n',
+      'tests/fixtures/f.json': '{"ref":"docs/plans/evidence/DEV-4/x.md"}\n',
     },
     contract: {
       items: [
@@ -625,25 +626,27 @@ test('content-rewrite：内容改写与 rewrite-residual 硬检（内部决策-0
     },
     policy: rewritePolicy,
   });
-  write(root, 'README.md', '# 示例\n\n参考 内部证据 与 内部任务-1\n');
+  write(root, 'README.md', '# 示例\n\n参考 docs/plans/evidence/DEV-1/x.md 与 DEV-1\n');
   const out1 = join(makeTmp('rewrite-out1'), 'pkg');
   const r1 = exportPkg(root, out1, ['--no-git', '--json']);
   assert.equal(r1.status, 0, `内容改写导出应成功：${r1.stdout}${r1.stderr}`);
   const read = (rel) => readFileSync(join(out1, rel), 'utf8');
   assert.doesNotMatch(read('README.md'), /DEV-\d+|docs\/plans\/evidence/);
   assert.doesNotMatch(read('LICENSE'), /DEV-\d+|docs\/plans\/evidence/);
-  assert.doesNotMatch(read('tests/t.test.mjs'), /DEV-\d+|docs\/plans\/evidence/); // test 面全文本改写
-  assert.doesNotMatch(read('tests/fixtures/f.json'), /DEV-\d+|docs\/plans\/evidence/); // 夹具面全文本改写
+  const testCode = read('tests/t.test.mjs');
+  assert.doesNotMatch(testCode, /\/\/ 测试注释 DEV-\d+/); // 测试 JS 注释改写（修正案 5）
+  assert.match(testCode, /DEV-3 用例/); // 测试 JS 字符串保留
+  assert.equal(read('tests/fixtures/f.json'), '{"ref":"docs/plans/evidence/DEV-4/x.md"}\n'); // 夹具数据不改写（修正案 5）
   const prod = read('src/prod.mjs');
   assert.doesNotMatch(prod, /\/\/ 文件头[^\n]*DEV-\d+/); // 注释面已改写（按行核对）
   assert.doesNotMatch(prod, /\/\/ 行尾注释 DEV-\d+/);
-  assert.match(prod, /http:\/\/example\.invalid\/内部任务-2/); // 字符串面不触碰（生产代码仅注释面）
-  assert.match(prod, /模板 内部任务-2/); // 模板字面量面不触碰
-  assert.match(prod, /内部任务-6\[\/\/\]/); // 正则字面量面不触碰（')' 后正则入口回归）
+  assert.match(prod, /http:\/\/example\.invalid\/DEV-2/); // 字符串面不触碰（生产代码仅注释面）
+  assert.match(prod, /模板 DEV-2/); // 模板字面量面不触碰
+  assert.match(prod, /DEV-6\[\/\/\]/); // 正则字面量面不触碰（')' 后正则入口回归）
   assert.doesNotMatch(prod, /\/\/ 行尾 DEV-\d+/); // 正则同行行尾注释仍被识别改写
   assert.doesNotMatch(prod, /\/\/ 除法 DEV-\d+/); // 除号表达式的行尾注释不得被正则入口吞掉
   // other-code（其他语言/脚本源码 + 语义配置/schema）保守不改写：ID 保留、计入未覆盖面
-  assert.match(read('scripts/tool.py'), /内部任务-7/);
+  assert.match(read('scripts/tool.py'), /DEV-7/);
   assert.match(read('config/rule_registry.json'), /RULE-CORE-001/); // 公开契约结构值不得被改写
   const payload = JSON.parse(String(r1.stdout));
   assert.ok(payload.rewrite && payload.rewrite.filesChanged >= 4, '改写报告应含文件计数');
@@ -661,6 +664,192 @@ test('content-rewrite：内容改写与 rewrite-residual 硬检（内部决策-0
   assert.equal(r3.status, 1, `规则替换后仍命中自身必须 rewrite-residual 阻断（status=${r3.status}，stderr=${r3.stderr}，stdout=${String(r3.stdout).slice(0,500)}）`);
   assert.match(`${r3.stdout}${r3.stderr}`, /rewrite-residual/);
   cleanup(root);
+});
+
+// ── 内部决策-062 修正案 5：改写面 v2（doc 全文 / code·test-code 仅注释 / data 不改写 / exclude） ──
+
+test('policy-rewrite-exclude-schema：rewrite.exclude 被接受；非数组退 2', () => {
+  const contract = {
+    items: [
+      { id: 'D-1', kind: 'file', source: 'README.md', target: 'README.md', required: true },
+      { id: 'D-2', kind: 'file', source: 'LICENSE', target: 'LICENSE', required: false },
+      { id: 'D-3', kind: 'file', source: 'assets/gitignore-template', target: 'assets/gitignore-template', required: false },
+    ],
+  };
+  const policy = {
+    scan: { extensions: ['.md'], include: ['LICENSE'], exclude: [] },
+    internal: { pathPatterns: ['nothing/**'], idPatterns: [], termPatterns: [] },
+    rewrite: {
+      rules: [{ id: 'dev-id', pattern: 'DEV-\\d+', replacement: '内部任务-0' }],
+      exclude: ['assets/gitignore-template'],
+    },
+  };
+  const root = makeProject('exclude-schema', {
+    contract,
+    policy,
+    files: { 'README.md': '# 示例交付\n', LICENSE: 'MIT\n\nDEV-1\n', 'assets/gitignore-template': '!/.sdd/suite.json\nDEV-2\n' },
+  });
+  try {
+    const out = join(makeTmp('exclude-schema-out'), 'pkg');
+    const r = exportPkg(root, out, ['--no-git', '--json']);
+    assert.equal(r.status, 0, `rewrite.exclude 应被接受：${r.stdout}${r.stderr}`);
+    write(root, '.deliver/policy.json', `${JSON.stringify({ schemaVersion: 1, ...policy, rewrite: { rules: [], exclude: 'assets/gitignore-template' } })}\n`);
+    const r2 = exportPkg(root, join(makeTmp('exclude-schema-bad'), 'pkg'), ['--no-git', '--json']);
+    assert.equal(r2.status, 2, 'rewrite.exclude 非数组必须退 2');
+  } finally { cleanup(root); }
+});
+
+test('rewrite-test-code-comments-only：测试 JS 仅注释改写，字符串保留', () => {
+  const contract = {
+    items: [
+      { id: 'D-1', kind: 'file', source: 'README.md', target: 'README.md', required: true },
+      { id: 'D-2', kind: 'file', source: 'tests/t.test.mjs', target: 'tests/t.test.mjs', required: false },
+    ],
+  };
+  const policy = {
+    scan: { extensions: ['.md'], include: [], exclude: [] },
+    internal: { pathPatterns: ['nothing/**'], idPatterns: [], termPatterns: [] },
+    license: { requireLicenseFile: false, requiredFields: ['name', 'license'] },
+    rewrite: { rules: [{ id: 'dev-id', pattern: 'DEV-\\d+', replacement: '内部任务-0' }] },
+  };
+  const root = makeProject('rewrite-test-code', {
+    contract,
+    policy,
+    files: { 'README.md': '# 示例交付\n', 'tests/t.test.mjs': '// 测试注释 DEV-3\ntest("DEV-3 用例", () => {});\n' },
+  });
+  try {
+    const out = join(makeTmp('rewrite-test-code-out'), 'pkg');
+    const r = exportPkg(root, out, ['--no-git', '--json']);
+    assert.equal(r.status, 0, `${r.stdout}${r.stderr}`);
+    const s = readFileSync(join(out, 'tests/t.test.mjs'), 'utf8');
+    assert.doesNotMatch(s, /\/\/ 测试注释 DEV-\d+/, '测试 JS 注释应被改写');
+    assert.match(s, /DEV-3 用例/, '测试 JS 字符串内的 ID 必须保留');
+  } finally { cleanup(root); }
+});
+
+test('rewrite-test-data-untouched：测试夹具数据文件不改写', () => {
+  const contract = {
+    items: [
+      { id: 'D-1', kind: 'file', source: 'README.md', target: 'README.md', required: true },
+      { id: 'D-2', kind: 'file', source: 'tests/fixtures/f.json', target: 'tests/fixtures/f.json', required: false },
+    ],
+  };
+  const policy = {
+    scan: { extensions: ['.md'], include: [], exclude: [] },
+    internal: { pathPatterns: ['nothing/**'], idPatterns: [], termPatterns: [] },
+    license: { requireLicenseFile: false, requiredFields: ['name', 'license'] },
+    rewrite: {
+      rules: [
+        { id: 'path-evidence', pattern: 'docs/plans/evidence/[A-Za-z0-9._/-]*', replacement: '内部证据' },
+        { id: 'dev-id', pattern: 'DEV-\\d+', replacement: '内部任务-0' },
+      ],
+    },
+  };
+  const original = '{"ref":"docs/plans/evidence/DEV-4/x.md"}\n';
+  const root = makeProject('rewrite-test-data', {
+    contract,
+    policy,
+    files: { 'README.md': '# 示例交付\n', 'tests/fixtures/f.json': original },
+  });
+  try {
+    const out = join(makeTmp('rewrite-test-data-out'), 'pkg');
+    const r = exportPkg(root, out, ['--no-git', '--json']);
+    assert.equal(r.status, 0, `${r.stdout}${r.stderr}`);
+    assert.equal(readFileSync(join(out, 'tests/fixtures/f.json'), 'utf8'), original, '夹具数据文件必须逐字节不变');
+  } finally { cleanup(root); }
+});
+
+test('rewrite-excluded-file：rewrite.exclude 命中文件不改写且计入 untargetedResidual', () => {
+  const contract = {
+    items: [
+      { id: 'D-1', kind: 'file', source: 'README.md', target: 'README.md', required: true },
+      { id: 'D-2', kind: 'file', source: 'assets/gitignore-template', target: 'assets/gitignore-template', required: false },
+    ],
+  };
+  const policy = {
+    scan: { extensions: ['.md'], include: [], exclude: [] },
+    internal: { pathPatterns: ['nothing/**'], idPatterns: [], termPatterns: [] },
+    license: { requireLicenseFile: false, requiredFields: ['name', 'license'] },
+    rewrite: {
+      rules: [{ id: 'dev-id', pattern: 'DEV-\\d+', replacement: '内部任务-0' }],
+      exclude: ['assets/gitignore-template'],
+    },
+  };
+  const original = '!/.sdd/suite.json\nDEV-6\n';
+  const root = makeProject('rewrite-exclude', {
+    contract,
+    policy,
+    files: { 'README.md': '# 示例交付\n', 'assets/gitignore-template': original },
+  });
+  try {
+    const out = join(makeTmp('rewrite-exclude-out'), 'pkg');
+    const r = exportPkg(root, out, ['--no-git', '--json']);
+    assert.equal(r.status, 0, `${r.stdout}${r.stderr}`);
+    assert.equal(readFileSync(join(out, 'assets/gitignore-template'), 'utf8'), original, 'exclude 命中文件必须逐字节不变');
+    const payload = JSON.parse(r.stdout);
+    assert.ok(payload.rewrite.untargetedResidual >= 1, 'exclude 面命中应计入 untargetedResidual');
+  } finally { cleanup(root); }
+});
+
+test('rewrite-surface-classification：扩展名定行为、路径只定标签（修正案 5）', () => {
+  assert.equal(classifyRewriteSurface('tests/t.test.mjs'), 'test-code');
+  assert.equal(classifyRewriteSurface('src/prod.mjs'), 'code');
+  assert.equal(classifyRewriteSurface('tests/fixtures/f.json'), 'data');
+  assert.equal(classifyRewriteSurface('config/x.json'), 'other-code');
+  assert.equal(classifyRewriteSurface('tests/notes.md'), 'doc');
+  assert.equal(classifyRewriteSurface('README.md'), 'doc');
+  assert.equal(classifyRewriteSurface('assets/gitignore-template'), 'doc');
+});
+
+test('rewrite-test-doc-rewritten：tests 下 Markdown 仍全文改写', () => {
+  const contract = {
+    items: [
+      { id: 'D-1', kind: 'file', source: 'README.md', target: 'README.md', required: true },
+      { id: 'D-2', kind: 'file', source: 'tests/notes.md', target: 'tests/notes.md', required: false },
+    ],
+  };
+  const policy = {
+    scan: { extensions: ['.md'], include: [], exclude: [] },
+    internal: { pathPatterns: ['nothing/**'], idPatterns: [], termPatterns: [] },
+    license: { requireLicenseFile: false, requiredFields: ['name', 'license'] },
+    rewrite: { rules: [{ id: 'dev-id', pattern: 'DEV-\\d+', replacement: '内部任务-0' }] },
+  };
+  const root = makeProject('rewrite-test-doc', {
+    contract,
+    policy,
+    files: { 'README.md': '# 示例交付\n', 'tests/notes.md': '# DEV-7 说明\n' },
+  });
+  try {
+    const out = join(makeTmp('rewrite-test-doc-out'), 'pkg');
+    const r = exportPkg(root, out, ['--no-git', '--json']);
+    assert.equal(r.status, 0, `${r.stdout}${r.stderr}`);
+    assert.doesNotMatch(readFileSync(join(out, 'tests/notes.md'), 'utf8'), /DEV-7/, 'tests 下 Markdown 属 doc 面，必须全文改写');
+  } finally { cleanup(root); }
+});
+
+test('rewrite-test-data-scan-face：保留的测试数据仍受 internal-pattern 约束', () => {
+  const contract = {
+    items: [
+      { id: 'D-1', kind: 'file', source: 'README.md', target: 'README.md', required: true },
+      { id: 'D-2', kind: 'file', source: 'tests/fixtures/f.json', target: 'tests/fixtures/f.json', required: false },
+    ],
+  };
+  const policy = {
+    scan: { extensions: ['.json'], include: [], exclude: [] },
+    internal: { pathPatterns: ['nothing/**'], idPatterns: ['\\bDEV-\\d+\\b'], termPatterns: [] },
+    rewrite: { rules: [{ id: 'dev-id', pattern: 'DEV-\\d+', replacement: '内部任务-0' }] },
+  };
+  const root = makeProject('rewrite-scan-face', {
+    contract,
+    policy,
+    files: { 'README.md': '# 示例交付\n', 'tests/fixtures/f.json': '{"id":"DEV-4"}\n' },
+  });
+  try {
+    const out = join(makeTmp('rewrite-scan-face-out'), 'pkg');
+    const r = exportPkg(root, out, ['--no-git', '--json']);
+    assert.equal(r.status, 1, '数据面保留的真实标识若落在扫描面内，必须 internal-pattern 阻断');
+    assert.match(`${r.stdout}${r.stderr}`, /internal-pattern/);
+  } finally { cleanup(root); }
 });
 
 // ── 阶段复审门 A（内部规则-13）阻塞修复回归（2026-10-23，内部任务-186）────────────────
@@ -780,9 +969,9 @@ test('dir/glob 投影覆盖与显式 visibilitySource 缺失/坏 JSON（阶段�
     assert.ok(existsSync(join(out, 'src', 'a.mjs')) && existsSync(join(out, 'src', 'nested', 'b.mjs')), 'dir 应保留目录结构');
     assert.ok(existsSync(join(out, 'docs', 'guide.md')), 'glob 应命中 docs/**/*.md');
     // 显式 visibilitySource 缺失/坏 JSON → exit 2
-    write(root, '.deliver/policy.json', `${JSON.stringify({ ...BASE_POLICY, visibilitySource: '内部规格' })}\n`);
+    write(root, '.deliver/policy.json', `${JSON.stringify({ ...BASE_POLICY, visibilitySource: 'specs/nope.json' })}\n`);
     assert.equal(exportPkg(root, join(root, 'o1'), ['--no-git']).status, 2);
-    write(root, '内部规格', '{ bad json');
+    write(root, 'specs/nope.json', '{ bad json');
     assert.equal(exportPkg(root, join(root, 'o2'), ['--no-git']).status, 2);
   } finally {
     cleanup(root);
@@ -859,7 +1048,7 @@ test('代码评审阻塞回归：危险豁免/提交信息注入/源符号链接
   {
     const root = makeProject('commit-inject');
     try {
-      write(root, '.deliver/contract.json', `${JSON.stringify({ ...BASE_CONTRACT, git: { ...BASE_CONTRACT.git, commitMessage: '内部任务-42 internal delivery' } })}\n`);
+      write(root, '.deliver/contract.json', `${JSON.stringify({ ...BASE_CONTRACT, git: { ...BASE_CONTRACT.git, commitMessage: 'DEV-42 internal delivery' } })}\n`);
       const r = exportPkg(root, join(makeTmp('commit-inject-out'), 'pkg'));
       assert.equal(r.status, 1, `提交信息内部 ID 应阻断：${r.stdout}${r.stderr}`);
       assert.match(`${r.stdout}${r.stderr}`, /internal-pattern/);
@@ -871,7 +1060,7 @@ test('代码评审阻塞回归：危险豁免/提交信息注入/源符号链接
   {
     const root = makeProject('source-symlink');
     try {
-      write(root, '内部规格', '# 内部规格\n');
+      write(root, 'specs/secret.md', '# 内部规格\n');
       mkdirSync(join(root, 'public'), { recursive: true });
       try {
         symlinkSync(join('..', 'specs', 'secret.md'), join(root, 'public', 'secret-link.md'));
@@ -969,7 +1158,7 @@ test('代码评审阻塞回归：危险豁免/提交信息注入/源符号链接
   {
     const root = makeProject('commit-path');
     try {
-      write(root, '.deliver/contract.json', `${JSON.stringify({ ...BASE_CONTRACT, git: { ...BASE_CONTRACT.git, commitMessage: 'see 内部计划' } })}\n`);
+      write(root, '.deliver/contract.json', `${JSON.stringify({ ...BASE_CONTRACT, git: { ...BASE_CONTRACT.git, commitMessage: 'see docs/plans/secret.md' } })}\n`);
       const r = exportPkg(root, join(makeTmp('commit-path-out'), 'pkg'));
       assert.equal(r.status, 1, `提交信息内部路径应阻断：${r.stdout}${r.stderr}`);
       assert.match(`${r.stdout}${r.stderr}`, /internal-artifact-present/);
@@ -1001,7 +1190,7 @@ test('代码评审阻塞回归：危险豁免/提交信息注入/源符号链接
 
 // ── 内部任务-244 E03：data: 引用恒 blocking（不得作为外部链接豁免，也不得经 allowPatterns 豁免） ──
 
-test('内部任务-244 E03：data: 引用恒 blocking（导出与 lint 两侧一致）', () => {
+test('DEV-244 E03：data: 引用恒 blocking（导出与 lint 两侧一致）', () => {
   const dataUri = 'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==';
   const root = makeProject('data-uri', { files: { 'README.md': `# 示例交付\n\n[内联](${dataUri})\n` } });
   const outBase = makeTmp('data-uri-out');

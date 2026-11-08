@@ -63,7 +63,7 @@ test('POC-A1：真实 dsh-tools 的 defineTool 必须有 output{schema,render}�
 });
 
 test('POC-A2/A3：真实子代理投递与 running→finished 需完整宿主栈——本进程 skip，转步骤 11 真机门', (t) => {
-  t.skip('需要完整宿主栈（Session/persistence/subagents/agents 服务引导）——本层测试进程不引导；由步骤 11 真机门验证，内部未决-151 保持');
+  t.skip('需要完整宿主栈（Session/persistence/subagents/agents 服务引导）——本层测试进程不引导；由步骤 11 真机门验证，OPEN-151 保持');
 });
 
 test('POC-A4：无 tools 服务时 attachAgentControl 不炸且不注册（fail-open）', async () => {
@@ -79,7 +79,7 @@ test('POC-A4：无 tools 服务时 attachAgentControl 不炸且不注册（fail-
   dispose();
 });
 
-test('POC-M1/内部模块-2：实现模块注册三工具、list 映射、message sender/块/signal（实现态）', async (t) => {
+test('POC-M1/M2：实现模块注册三工具、list 映射、message sender/块/signal（实现态）', async (t) => {
   if (!PHASE_M) {
     t.skip('相位 A 不跑实现态（设 F2_POC_PHASE=M 在步骤 8 后强制重跑）');
     return;

@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "code-review-内部任务-36-sstage1",
+  "receiptId": "code-review-DEV-36-sstage1",
   "kind": "code-review",
-  "taskId": "内部任务-36",
+  "taskId": "DEV-36",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,7 +15,7 @@
       "documents": "115"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-17-DEV-36-open-item-tracking-phase1-with-lease-guidance-fix.md",
       "sha256": "sha256:a8dc1d8f2788838d75bc608c2d98d9536a45a5f2d977af1329cc13a0c9acaa28"
     },
     "algorithmVersion": "1"
@@ -25,7 +25,7 @@
   "stage": "stage1",
   "stageReceipt": true,
   "evidenceProfile": "full",
-  "summary": "检查点①阶段1消费面：两发现（内部验收-23载体/锚点、守卫面误归×3）全当场处置复绿",
+  "summary": "检查点①阶段1消费面：两发现（A-M8-23载体/锚点、守卫面误归×3）全当场处置复绿",
   "reviewInstances": 1,
   "reviewMode": "single-instance",
   "integritySha256": "sha256:f35571a9bd78a0502f6a34148a0c2bc49fb68f626f6e6bb5a95f187e8f25c88f"

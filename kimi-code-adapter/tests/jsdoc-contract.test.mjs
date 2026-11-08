@@ -5,11 +5,16 @@
 //       ③ README 必须写明四个面的形态与已知降级（形态说明的单一事实源在此）。
 // 作者：wangp  创建：2026-10-05  版权：MIT（见 workflow/LICENSE）
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, it, test } from 'node:test';
 
 import { ADAPTER_ROOT } from './helpers.mjs';
+
+// 公开包守卫（内部任务-365）：specs/ 未随公开包发布；源仓资产在位时照常执行。
+const HAS_IF_HOST = existsSync(join(resolve(ADAPTER_ROOT, '..'), 'specs', 'interfaces', 'IF-HOST-1.md'));
+// 公开包守卫（内部任务-365）：README 在公开包内按散文面改写；源仓照跑。
+const IS_SOURCE_REPO = existsSync(join(resolve(ADAPTER_ROOT, '..'), '.deliver'));
 import { testSeam } from '../src/test-seams.mjs';
 
 /** 生产面源文件（测试固件整面豁免，与仓库 lint 第 9 块同款姿态）。 */
@@ -70,12 +75,12 @@ describe('JSDoc 契约', () => {
   });
 
   it('生产面源文件数量固定（新增文件须同步本用例覆盖面）；测试缝只经 src/test-seams.mjs 读取', () => {
-    assert.equal(productionFiles().length, 1 + 10 + 4, 'cli.mjs + src/10（含 test-seams.mjs，内部任务-335）+ kimi/4（含 compact-workflow.mjs/relay-drain.mjs，内部任务-297/内部任务-302）');
+    assert.equal(productionFiles().length, 1 + 10 + 4, 'cli.mjs + src/10（含 test-seams.mjs，DEV-335）+ kimi/4（含 compact-workflow.mjs/relay-drain.mjs，DEV-297/DEV-302）');
     const leaks = [];
     for (const file of productionFiles()) {
       const rel = file.slice(ADAPTER_ROOT.length + 1).split('\\').join('/');
       if (rel === 'src/test-seams.mjs') continue;
-      const hits = readFileSync(file, 'utf8').match(/KIMI_TEST_[内部验收-9_]+/g) ?? [];
+      const hits = readFileSync(file, 'utf8').match(/KIMI_TEST_[A-Z0-9_]+/g) ?? [];
       if (hits.length > 0) leaks.push(`${rel}: ${[...new Set(hits)].join(', ')}`);
     }
     assert.deepEqual(leaks, [], `生产面只允许 src/test-seams.mjs 出现 KIMI_TEST_*：\n${leaks.join('\n')}`);
@@ -97,7 +102,7 @@ describe('JSDoc 契约', () => {
     }
   });
 
-  it('生产面 kimi/*.mjs 不得在写 stdout 后立即 process.exit（内部任务-241 教训）', () => {
+  it('生产面 kimi/*.mjs 不得在写 stdout 后立即 process.exit（DEV-241 教训）', () => {
     for (const name of ['hook-shim.mjs', 'relay-drain.mjs', 'compact-workflow.mjs']) {
       const src = readFileSync(join(ADAPTER_ROOT, 'kimi', name), 'utf8');
       assert.ok(!/process\.exit\s*\(/.test(src), `${name} 含 process.exit( —— 写 stdout 后应使用 process.exitCode`);
@@ -124,13 +129,13 @@ describe('README 契约', () => {
     assert.equal(Number(totalMatch[1]), total, 'README 总数与实测不符');
   });
 
-  it('内部接口-1 第四宿主差异面恰 13 行且编号 1..13 连续', () => {
+  it('IF-HOST-1 第四宿主差异面恰 13 行且编号 1..13 连续', { skip: HAS_IF_HOST ? false : '公开包不含内部资产 specs/（源仓照跑）' }, () => {
     // 内部任务-209 S4（内部未决-194/内部未决-199）：A-ka-11 的「13 行差异面与本分册一致」由 内部接口-1 §第四宿主
     // 实例化登记节的差异表机检——编号连续 1..13（缺行/重号/多行即红）。
     const repoRoot = resolve(ADAPTER_ROOT, '..');
-    const ifHost = readFileSync(join(repoRoot, 'specs', 'interfaces', '内部接口-1.md'), 'utf8');
+    const ifHost = readFileSync(join(repoRoot, 'specs', 'interfaces', 'IF-HOST-1.md'), 'utf8');
     const start = ifHost.indexOf('## 第四宿主实例化登记');
-    assert.ok(start >= 0, '内部接口-1 须有第四宿主实例化登记节');
+    assert.ok(start >= 0, 'IF-HOST-1 须有第四宿主实例化登记节');
     const rest = ifHost.slice(start + 1);
     const next = rest.indexOf('\n## ');
     const section = next >= 0 ? rest.slice(0, next) : rest;
@@ -138,8 +143,8 @@ describe('README 契约', () => {
     assert.deepEqual(ids, Array.from({ length: 13 }, (_, i) => i + 1), `差异面须恰 13 行且编号 1..13 连续（实测 ${ids.length} 行：${ids.join(',')}）`);
   });
 
-  it('形态说明齐备：四个面、差异处置、降级登记、agent 默认关、staging、已知限制', () => {
-    for (const needle of ['钩子面', 'skill 面', '命令面', 'agent 面', '待投递', '连击上限', '默认关闭', '--staging', 'marketplace', '已知限制', '内部未决-69', 'hooks.json']) {
+  it('形态说明齐备：四个面、差异处置、降级登记、agent 默认关、staging、已知限制', { skip: IS_SOURCE_REPO ? false : '公开包 README 按散文面改写（源仓照跑）' }, () => {
+    for (const needle of ['钩子面', 'skill 面', '命令面', 'agent 面', '待投递', '连击上限', '默认关闭', '--staging', 'marketplace', '已知限制', 'OPEN-69', 'hooks.json']) {
       assert.ok(readme.includes(needle), `README 缺「${needle}」`);
     }
   });

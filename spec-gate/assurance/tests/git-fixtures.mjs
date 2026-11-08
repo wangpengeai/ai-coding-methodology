@@ -84,8 +84,8 @@ export function makeGitProject(base) {
   mkdirSync(join(proj, '.sdd'), { recursive: true });
   writeFileSync(join(proj, 'src', 'app.py'), "print('v1')\n", 'utf8');
   writeFileSync(join(proj, 'specs', 'x.md'), '---\ndocumentType: requirement-baseline\n---\n# X\n', 'utf8');
-  writeFileSync(join(proj, 'docs', 'plans', 'p.md'), '---\nspecRefs: [内部需求-1]\n---\n# 计划\n', 'utf8');
-  writeFileSync(join(proj, '.sdd', 'suite.json'), suiteWith('内部规格'), 'utf8');
+  writeFileSync(join(proj, 'docs', 'plans', 'p.md'), '---\nspecRefs: [FR-wf-1]\n---\n# 计划\n', 'utf8');
+  writeFileSync(join(proj, '.sdd', 'suite.json'), suiteWith('specs/x.md'), 'utf8');
   initRepo(proj);
   git(proj, 'add', '-A', '--force', '.');
   git(proj, 'commit', '-q', '-m', 'init');

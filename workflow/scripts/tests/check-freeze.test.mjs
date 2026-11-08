@@ -106,7 +106,7 @@ test('极性双断言：负载垃圾 → deny(2)（fail-closed）；解析后自
   }
 });
 
-test('内部任务-320 状态根隔离：崩溃注入的观测记录落在注入的临时状态根（不污染项目真实状态根）', () => {
+test('DEV-320 状态根隔离：崩溃注入的观测记录落在注入的临时状态根（不污染项目真实状态根）', () => {
   const errors = join(STATE_DIR, 'hook-errors.jsonl');
   const before = existsSync(errors) ? readFileSync(errors, 'utf8').split('\n').filter(Boolean).length : 0;
   const { root, cleanup } = makeRoot(['docs/*']);
@@ -148,7 +148,7 @@ test('从子目录向上找到声明根（cwd 在项目子目录）', () => {
   }
 });
 
-test('Windows 路径形态：反斜杠 file_path 与小写盘符 cwd 等价命中', { skip: process.platform !== 'win32' ? '非 Windows 平台无盘符/反斜杠路径语义（条件用例跳过；内部任务-259 步骤10 归因）' : false }, () => {
+test('Windows 路径形态：反斜杠 file_path 与小写盘符 cwd 等价命中', { skip: process.platform !== 'win32' ? '非 Windows 平台无盘符/反斜杠路径语义（条件用例跳过；DEV-259 步骤10 归因）' : false }, () => {
   const { root, cleanup } = makeRoot(['docs/*']);
   try {
     const forward = String.raw`${root}`.replaceAll('/', '\\');
@@ -262,14 +262,14 @@ test('双跑对拍：与旧 check-freeze.sh 退出码与 stdout 逐字节一致�
 
 // ── 内部任务-8（2026-10-07，内部规则-17）：钩内工具族分流——已命名的非 edit 族负载静默放行 ──
 
-test('内部任务-8 任务 2.2：非 edit 族负载静默放行（漂移防护：shell/只读族带 file_path 不得误拦）', () => {
+test('DEV-8 任务 2.2：非 edit 族负载静默放行（漂移防护：shell/只读族带 file_path 不得误拦）', () => {
   const { root, cleanup } = makeRoot(['docs/*']);
   try {
     const frozen = `${root}/docs/spec.md`;
     // 漂移防护：shell 族负载携带 file_path 指向冻结目录 → 静默放行（现状无工具名分流 → 误拦）
     const shell = runFreeze(JSON.stringify({ tool_name: 'pwsh', tool_input: { file_path: frozen }, cwd: root }));
     assert.equal(shell.status, 0, 'shell 族静默放行');
-    assert.equal(shell.stdout.trim(), '', '零输出（内部规则-6 信封契约）');
+    assert.equal(shell.stdout.trim(), '', '零输出（R-M8-6 信封契约）');
     assert.equal(
       runFreeze(JSON.stringify({ tool_name: 'Read', tool_input: { file_path: frozen }, cwd: root })).status,
       0,
@@ -288,7 +288,7 @@ test('内部任务-8 任务 2.2：非 edit 族负载静默放行（漂移防护�
 
 // ── 内部任务-244 S02：冻结判定规范化——`..` 消解 / symlink 别名 / Windows 大小写 / 相对路径不可绕过 ──
 
-test('冻结判定规范化（内部任务-244 S02）：..、symlink、Windows 大小写、相对路径均不能绕过', (t) => {
+test('冻结判定规范化（DEV-244 S02）：..、symlink、Windows 大小写、相对路径均不能绕过', (t) => {
   const { root, cleanup } = makeRoot(['docs/*']);
   try {
     // `..` 级联：字符串形态不在 docs/ 下，但解析后就在冻结目录内

@@ -14,10 +14,10 @@ const DANGLING_PLAN = '---\ndocumentType: plan\nspecRefs: [FR-GHOST-9]\n---\n\n#
 function project(withSdd) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'dev151-gateplan-')));
   mkdirSync(join(root, 'specs'), { recursive: true });
-  writeFileSync(join(root, '内部规格'), '# 需求基线\n\n- FR-TEST-1：样例需求\n');
+  writeFileSync(join(root, 'specs/requirements.md'), '# 需求基线\n\n- FR-TEST-1：样例需求\n');
   mkdirSync(join(root, 'docs/plans'), { recursive: true });
-  writeFileSync(join(root, '内部计划'), VALID_PLAN);
-  writeFileSync(join(root, '内部计划'), DANGLING_PLAN);
+  writeFileSync(join(root, 'docs/plans/valid.md'), VALID_PLAN);
+  writeFileSync(join(root, 'docs/plans/dangling.md'), DANGLING_PLAN);
   const configDir = join(root, '.sdd');
   if (withSdd) mkdirSync(configDir, { recursive: true });
   const config = {
@@ -54,7 +54,7 @@ test('无 .sdd 体系时 plan 节为空（B-M7-3）', () => {
 test('F-17：非 UTF-8 计划计入 checked 并产 RULE-PLAN-002 warning', () => {
   const config = project(true);
   const root = dirname(dirname(config));
-  writeFileSync(join(root, '内部计划'), Buffer.from([0xff, 0xfe]));
+  writeFileSync(join(root, 'docs/plans/broken.md'), Buffer.from([0xff, 0xfe]));
   const r = runSuite(config);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const plan = JSON.parse(r.stdout).plan;

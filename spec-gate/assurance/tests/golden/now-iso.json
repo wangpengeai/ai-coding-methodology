@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedBy": "spec-gate/assurance/tests/gen_golden.py",
-  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（内部决策-051 D4，内部任务-60 计划评审 F7）",
+  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（ADR-051 D4，DEV-60 计划评审 F7）",
   "formatRegex": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}$",
   "cases": [
     {

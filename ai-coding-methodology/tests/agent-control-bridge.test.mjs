@@ -290,7 +290,7 @@ test('wait_subagent：超时返回 timeout 不伪装 finished；调用方取消 
 // （AbortSignal.abort()）；本用例锁「running 中变 aborted」的迟滞路径（循环顶检查抛取消，迟滞≤interval，
 // agent-control-bridge.mjs:309/:318——sleep 是纯 setTimeout 不响应 abort）与 wait 独立性（结果只由
 // 调用方 signal 与子代理状态决定，不误报 timeout/finished）。
-test('内部任务-339 T-06：wait running 中 abort 循环顶抛取消（迟滞≤interval）；wait 只随调用方 signal 取消', async () => {
+test('DEV-339 T-06：wait running 中 abort 循环顶抛取消（迟滞≤interval）；wait 只随调用方 signal 取消', async () => {
   const subagents = makeFakeSubagents({ children: [{ id: 'c1', mode: 'continuable', createdAt: 1 }] });
   const statuses = { c1: 'running' };
   const { tools, disposer } = setup({ subagents, agents: makeFakeAgents(statuses) });
@@ -334,9 +334,9 @@ test('render 契约：output.render 返回宿主 Content 块数组（不是 stri
 
 // ── 内部任务-220：首轮桥接通道提示（文案/门控/注册工具名） ─────────────────────────
 
-test('内部任务-220 hint：文案含四要素（可续/续聊复用/不作计划与代码复审通道/再水化）且按 registeredTools 动态', () => {
+test('DEV-220 hint：文案含四要素（可续/续聊复用/不作计划与代码复审通道/再水化）且按 registeredTools 动态', () => {
   const full = bridgeChannelHintText({ registeredTools: ['list_subagents', 'message_subagent', 'wait_subagent'] });
-  for (const anchor of ['可续', '续聊复用', '不作计划/代码复审通道', '再水化', '内部台账<任务号>.md']) {
+  for (const anchor of ['可续', '续聊复用', '不作计划/代码复审通道', '再水化', 'docs/plans/agents-<任务号>.md']) {
     assert.ok(full.includes(anchor), `提示文案缺要素：${anchor}`);
   }
   assert.ok(full.includes('三工具可用'), '三工具齐全时首行应写「三工具可用」');
@@ -351,7 +351,7 @@ test('内部任务-220 hint：文案含四要素（可续/续聊复用/不作计
   assert.equal(bridgeChannelHintText({ registeredTools: [] }), '', '零工具返回空串（调用方不得注入空提示）');
 });
 
-test('内部任务-220 gate：门控四态——depth/未注册/空 sid（一次性 warn）/once 单源＋reset 重臂', () => {
+test('DEV-220 gate：门控四态——depth/未注册/空 sid（一次性 warn）/once 单源＋reset 重臂', () => {
   const warns = [];
   const registered = new Set(['s1']);
   const gate = createBridgeHintGate({
@@ -375,7 +375,7 @@ test('内部任务-220 gate：门控四态——depth/未注册/空 sid（一次
   assert.equal(warns.length, before + 1, '空 sid warn 仅一次');
 });
 
-test('内部任务-220 gate：isRegistered 抛错 fail-open 不消耗（下一轮可重试）', () => {
+test('DEV-220 gate：isRegistered 抛错 fail-open 不消耗（下一轮可重试）', () => {
   const warns = [];
   let boom = true;
   const gate = createBridgeHintGate({
@@ -394,7 +394,7 @@ test('内部任务-220 gate：isRegistered 抛错 fail-open 不消耗（下一�
   assert.equal(gate.shouldInject(agent), true, '异常未消耗 once——下一轮可注入');
 });
 
-test('内部任务-220 注册面：registerAgentControlTools 返回 registeredTools（实际注册工具名）', () => {
+test('DEV-220 注册面：registerAgentControlTools 返回 registeredTools（实际注册工具名）', () => {
   const withAll = setup();
   assert.deepEqual([...withAll.registeredTools].sort(), [...TOOL_NAMES].sort());
   withAll.disposer();
@@ -405,7 +405,7 @@ test('内部任务-220 注册面：registerAgentControlTools 返回 registeredTo
   assert.deepEqual(none.registeredTools, [], 'fail-open 时注册工具名为空');
 });
 
-test('内部任务-220 描述：三工具 description 追加 内部任务-220 句子（可续/正确入口/等待语义）', () => {
+test('DEV-220 描述：三工具 description 追加 DEV-220 句子（可续/正确入口/等待语义）', () => {
   const defs = buildToolDefinitions({ subagents: makeFakeSubagents(), agents: makeFakeAgents(), parentSessionId: 'root-1' });
   const byName = new Map(defs.map((d) => [d.name, d.description]));
   assert.ok(byName.get('list_subagents').includes('非一次性派发'), 'list 描述应写明非一次性派发');

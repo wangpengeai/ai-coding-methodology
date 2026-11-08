@@ -127,7 +127,7 @@ test('emitPreToolUseDecision：deny 退 2、ask 退 0，stdout 为可解析信�
   }
 });
 
-test('pluginRootDir：指向含 hooks/scripts 的插件根（内部任务-20 A1/F5）', async () => {
+test('pluginRootDir：指向含 hooks/scripts 的插件根（DEV-20 A1/F5）', async () => {
   // 为什么要有：注入文本要给出**可直接执行**的绝对路径（消费仓里仓相对命令必 MODULE_NOT_FOUND），
   // 推导根必须就是运行中的插件版本目录——用"根下确有这两个文件"钉住形态，而不是只比字符串。
   const { pluginRootDir } = await import('../../hooks/hook-lib.mjs');
@@ -137,7 +137,7 @@ test('pluginRootDir：指向含 hooks/scripts 的插件根（内部任务-20 A1/
   assert.ok(existsSync(join(root, 'scripts', 'incident-cli.mjs')), '推导根须含 scripts/incident-cli.mjs');
 });
 
-test('pluginRootDir：自身位置优先于环境变量（内部任务-20 A1/F5）', async () => {
+test('pluginRootDir：自身位置优先于环境变量（DEV-20 A1/F5）', async () => {
   const { pluginRootDir } = await import('../../hooks/hook-lib.mjs');
   const prev = process.env.ZCODE_PLUGIN_ROOT;
   process.env.ZCODE_PLUGIN_ROOT = 'C:/nonexistent-plugin-root';
@@ -149,12 +149,12 @@ test('pluginRootDir：自身位置优先于环境变量（内部任务-20 A1/F5�
   }
 });
 
-test('pluginRootDir marker 参数：声明命令 marker 与默认 marker 同根（内部未决-91，内部任务-48）', async () => {
+test('pluginRootDir marker 参数：声明命令 marker 与默认 marker 同根（OPEN-91，DEV-48）', async () => {
   const { pluginRootDir } = await import('../../hooks/hook-lib.mjs');
   assert.equal(pluginRootDir('hooks/routing-declare.mjs'), pluginRootDir(), '健康插件树上两 marker 指向同一根');
 });
 
-test('declareCmdPrefix（hook-lib 导出）：env 双清空 → 真路径非占位符（内部未决-91，内部任务-48）', async () => {
+test('declareCmdPrefix（hook-lib 导出）：env 双清空 → 真路径非占位符（OPEN-91，DEV-48）', async () => {
   const { declareCmdPrefix } = await import('../../hooks/hook-lib.mjs');
   const prevZ = process.env.ZCODE_PLUGIN_ROOT;
   const prevC = process.env.CLAUDE_PLUGIN_ROOT;
@@ -162,7 +162,7 @@ test('declareCmdPrefix（hook-lib 导出）：env 双清空 → 真路径非占�
   delete process.env.CLAUDE_PLUGIN_ROOT;
   try {
     const cmd = declareCmdPrefix();
-    assert.ok(cmd.startsWith("node '"), '单引号包裹形态（内部未决-94：bash/pwsh 双壳内单引号零展开）');
+    assert.ok(cmd.startsWith("node '"), '单引号包裹形态（OPEN-94：bash/pwsh 双壳内单引号零展开）');
     assert.ok(cmd.endsWith("/hooks/routing-declare.mjs'"), '正斜杠绝对路径形态');
     assert.ok(!cmd.includes('<插件根>'), '自身位置有效时不得退占位符（收敛前的 env-only 缺陷形态）');
   } finally {
@@ -173,7 +173,7 @@ test('declareCmdPrefix（hook-lib 导出）：env 双清空 → 真路径非占�
   }
 });
 
-test('占位符回落：裁剪树（marker 文件俱缺）→ null 根 → 占位符命令（内部未决-91，内部任务-48）', async () => {
+test('占位符回落：裁剪树（marker 文件俱缺）→ null 根 → 占位符命令（OPEN-91，DEV-48）', async () => {
   // 只拷 hook-lib 与其唯一仓内依赖 routing-lib 到 tmp——树里没有 scripts/incident-cli.mjs
   // 也没有 hooks/routing-declare.mjs，两级候选全部失败 ⇒ null 根 ⇒ 两个命令都退占位符
   // （不产"看似可执行却是错根"的命令，内部任务-20 A1/F5 的回落语义在收敛后保持）。
@@ -205,7 +205,7 @@ test('占位符回落：裁剪树（marker 文件俱缺）→ null 根 → 占�
   }
 });
 
-test('runtimeStateDir 与单点原语一致（内部任务-20 A2/F7）', async () => {
+test('runtimeStateDir 与单点原语一致（DEV-20 A2/F7）', async () => {
   // 收敛判据：运行态状态目录只允许经单点原语解析（注入缝 > 项目记号 > 用户级默认），
   // 存在第二套拼路径即本断言转红——「无 cwd 参与的第二解析链」是 A2 的核心不变量之一。
   const { runtimeStateDir, stateRootFor } = await import('../../hooks/routing-lib.mjs');
@@ -214,7 +214,7 @@ test('runtimeStateDir 与单点原语一致（内部任务-20 A2/F7）', async (
 
 // ── 内部任务-290：runHookMain 记录 error/host/sessionKey（内部未决-258/260）与脱敏 ──
 
-test('内部任务-290：runHookMain 记录 error、host 与 sessionKey，且 error 经路径脱敏', () => {
+test('DEV-290：runHookMain 记录 error、host 与 sessionKey，且 error 经路径脱敏', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-rt-dev290-'));
   const state = join(home, 'state');
   const script = join(home, 'main-crash2.mjs');
@@ -236,9 +236,9 @@ test('内部任务-290：runHookMain 记录 error、host 与 sessionKey，且 er
     assert.equal(r.status, 0, 'fail-open 不破');
     const line = JSON.parse(readFileSync(join(state, 'hook-errors.jsonl'), 'utf8').trim().split('\n').pop());
     assert.equal(line.reason, 'uncaught-in-main');
-    assert.equal(line.sessionKey, 'sess-dev290', '绑定后须写入会话键（内部未决-260）');
-    assert.equal(line.host, 'mcode', 'MCODE_ 前缀 ⇒ host=mcode（内部未决-260 归因）');
-    assert.ok(typeof line.error === 'string' && line.error.length > 0, '须记录错误内容（内部未决-258）');
+    assert.equal(line.sessionKey, 'sess-dev290', '绑定后须写入会话键（OPEN-260）');
+    assert.equal(line.host, 'mcode', 'MCODE_ 前缀 ⇒ host=mcode（OPEN-260 归因）');
+    assert.ok(typeof line.error === 'string' && line.error.length > 0, '须记录错误内容（OPEN-258）');
     assert.ok(!line.error.includes('C:\\tmp'), `盘符绝对路径须被脱敏，实际：${line.error}`);
     assert.ok(line.error.includes('boom'), '非路径信息应保留可读');
   } finally {
@@ -246,7 +246,7 @@ test('内部任务-290：runHookMain 记录 error、host 与 sessionKey，且 er
   }
 });
 
-test('内部任务-290：未绑定上下文时不写 sessionKey（旧行为兼容）', () => {
+test('DEV-290：未绑定上下文时不写 sessionKey（旧行为兼容）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-rt-dev290b-'));
   const state = join(home, 'state');
   const script = join(home, 'main-crash3.mjs');
@@ -275,7 +275,7 @@ test('内部任务-290：未绑定上下文时不写 sessionKey（旧行为兼�
 
 // ── 内部任务-244 E02：main rejection 可见化（runHookMain）与九钩入口收敛 ──
 
-test('内部任务-244 E02：runHookMain 的 main rejection 落 hook-errors（uncaught-in-main）且 exit 0', () => {
+test('DEV-244 E02：runHookMain 的 main rejection 落 hook-errors（uncaught-in-main）且 exit 0', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-rt-main-'));
   const state = join(home, 'state');
   const script = join(home, 'main-crash.mjs');
@@ -300,7 +300,7 @@ test('内部任务-244 E02：runHookMain 的 main rejection 落 hook-errors（un
   }
 });
 
-test('内部任务-244 E02：十个钩入口统一经 runHookMain（不得保留静默 main().catch）', () => {
+test('DEV-244 E02：十个钩入口统一经 runHookMain（不得保留静默 main().catch）', () => {
   const names = ['check-careful', 'check-freeze', 'verify-gate', 'task-recap', 'learnings-recap', 'post-tool', 'user-prompt', 'session-start', 'routing-gate', 'write-guard'];
   for (const name of names) {
     const src = readFileSync(join(HOOKS, `${name}.mjs`), 'utf8');
@@ -309,7 +309,7 @@ test('内部任务-244 E02：十个钩入口统一经 runHookMain（不得保留
   }
 });
 
-test('内部任务-244 T05：installHookErrorTrap 捕获 unhandledRejection（删掉注册即红）', () => {
+test('DEV-244 T05：installHookErrorTrap 捕获 unhandledRejection（删掉注册即红）', () => {
   const home = mkdtempSync(join(tmpdir(), 'wf-rt-rej-'));
   const state = join(home, 'state');
   const script = join(home, 'reject.mjs');

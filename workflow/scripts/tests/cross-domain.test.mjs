@@ -33,7 +33,7 @@ function sh(script, args, o) {
   return { status: r.status, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
 }
 
-test('内部任务-20 A2/F6 端到端：请求 → 签发 → 声明成功，且目标仓写操作被闸放行', () => {
+test('DEV-20 A2/F6 端到端：请求 → 签发 → 声明成功，且目标仓写操作被闸放行', () => {
   const base = mkdtempSync(join(tmpdir(), 'xdomain-'));
   const home = join(base, 'home');
   const a = join(base, 'A');
@@ -51,7 +51,7 @@ test('内部任务-20 A2/F6 端到端：请求 → 签发 → 声明成功，且
     const up1 = sh(UPROMPT, [], { cwd: a, env, input: JSON.stringify({ session_id: 'sess-x', cwd: a, prompt: '任务' }) });
     const tokenA = /--lease ([0-9a-f]{32})/.exec(up1.stdout)?.[1];
     assert.ok(tokenA, `首轮须注入 A 的租约行；实际：${up1.stdout.slice(0, 200)}`);
-    const decA = sh(DECLARE, ['code-review', '--lease', tokenA, '--task-id', '内部任务-20'], { cwd: a, env });
+    const decA = sh(DECLARE, ['code-review', '--lease', tokenA, '--task-id', 'DEV-20'], { cwd: a, env });
     assert.equal(decA.status, 0, `A 声明须成功：${decA.stdout}${decA.stderr}`);
 
     // 第一跳：登记跨域请求（不含令牌、不激活租约）
@@ -69,7 +69,7 @@ test('内部任务-20 A2/F6 端到端：请求 → 签发 → 声明成功，且
     const tokenB = /--lease ([0-9a-f]{32})/.exec(bLine)[1];
 
     // 第三跳：按注入行声明 B 的键（**声明侧零改动**）
-    const decB = sh(DECLARE, ['code-review', '--lease', tokenB, '--task-id', '内部任务-20', '--project-root', b], { cwd: a, env });
+    const decB = sh(DECLARE, ['code-review', '--lease', tokenB, '--task-id', 'DEV-20', '--project-root', b], { cwd: a, env });
     assert.equal(decB.status, 0, `B 声明须成功（声明侧零改动）：${decB.stdout}${decB.stderr}`);
 
     // 闸面断言（本用例的证伪点）：声明成功后，对 **B 仓文件**的写操作必须放行

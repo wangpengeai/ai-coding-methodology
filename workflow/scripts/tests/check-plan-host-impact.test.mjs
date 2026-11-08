@@ -64,7 +64,7 @@ test('合法：四状态各一（4 计划全部 exit 0）＋带括注 H2 容差�
   // 带括注 H2 容差（C-1 未写容差；本计划自身标题即带括注——CEO round4 执行注意 #4）
   writeFileSync(
     join(root, 'paren.md'),
-    `# 计划：夹具\n\n## 多宿主适配评估（内部决策-056 格式契约第 8 条）\n\n- 宿主A：本批不适用｜理由：x\n\n${STEP}`,
+    `# 计划：夹具\n\n## 多宿主适配评估（ADR-056 格式契约第 8 条）\n\n- 宿主A：本批不适用｜理由：x\n\n${STEP}`,
     'utf8',
   );
   const rp = run([join(root, 'paren.md')], root);

@@ -130,7 +130,7 @@ test('⑧ baseline-register 成功追加且旧条目字节不变', () => {
   assert.deepEqual(after.entries[0], beforeParsed.entries[0]);
 });
 
-test('⑨ fromIteration 悬空或缺失 → 失败（复审 F1：空值同拒——内部接口-22 §4）', () => {
+test('⑨ fromIteration 悬空或缺失 → 失败（复审 F1：空值同拒——IF-COLLAB-22 §4）', () => {
   const root = makeRoot();
   initProject(root);
   const r = applyWrite(root, 'baseline-register', { id: 'b1', metrics: { m: 0.7 }, fromIteration: 'no-such', reason: 'raise' });
@@ -233,7 +233,7 @@ test('⑯ 未知子命令/--project-root 缺值 → 退 2（用法错误与校�
   rmSync(runLoopMissing, { recursive: true, force: true });
 });
 
-test('⑰ dogfood 全环：立项→三轮迭代（含单变量 false 声明）→bad case 全链→抬基线→check-consistency 收口（内部验收-9）', () => {
+test('⑰ dogfood 全环：立项→三轮迭代（含单变量 false 声明）→bad case 全链→抬基线→check-consistency 收口（A-M18-9）', () => {
   const root = makeRoot();
   initProject(root);
   for (let round = 1; round <= 3; round += 1) {

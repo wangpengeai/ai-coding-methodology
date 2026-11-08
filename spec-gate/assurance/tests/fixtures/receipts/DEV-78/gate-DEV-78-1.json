@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "gate-内部任务-78-1",
+  "receiptId": "gate-DEV-78-1",
   "kind": "gate",
-  "taskId": "内部任务-78",
+  "taskId": "DEV-78",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -19,9 +19,9 @@
   },
   "createdAt": "2026-10-17T20:01:32+08:00",
   "status": "passed",
-  "verificationReceipt": "verification-内部任务-78-1",
+  "verificationReceipt": "verification-DEV-78-1",
   "codeReviewReceipt": null,
-  "operationReceipt": "operation-内部任务-78-1",
+  "operationReceipt": "operation-DEV-78-1",
   "chainProfile": "operation",
   "blockingCount": 0,
   "warningCount": 0,

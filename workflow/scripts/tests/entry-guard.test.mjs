@@ -11,12 +11,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HOOKS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'hooks');
+// 公开包守卫（内部任务-365）：仓级 scripts/ 未随公开包发布；源仓资产在位时照常执行。
+const HAS_REPO_SCRIPTS = existsSync(join(HOOKS_DIR, '..', '..', 'scripts', 'verify-core-baseline.mjs'));
 
 /** symlink 可用性一次性探测：Windows 无开发者模式/管理员时 symlinkSync 抛 EPERM——
  * 守卫归一是平台特定缺陷（macOS /var symlink 形态分裂），其余平台缺陷面不存在，
@@ -95,7 +97,7 @@ test('字面漂移守卫：凡含 invokedDirectly 的钩子必须带 realpathSyn
 // 自 2026-10-01 起已是 realpathSync 归一形态〔:479-489〕，无需改动，终审发现 1 更正原「残余」误记）。
 // 内部任务-244 Q01：交付两 CLI（deliver-lint/deliver-export）并入清单（原 resolve 字符串比对在
 // symlink 别名形态下静默 no-op）。
-test('字面漂移守卫（CLI 面，内部未决-52）：清单内全部直跑入口必须带 realpath 归一（或经 cli-main 单源 isMainModule）', () => {
+test('字面漂移守卫（CLI 面，OPEN-52）：清单内全部直跑入口必须带 realpath 归一（或经 cli-main 单源 isMainModule）', { skip: HAS_REPO_SCRIPTS ? false : '公开包不含仓级 scripts/（源仓照跑）' }, () => {
   const REPO = join(HOOKS_DIR, '..', '..');
   const files = [
     'workflow/scripts/incident-cli.mjs',
@@ -122,7 +124,7 @@ test('字面漂移守卫（CLI 面，内部未决-52）：清单内全部直跑�
   assert.deepEqual(offenders, [], `入口守卫缺 realpath 归一的 CLI：${offenders.join(', ')}`);
 });
 
-test('内部任务-244 Q01：symlink 别名直跑 deliver-lint --selftest 须真执行', { skip: CAN_SYMLINK ? false : 'symlink 不可用（Windows 无开发者模式）——该平台缺陷面不存在' }, () => {
+test('DEV-244 Q01：symlink 别名直跑 deliver-lint --selftest 须真执行', { skip: CAN_SYMLINK ? false : 'symlink 不可用（Windows 无开发者模式）——该平台缺陷面不存在' }, () => {
   const REPO = join(HOOKS_DIR, '..', '..');
   const alias = aliasTo(join(REPO, 'workflow', 'scripts', 'deliver-lint.mjs'), 'deliver-lint.mjs');
   try {

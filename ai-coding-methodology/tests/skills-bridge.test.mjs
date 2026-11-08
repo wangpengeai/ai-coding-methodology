@@ -268,7 +268,7 @@ test('registerSkills：逐条隔离失败，单条形态非法不带倒其余', 
   assert.equal(logger.byLevel('warn').length, 2);
 });
 
-test('内部任务-273 M-05：registerSkills 保留宿主 disposer（回收由装配层 ctx.effect 负责）', () => {
+test('DEV-273 M-05：registerSkills 保留宿主 disposer（回收由装配层 ctx.effect 负责）', () => {
   const calls = [];
   const registry = {
     register: (s) => {

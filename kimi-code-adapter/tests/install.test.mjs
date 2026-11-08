@@ -132,7 +132,7 @@ describe('直写安装与核对', () => {
       const entry = registry.plugins.find((item) => item.id === id);
       assert.ok(entry, `${id} 条目应在场`);
       assert.equal(entry.enabled, true);
-      assert.equal(entry.source, INSTALLED_SOURCE, '本地目录 source 常量（内部未决-69/P3 探针收口）');
+      assert.equal(entry.source, INSTALLED_SOURCE, '本地目录 source 常量（OPEN-69/P3 探针收口）');
       assert.equal(entry.root, join(homeDir, 'plugins', 'managed', id));
       assert.ok(!Number.isNaN(Date.parse(entry.installedAt)) && !Number.isNaN(Date.parse(entry.updatedAt)), '时间戳 ISO');
     }
@@ -152,7 +152,7 @@ describe('直写安装与核对', () => {
     assert.equal(other.enabled, false, '他插件条目的字段不得被改写');
     assert.equal(after2.plugins.length, 7);
     const workflowEntry = after2.plugins.find((item) => item.id === 'workflow');
-    assert.equal(workflowEntry.originalSource, 'https://legacy.example/pkg.zip', '宿主既有 originalSource 字段保留（内部任务-305 B6）');
+    assert.equal(workflowEntry.originalSource, 'https://legacy.example/pkg.zip', '宿主既有 originalSource 字段保留（DEV-305 B6）');
     assert.equal(workflowEntry.installedAt, registry.plugins[0].installedAt, 'installedAt 原位保留（upsert 语义）');
     assert.equal(runCli(['verify', '--data-dir', homeDir]).status, 0, '改过的登记被 install 重建六条目后 verify 应零漂移');
   });
@@ -520,7 +520,7 @@ describe('staging 与 dry-run', () => {
 // 误读成「资产被篡改」。基线证据：内部证据
 //
 // 判别力：把 `isLocalArtifact` 短路为恒 `false` 时本用例必红（三种形态在一例内全覆盖）。
-describe('内部任务-55 步骤 2.7：物化面排除本地产物', () => {
+describe('DEV-55 步骤 2.7：物化面排除本地产物', () => {
   it('__pycache__ 段、.mimosa 段与 *.pyc 末段一律不进物化计划，正常文件不受影响', () => {
     const dir = tempRoot('install-localartifact');
     try {
@@ -569,7 +569,7 @@ describe('内部任务-55 步骤 2.7：物化面排除本地产物', () => {
 
 // ── 内部决策-048/内部任务-11：宿主应用在位探测输出（与 assurance 探针同库两独立读取者）──
 
-describe('宿主应用在位行（内部决策-048）', () => {
+describe('宿主应用在位行（ADR-048）', () => {
   it('KIMI_APP_ROOT 指向真目录 → 输出在位行（含命中路径）', () => {
     const dir = tempRoot('kimi-host-present');
     try {
@@ -601,7 +601,7 @@ describe('宿主应用在位行（内部决策-048）', () => {
 
   // ── 内部任务-347 批 C（内部未决-273）：install 互斥锁＋写前重读 ──
 
-  it('内部未决-273 install 互斥：锁被持（新鲜）时 install 拒绝退 2；stale 锁强占放行；正常完成即释放', () => {
+  it('OPEN-273 install 互斥：锁被持（新鲜）时 install 拒绝退 2；stale 锁强占放行；正常完成即释放', () => {
     const dir = tempRoot('kimi-install-lock');
     try {
       runCli(['install', '--data-dir', dir]);

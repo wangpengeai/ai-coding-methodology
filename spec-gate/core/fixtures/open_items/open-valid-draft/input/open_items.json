@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "id": "内部未决-1",
+      "id": "OPEN-1",
       "status": "open",
       "owner": "dev",
       "impact": "契约错误语义待定",

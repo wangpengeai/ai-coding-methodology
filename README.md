@@ -64,8 +64,6 @@
 
 受支持宿主之一（事件钩子支持面见各插件 README「环境要求」）+ Node.js ≥ 21（唯一硬性要求——验证命令 `node --test "<glob>"` 形态与测试内 `import.meta.dirname` 均需 Node 20.11+；内部未决-15 已裁决取 ≥21 口径，推荐 22+；bash 可选——仅影响 verify-gate 声明命令的执行 shell 语义，四级探测自动兜底）。
 
-阶段 4 起 spec-gate core 已全部 JS 化，阶段 5 起零 Python 棘轮生效，仓库开发**不再需要 Python**。六个插件均零第三方包。仓库以 `.gitattributes` 强制 LF。
-
 ## 许可
 
-MIT。`spec-gate/core/` 历史派生自 sdd-methodology（MIT，wangp），自阶段 4 起以本仓为唯一事实源，基线哈希锁定（`spec-gate/core-baseline.sha256`）；workflow 侧全部资产按「借鉴思想、自写表达」原则重写（致谢见 `workflow/NOTICE`）。第三方来源致谢见根 `LICENSE` 补充说明与各插件 `LICENSE`/`NOTICE`。
+MIT。第三方来源致谢见根 `LICENSE` 补充说明与各插件 `LICENSE`/`NOTICE`。

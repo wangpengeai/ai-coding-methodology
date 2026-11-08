@@ -15,14 +15,14 @@ const LIB_PATH = fileURLToPath(LIB_URL);
 
 const { OBSERVATION_CAPABILITIES, applyObservationCapabilitiesEnv, emptyState, enqueuePending, readState, writeDiagnostic, writeState, sweepStaleTmp } = await import(LIB_URL);
 
-describe('hook-lib 状态面（内部任务-2 批 A2）', () => {
-it('A2 enqueuePending：显式会话键忠实入帧；空串回落字典最大计数键（兜底尽力投递，内部任务-347 字典形态）', () => {
+describe('hook-lib 状态面（DEV-2 批 A2）', () => {
+it('A2 enqueuePending：显式会话键忠实入帧；空串回落字典最大计数键（兜底尽力投递，DEV-347 字典形态）', () => {
   const state = emptyState();
   const next = enqueuePending(state, '提醒A', 'sess-now');
   assert.equal(next.frames[0].sessionKey, 'sess-now', '显式键优先——观察面帧不再错挂兜底键');
   const legacy = { frames: [], streaks: { 's:sess-old': 2, 's:other': 1 }, droppedBySession: {} };
   assert.equal(enqueuePending(legacy, '回落', '').frames[0].sessionKey, 'sess-old', '空串回落最大计数键（底部兜底尽力形态）');
-  assert.equal(enqueuePending(emptyState(), '空字典', '').frames[0].sessionKey, '', '空字典兜底为空串＝帧不可投递（丢弃更诚实，内部任务-347）');
+  assert.equal(enqueuePending(emptyState(), '空字典', '').frames[0].sessionKey, '', '空字典兜底为空串＝帧不可投递（丢弃更诚实，DEV-347）');
 });
 
 it('A3 enqueuePending：去重键＝会话+文本（跨会话同文案不互删）', () => {
@@ -34,7 +34,7 @@ it('A3 enqueuePending：去重键＝会话+文本（跨会话同文案不互删�
   assert.equal(c.frames.length, 2, '不误删他会话帧');
 });
 
-it('A3 enqueuePending：20 条上限全局淘汰并按会话分账累加 droppedBySession（内部任务-347/内部未决-274）', () => {
+it('A3 enqueuePending：20 条上限全局淘汰并按会话分账累加 droppedBySession（DEV-347/OPEN-274）', () => {
   let state = emptyState();
   for (let i = 0; i < 21; i += 1) state = enqueuePending(state, `提醒-${i}`, 'S');
   assert.equal(state.frames.length, 20, '上限 20');
@@ -67,7 +67,7 @@ it('A2 readState：旧形状 pending 不迁移（kimi 单提交新建、无旧�
   }
 });
 
-it('A2 readState/writeState：streaks/droppedBySession 字典读写往返保留（引擎多会话状态键不被宿主读侧抹掉，内部任务-347）', () => {
+it('A2 readState/writeState：streaks/droppedBySession 字典读写往返保留（引擎多会话状态键不被宿主读侧抹掉，DEV-347）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'kimi-a2-'));
   try {
     assert.equal(writeState(dir, { frames: [], streaks: { 's:a': 2 }, droppedBySession: { 's:a': 3 } }), true);
@@ -105,7 +105,7 @@ it('A2 writeState：双进程并发写冒烟（各 30 次——结束后状态�
 
 // ── 内部任务-347 批 C（内部未决-280/286）：诊断面加固＋sweep ──
 
-it('内部未决-280 writeDiagnostic：符号链接目标拒写（不跟随）', () => {
+it('OPEN-280 writeDiagnostic：符号链接目标拒写（不跟随）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'kimi-o280-'));
   try {
     mkdirSync(join(dir, 'outside'), { recursive: true });
@@ -119,7 +119,7 @@ it('内部未决-280 writeDiagnostic：符号链接目标拒写（不跟随）',
   }
 });
 
-it('内部未决-280 readState 损坏：一次告警＋坏文件改名隔离 .corrupt（后续零重复）', () => {
+it('OPEN-280 readState 损坏：一次告警＋坏文件改名隔离 .corrupt（后续零重复）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'kimi-o280b-'));
   try {
     writeFileSync(join(dir, 'relay-state.json'), '{bad', 'utf8');
@@ -135,7 +135,7 @@ it('内部未决-280 readState 损坏：一次告警＋坏文件改名隔离 .co
   }
 });
 
-it('内部未决-286 sweepStaleTmp：死 pid＋超龄清、活 pid（含 EPERM 语义）与新鲜件留', () => {
+it('OPEN-286 sweepStaleTmp：死 pid＋超龄清、活 pid（含 EPERM 语义）与新鲜件留', () => {
   const dir = mkdtempSync(join(tmpdir(), 'kimi-o286-'));
   try {
     const mk = (name, pid, ageMs) => {
@@ -159,7 +159,7 @@ it('内部未决-286 sweepStaleTmp：死 pid＋超龄清、活 pid（含 EPERM �
   }
 });
 
-it('内部未决-286 sweepStaleTmp EPERM 语义：System pid（存在但拒权限）视为存活跳过', () => {
+it('OPEN-286 sweepStaleTmp EPERM 语义：System pid（存在但拒权限）视为存活跳过', () => {
   if (process.platform !== 'win32') return; // EPERM 夹具只在 Windows 可稳定构造（pid4=System）
   const dir = mkdtempSync(join(tmpdir(), 'kimi-o286e-'));
   try {
@@ -179,11 +179,11 @@ it('内部未决-286 sweepStaleTmp EPERM 语义：System pid（存在但拒权�
 // ── 运行观测能力域声明（2026-10-24 内部任务-192 P2 步骤 12；内部接口-1 Kimi 列） ────────────────
 // 用例用 `it(` 以纳入本适配层 README 的「测试计数与实测逐文件一致」契约（只统计 `it(`）；
 // 计数与规格面由 README「测试计数」节与 jsdoc-contract 机检同步（不写死历史数字）。
-it('内部任务-192 能力域 env：声明注入钩子子进程环境（键存在/JSON 可解析/既有键不变）', () => {
+it('DEV-192 能力域 env：声明注入钩子子进程环境（键存在/JSON 可解析/既有键不变）', () => {
   // hook-lib 装载即声明（shim 随后以 `{...process.env}` 构造子进程 env）⇒ 当前进程 env 可见。
   assert.ok(Object.hasOwn(process.env, 'WF_OBSERVATION_CAPABILITIES'), 'env 键存在（shim 子进程继承面）');
   const caps = JSON.parse(process.env.WF_OBSERVATION_CAPABILITIES);
-  assert.deepEqual(caps, { failureFacts: 'error-object', hookFailure: 'engine-log', injection: 'relay', selfCheck: 'selftest' }, '内部接口-1 Kimi 列四能力域取值');
+  assert.deepEqual(caps, { failureFacts: 'error-object', hookFailure: 'engine-log', injection: 'relay', selfCheck: 'selftest' }, 'IF-HOST-1 Kimi 列四能力域取值');
   assert.deepEqual(caps, { ...OBSERVATION_CAPABILITIES }, 'env 与导出常量同源');
   assert.deepEqual(Object.keys(caps).sort(), ['failureFacts', 'hookFailure', 'injection', 'selfCheck'], '键集＝四能力域');
   // 既有键不变：注入只增一键，不覆盖/删除 shim 既有环境（ZCODE_PLUGIN_ROOT/ZCODE_PROJECT_DIR/KIMI_HOOK_EVENT 等）。

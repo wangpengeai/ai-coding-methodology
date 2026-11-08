@@ -268,7 +268,7 @@ test('超时：VERIFY_GATE_CMD_TIMEOUT=1 + 长命令（node 跨平台）→ rc2 
   }
 });
 
-test('内部任务-244 T04：shellTrue 分支可执行（清 PATH/ProgramFiles 注入缝 → cmd.exe 语义真跑）', () => {
+test('DEV-244 T04：shellTrue 分支可执行（清 PATH/ProgramFiles 注入缝 → cmd.exe 语义真跑）', () => {
   const { root, cleanup } = makeRoot('node -e "process.exit(0)"\n');
   const trustDir = mkdtempSync(join(tmpdir(), 'wf-vgtrust-'));
   // 清空 shell 探测面：无 PATH 内 bash、无 ProgramFiles 惯例位置 → resolveGateShell 必走 shellTrue
@@ -289,7 +289,7 @@ test('内部任务-244 T04：shellTrue 分支可执行（清 PATH/ProgramFiles �
   }
 });
 
-test('内部任务-244 T07：信任文件按项目根 digest 键控——同 trustDir 两项目互不共享信任', () => {
+test('DEV-244 T07：信任文件按项目根 digest 键控——同 trustDir 两项目互不共享信任', () => {
   const a = makeRoot('echo a\n');
   const b = makeRoot('echo b\n');
   const trustDir = mkdtempSync(join(tmpdir(), 'wf-vgtrust-'));
@@ -307,7 +307,7 @@ test('内部任务-244 T07：信任文件按项目根 digest 键控——同 tru
   }
 });
 
-test('内部任务-244 C02：整轮执行预算耗尽 → 124 阻断并注记（防多条长命令击穿宿主 60s）', () => {
+test('DEV-244 C02：整轮执行预算耗尽 → 124 阻断并注记（防多条长命令击穿宿主 60s）', () => {
   // 首条用 shell 内建 echo（毫秒级），保证预算耗尽一定发生在第二条之前（node 启动在负载下可 >1s）
   const { root, cleanup } = makeRoot('echo ok\nnode -e "setTimeout(()=>{},3000)"\n');
   const trustDir = mkdtempSync(join(tmpdir(), 'wf-vgtrust-'));
@@ -380,7 +380,7 @@ function runWithReport(o = {}) {
   }
 }
 
-test('内部任务-261 写归因报表：clean → 静默；unattributed/degraded/缺失/过期/损坏 → 显式 warning', () => {
+test('DEV-261 写归因报表：clean → 静默；unattributed/degraded/缺失/过期/损坏 → 显式 warning', () => {
   const clean = runWithReport({ baseline: true, report: { status: 'clean', attributed: {}, rows: [] } });
   try {
     assert.equal(clean.status, 0, 'gate 仍放行');
@@ -419,7 +419,7 @@ test('内部任务-261 写归因报表：clean → 静默；unattributed/degrade
   } finally { bad.cleanup(); }
 });
 
-test('内部任务-261 写归因报表：sid 不匹配/ts 非法/degraded 无原因/未生效会话静默/坏负载 fail-open', () => {
+test('DEV-261 写归因报表：sid 不匹配/ts 非法/degraded 无原因/未生效会话静默/坏负载 fail-open', () => {
   const mismatch = runWithReport({ baseline: true, reportRaw: JSON.stringify({ sidDigest: 'deadbeefdeadbeef', ts: new Date().toISOString(), status: 'clean', attributed: {}, rows: [] }) });
   try {
     assert.equal(mismatch.status, 0);
@@ -454,7 +454,7 @@ test('内部任务-261 写归因报表：sid 不匹配/ts 非法/degraded 无原
   } finally { rmTempBestEffort(trustDir); }
 });
 
-test('内部任务-261 写归因报表：形状损坏（字段类型非法）→ 显式 degraded；状态根不可解析且无 baseline → 静默', () => {
+test('DEV-261 写归因报表：形状损坏（字段类型非法）→ 显式 degraded；状态根不可解析且无 baseline → 静默', () => {
   const badShape = runWithReport({ baseline: true, reportRaw: JSON.stringify({ sidDigest: sha16('s1'), ts: new Date().toISOString(), status: 'clean', degradedReasons: 'not-array', attributed: {}, rows: [] }) });
   try {
     assert.equal(badShape.status, 0);

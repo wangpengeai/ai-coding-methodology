@@ -33,7 +33,7 @@ function withEnv(key, value, fn) {
   }
 }
 
-test('detectHookInterpreter 注入缝：PATH 命中 tmp 假 node 返回绝对路径／空 PATH 返回 null（内部未决-243 缓解面，内部任务-275）', { skip: process.platform === 'win32' && 'win32 夹具绝对路径盘符冒号被 darwin PATH 分隔符「:」撕碎，POSIX PATH 形态探测仅 POSIX 机可测（内部任务-279；内部任务-278 归因 R2）' }, () => {
+test('detectHookInterpreter 注入缝：PATH 命中 tmp 假 node 返回绝对路径／空 PATH 返回 null（OPEN-243 缓解面，DEV-275）', { skip: process.platform === 'win32' && 'win32 夹具绝对路径盘符冒号被 darwin PATH 分隔符「:」撕碎，POSIX PATH 形态探测仅 POSIX 机可测（DEV-279；DEV-278 归因 R2）' }, () => {
   const d = join(tmpdir(), `zcode-interp-${process.pid}`);
   rmSync(d, { recursive: true, force: true });
   try {
@@ -54,7 +54,7 @@ test('detectHookInterpreter 注入缝：PATH 命中 tmp 假 node 返回绝对路
   }
 });
 
-test('runInstall 输出解释器探测行：PATH 无 node 时显著告警且不阻断（内部任务-275）', () => {
+test('runInstall 输出解释器探测行：PATH 无 node 时显著告警且不阻断（DEV-275）', () => {
   const w = freshWorld();
   try {
     const lines = [];

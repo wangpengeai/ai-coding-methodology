@@ -206,7 +206,7 @@ test('retro-metrics 空仓库 locale 固定：宿主非 C 环境仍退 0（WF_GI
   }
 });
 
-test('自察热度（内部模块-15）：读 repoPath 下 内部工作流状态 聚合 open 与 digest Top', () => {
+test('自察热度（M15）：读 repoPath 下 .workflow/incidents.jsonl 聚合 open 与 digest Top', () => {
   const repo = tempRepo();
   try {
     commit(repo, { at: '2026-09-02T09:00:00', message: 'feat: first', files: [{ path: 'src/x.txt', lines: 1 }] });
@@ -268,7 +268,7 @@ function seedIncidents(repo, rows) {
 /** 一条自察记录（缺省 open/近期）。 */
 const irec = (over = {}) => ({ schemaVersion: 1, id: 'ri-r', ts: Date.now(), session: 's', kind: 'tool-failure', digest: 'dr0000000000001', status: 'open', ...over });
 
-test('内部模块-15 v2 retro 分类面：causeCounts 30 天窗口按 cause 分组（旧记录回退 unclassified）', () => {
+test('M15 v2 retro 分类面：causeCounts 30 天窗口按 cause 分组（旧记录回退 unclassified）', () => {
   const repo = tempRepo();
   try {
     commit(repo, { at: '2026-09-02T09:00:00', message: 'feat: first', files: [{ path: 'src/x.txt', lines: 1 }] });
@@ -290,7 +290,7 @@ test('内部模块-15 v2 retro 分类面：causeCounts 30 天窗口按 cause 分
   }
 });
 
-test('内部模块-15 v2 retro 分类面：dispositionRate（窗内非证据面已处置占比；空态 0 不除零）', () => {
+test('M15 v2 retro 分类面：dispositionRate（窗内非证据面已处置占比；空态 0 不除零）', () => {
   const repo = tempRepo();
   try {
     commit(repo, { at: '2026-09-02T09:00:00', message: 'feat: first', files: [{ path: 'src/x.txt', lines: 1 }] });
@@ -318,7 +318,7 @@ test('内部模块-15 v2 retro 分类面：dispositionRate（窗内非证据面�
   }
 });
 
-test('内部模块-15 v2 retro 分类面：oldestPendingAgeDays（最老待排查年龄；证据面/非 open 不计）', () => {
+test('M15 v2 retro 分类面：oldestPendingAgeDays（最老待排查年龄；证据面/非 open 不计）', () => {
   const repo = tempRepo();
   try {
     commit(repo, { at: '2026-09-02T09:00:00', message: 'feat: first', files: [{ path: 'src/x.txt', lines: 1 }] });
@@ -336,7 +336,7 @@ test('内部模块-15 v2 retro 分类面：oldestPendingAgeDays（最老待排�
   }
 });
 
-test('内部模块-15 v2 retro 分类面：lostFacts 读兜底旁路行数（缺失 0；与 digest/SessionStart 同源）', () => {
+test('M15 v2 retro 分类面：lostFacts 读兜底旁路行数（缺失 0；与 digest/SessionStart 同源）', () => {
   const repo = tempRepo();
   try {
     commit(repo, { at: '2026-09-02T09:00:00', message: 'feat: first', files: [{ path: 'src/x.txt', lines: 1 }] });
@@ -352,7 +352,7 @@ test('内部模块-15 v2 retro 分类面：lostFacts 读兜底旁路行数（缺
   }
 });
 
-test('内部任务-244 Q05/Q06：computeSelfCheckHeat 单次读盘派生 open/Top3；证据面谓词单源（规则表）', async () => {
+test('DEV-244 Q05/Q06：computeSelfCheckHeat 单次读盘派生 open/Top3；证据面谓词单源（规则表）', async () => {
   const repo = tempRepo();
   // 内部任务-349：appendIncident 现会补 internal 归因行（写状态根）——夹具注入独立状态根，防写真实用户级目录
   const savedStateDir = process.env.WF_ROUTING_STATE_DIR;

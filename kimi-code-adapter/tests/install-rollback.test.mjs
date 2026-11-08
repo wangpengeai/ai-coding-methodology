@@ -29,7 +29,7 @@ function runCli(args, { env = {} } = {}) {
   });
 }
 
-describe('install 回滚链与值旗标（内部任务-2 批 A5）', () => {
+describe('install 回滚链与值旗标（DEV-2 批 A5）', () => {
 it('A10 原子写：临时名带随机后缀 + 独占创建（防预置链接覆写）', () => {
   const src = readFileSync(CLI_PATH, 'utf8');
   assert.ok(src.includes('.kimi-tmp-${process.pid}-'), '临时名须含随机后缀（可预测名可被预置链接覆写）');

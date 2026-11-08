@@ -8,8 +8,10 @@
 //       内部决策-062 修正案 3：internal.textPathPatterns 为可选文本扫描分面（缺省/显式空数组均回落 pathPatterns；
 //       提交信息/作者面恒用 pathPatterns）；CLI 直跑以 process.exitCode 退出保证 POSIX 管道 stdout 完整。
 //       内部决策-062 修正案 4：scan.include 扩展扫描面（无扩展名/非文档扩展名文件可纳入词表）；路径 token 首字符
-//       允许 `.`（dot 目录文本规则生效）；policy.rewrite 投影期内容改写（文档/测试/夹具全文本面、生产代码仅
-//       注释面；静态规则、确定性、改写后零残留硬检 rewrite-residual）。
+//       允许 `.`（dot 目录文本规则生效）；policy.rewrite 投影期内容改写（静态规则、确定性、零残留硬检）。
+//       内部决策-062 修正案 5（内部任务-365）：改写面 v2——doc（.md/.txt/.html 含 tests 下）全文改写；生产与测试 JS
+//       仅注释面；tests/fixtures 的 JSON/YAML 等数据文件与其他语言/脚本不改写；policy.rewrite.exclude（glob）
+//       命中文件整文件不改写。三类消费（主循环/未覆盖面/残留硬检）统一经 rewriteDecision，防口径漂移。
 // 作者：wangp  创建：2026-10-23  版权：MIT（见 workflow/LICENSE）
 // 纪律：仅 node: 内置模块；只读逻辑（写盘只由 CLI 的事务面执行）。
 import { createHash } from 'node:crypto';
@@ -261,7 +263,7 @@ export function validatePolicy(policy) {
   if (policy.rewrite !== undefined) {
     const rw = policy.rewrite;
     if (rw === null || typeof rw !== 'object' || Array.isArray(rw)) throw new ConfigError('policy.rewrite 必须是对象');
-    rejectUnknownKeys(rw, ['rules'], 'policy.rewrite');
+    rejectUnknownKeys(rw, ['rules', 'exclude'], 'policy.rewrite');
     const rules = rw.rules ?? [];
     if (!Array.isArray(rules)) throw new ConfigError('policy.rewrite.rules 必须是数组');
     const seenIds = new Set();
@@ -280,6 +282,9 @@ export function validatePolicy(policy) {
       const files = needStringArray(r.files, `policy.rewrite.rules[${i}].files`);
       files.forEach((p) => globToRegExp(p));
     }
+    // 内部决策-062 修正案 5：rewrite.exclude（glob）命中文件整文件不改写、计入 untargetedResidual。
+    const exclude = needStringArray(rw.exclude, 'policy.rewrite.exclude');
+    exclude.forEach((p) => globToRegExp(p));
   }
   const license = policy.license ?? {};
   if (typeof license !== 'object' || Array.isArray(license)) throw new ConfigError('policy.license 必须是对象');
@@ -665,16 +670,17 @@ export function scanInternalText(text, policy, { projectRoot, overrides, compile
 }
 
 // ── 内部决策-062 修正案 4：内容改写（policy.rewrite）与零残留硬检 ──────────────────────────
-/** 改写目标面分类：test＝测试/夹具（全文本面）；code＝生产 JS 族（仅注释面）；other-code＝其他语言/脚本
- *  源码与配置类（.ts/.py/.sh/.ps1/.xml 等，保守不改写、按未覆盖面计数）；doc＝其余文本面（全文）。 */
+/** 改写面分类 v2（内部决策-062 修正案 5）：**扩展名定行为、路径只定标签**。
+ *  doc＝.md/.txt/.html/.htm（含测试目录下 Markdown，全文）；code＝生产 JS（仅注释）；test-code＝测试/夹具 JS
+ *  （仅注释）；data＝测试/夹具数据文件（不改写）；other-code＝其他语言/脚本与非测试数据（不改写）。
+ *  无/未知扩展名沿用 v1 回退 doc（LICENSE/NOTICE 等；功能数据文件经 policy.rewrite.exclude 排除）。 */
 export function classifyRewriteSurface(rel) {
   const p = String(rel).replaceAll('\\', '/');
-  if (/(^|\/)(tests?|fixtures)\//i.test(p) || /\.test\.[cm]?js$/i.test(p)) return 'test';
-  if (/\.(mjs|js|cjs)$/i.test(p)) return 'code';
+  const inTest = /(^|\/)(tests?|fixtures)\//i.test(p) || /\.test\.[cm]?js$/i.test(p);
+  if (/\.(mjs|js|cjs)$/i.test(p)) return inTest ? 'test-code' : 'code';
+  if (/\.(json|jsonc|json5|jsonl|ya?ml|toml|ini|conf|lock)$/i.test(p)) return inTest ? 'data' : 'other-code';
+  if (/\.(md|txt|html|htm)$/i.test(p)) return 'doc';
   if (/\.(ts|tsx|jsx|py|sh|bash|zsh|fish|ps1|vbs|cmd|bat|xml|java|go|rs|rb|php|kt|swift|c|cc|cpp|h|hpp)$/i.test(p)) return 'other-code';
-  // 语义配置/schema/数据文件同样保守不改写（避免改坏公开契约中的 ruleId/键名等结构值）；
-  // 测试/夹具路径在上方已归 test 面（夹具仍全文改写）。
-  if (/\.(json|jsonc|json5|jsonl|yml|yaml|toml|ini|conf|lock)$/i.test(p)) return 'other-code';
   return 'doc';
 }
 
@@ -691,6 +697,19 @@ export function compileRewriteRules(policy) {
 
 function ruleAppliesToFile(rule, rel) {
   return rule.fileRes === null || rule.fileRes.some((re) => re.test(rel));
+}
+
+/** 编译 rewrite.exclude（glob 数组，可选）：命中文件整文件不改写、计入 untargetedResidual。 */
+export function compileRewriteExclude(policy) {
+  return needStringArray(policy.rewrite?.exclude, 'policy.rewrite.exclude').map(globToRegExp);
+}
+
+/** 改写决策单源（内部决策-062 修正案 5）：顺序固定 exclude → surface → 规则文件面。
+ *  主循环、未覆盖面统计、残留硬检三处只调本函数，防三面口径漂移。 */
+export function rewriteDecision(rel, compiledRules, excludeRes) {
+  const rules = compiledRules.filter((r) => ruleAppliesToFile(r, rel));
+  const excluded = excludeRes.some((re) => re.test(rel));
+  return { excluded, surface: excluded ? 'excluded' : classifyRewriteSurface(rel), rules };
 }
 
 /** 统计并执行单段文本的全部规则替换（含 `$1` 捕获组语义；返回替换后文本，计数累加）。 */
@@ -856,10 +875,12 @@ function lineOfIndex(text, index) {
   return line;
 }
 
-/** 投影期内容改写：按 policy.rewrite.rules 改写包内文件（doc/test 全文本面、code 仅注释面）。
+/** 投影期内容改写：按 policy.rewrite.rules 改写包内文件（doc 全文本面；code/test-code 仅注释段；
+ *  data/other-code/rewrite.exclude 命中面不改写）。
  *  源仓不动（只写 packageDir）；返回计数报告；存在目标面残留即抛 ViolationError（rewrite-residual）。 */
 export function rewritePackage(packageDir, policy) {
   const rules = compileRewriteRules(policy);
+  const excludeRes = compileRewriteExclude(policy);
   const counts = Object.fromEntries(rules.map((r) => [r.id, 0]));
   const report = { enabled: rules.length > 0, rules: [], filesChanged: 0, untargetedResidual: 0 };
   if (rules.length === 0) return report;
@@ -867,43 +888,44 @@ export function rewritePackage(packageDir, policy) {
   const files = walkFiles(pkg);
   for (const rel of files) {
     if (rel === MANIFEST_NAME) continue;
-    const applicable = rules.filter((r) => ruleAppliesToFile(r, rel));
+    const { excluded, surface, rules: applicable } = rewriteDecision(rel, rules, excludeRes);
     if (applicable.length === 0) continue;
     const abs = join(pkg, rel);
     let text;
     try { text = readFileSync(abs, 'utf8'); } catch { continue; }
     if (text.includes('\u0000')) continue;
-    const surface = classifyRewriteSurface(rel);
     let next = text;
-    if (surface === 'code') {
+    if (excluded) {
+      // 排除面：整文件不改写（命中计入下方 untargetedResidual）
+    } else if (surface === 'code' || surface === 'test-code') {
       const parts = [];
       for (const seg of splitJsCommentSegments(text)) parts.push(seg.comment ? replaceRulesInText(seg.text, applicable, counts) : seg.text);
       next = parts.join('');
-    } else if (surface === 'doc' || surface === 'test') {
+    } else if (surface === 'doc') {
       next = replaceRulesInText(text, applicable, counts);
-    } // other-code：保守不改写（未覆盖面计数披露）
+    } // data/other-code：保守不改写（未覆盖面计数披露）
     if (next !== text) {
       writeFileSync(abs, next, 'utf8');
       report.filesChanged += 1;
     }
   }
-  // 目标面零残留硬检（code 注释面 / doc·test 全文本面）
+  // 目标面零残留硬检（doc 全文本面 / code·test-code 注释段；excluded/data/other-code 非目标面）
   const residual = scanRewriteResidual(pkg, policy);
   if (residual.length > 0) {
     throw new ViolationError('内容改写残留（rewrite-residual，导出中止）', residual);
   }
-  // 未覆盖面（生产代码字符串/模板/正则等 + 其他语言/脚本源码）残留计数：如实报告、不阻断（内部决策-062 修正案 4）
+  // 未覆盖面（排除面/数据文件/其他语言源码整文件 + 代码字符串/模板/正则段）残留计数：如实报告、不阻断
   for (const rel of files) {
-    const surface = classifyRewriteSurface(rel);
-    if (surface !== 'code' && surface !== 'other-code') continue;
-    const applicable = rules.filter((r) => ruleAppliesToFile(r, rel));
+    if (rel === MANIFEST_NAME) continue;
+    const { excluded, surface, rules: applicable } = rewriteDecision(rel, rules, excludeRes);
     if (applicable.length === 0) continue;
     let text;
     try { text = readFileSync(join(pkg, rel), 'utf8'); } catch { continue; }
     if (text.includes('\u0000')) continue;
-    const zones = surface === 'code'
-      ? splitJsCommentSegments(text).filter((s) => !s.comment)
-      : [{ comment: false, text, start: 0 }];
+    let zones;
+    if (excluded || surface === 'data' || surface === 'other-code') zones = [{ comment: false, text, start: 0 }];
+    else if (surface === 'code' || surface === 'test-code') zones = splitJsCommentSegments(text).filter((s) => !s.comment);
+    else continue; // doc 属目标面，残留由 rewrite-residual 判定
     for (const seg of zones) {
       for (const rule of applicable) {
         const m = seg.text.match(rule.re);
@@ -919,18 +941,18 @@ export function rewritePackage(packageDir, policy) {
 export function scanRewriteResidual(packageDir, policy) {
   const rules = compileRewriteRules(policy);
   if (rules.length === 0) return [];
+  const excludeRes = compileRewriteExclude(policy);
   const pkg = resolve(packageDir);
   const violations = [];
   for (const rel of walkFiles(pkg)) {
     if (rel === MANIFEST_NAME) continue;
-    const applicable = rules.filter((r) => ruleAppliesToFile(r, rel));
+    const { excluded, surface, rules: applicable } = rewriteDecision(rel, rules, excludeRes);
     if (applicable.length === 0) continue;
+    if (excluded || surface === 'data' || surface === 'other-code') continue; // 非目标面不计残留
     let text;
     try { text = readFileSync(join(pkg, rel), 'utf8'); } catch { continue; }
     if (text.includes('\u0000')) continue;
-    const surface = classifyRewriteSurface(rel);
-    if (surface === 'other-code') continue; // 其他语言/脚本源码保守不改写（未覆盖面披露）
-    const zones = surface === 'code'
+    const zones = (surface === 'code' || surface === 'test-code')
       ? splitJsCommentSegments(text).filter((s) => s.comment)
       : [{ comment: true, text, start: 0 }];
     for (const zone of zones) {

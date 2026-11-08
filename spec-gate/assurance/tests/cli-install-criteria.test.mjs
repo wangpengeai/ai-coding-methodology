@@ -54,7 +54,7 @@ describe('CliInstallCriteriaTest', () => {
     const mirrorHashProbe = criteria.filter((c) => c.probe.type === 'file-sha256');
     assert.equal(mirrorHashProbe.length, 1);
     assert.equal(mirrorHashProbe[0].probe.expect, sha256File(join(fx.market, 'marketplace.json')));
-    assert.ok(criteria.every((c) => c.evidenceRef === '内部治理状态#验证判据'));
+    assert.ok(criteria.every((c) => c.evidenceRef === '.sdd/evidence/x.md#验证判据'));
     assert.ok(r.stderr.includes('【收口指引】'), 'stderr 收口指引（stdout 保持纯 JSON）');
   });
 
@@ -86,7 +86,7 @@ describe('CliInstallCriteriaTest', () => {
     const hp = criteria.filter((c) => c.probe.type === 'host-app-present');
     assert.equal(hp.length, 1);
     assert.deepEqual(hp[0].probe.expect, { host: 'zcode', presence: 'present' });
-    assert.equal(hp[0].evidenceRef, '内部治理状态#验证判据');
+    assert.equal(hp[0].evidenceRef, '.sdd/evidence/x.md#验证判据');
   });
 
   test('test_install_criteria_host_kimi', () => {
@@ -101,7 +101,7 @@ describe('CliInstallCriteriaTest', () => {
     }), 'utf8');
     const r = runCli(proj, [
       'install-criteria', '--host', 'kimi', '--home', fx.home,
-      '--record-ref', '内部治理状态#验证判据',
+      '--record-ref', '.sdd/evidence/x.md#验证判据',
     ]);
     assert.equal(r.code, 0, r.stderr);
     const criteria = jsonOf(r);
@@ -118,7 +118,7 @@ describe('CliInstallCriteriaTest', () => {
   test('test_install_criteria_host_mcode_without_registry_face', () => {
     for (const plugin of SUITE) mkdirSync(join(fx.home, '.minimax', 'plugins', plugin), { recursive: true });
     const r = runCli(proj, [
-      'install-criteria', '--host', 'mcode', '--home', fx.home, '--record-ref', '内部治理状态#验证判据',
+      'install-criteria', '--host', 'mcode', '--home', fx.home, '--record-ref', '.sdd/evidence/x.md#验证判据',
     ]);
     assert.equal(r.code, 0, r.stderr);
     const types = jsonOf(r).map((c) => c.probe.type);
@@ -139,7 +139,7 @@ describe('CliInstallCriteriaTest', () => {
   test('test_install_criteria_host_dsh_presence_only', () => {
     // 第四宿主（内部决策-054 G-05）：DSH 无 managed 静态装机面，恰 1 条 host-app-present 在位判据
     const r = runCli(proj, [
-      'install-criteria', '--host', 'dsh', '--home', fx.home, '--record-ref', '内部治理状态#验证判据',
+      'install-criteria', '--host', 'dsh', '--home', fx.home, '--record-ref', '.sdd/evidence/x.md#验证判据',
     ]);
     assert.equal(r.code, 0, r.stderr);
     const criteria = jsonOf(r);
@@ -147,7 +147,7 @@ describe('CliInstallCriteriaTest', () => {
     assert.equal(criteria[0].probe.type, 'host-app-present');
     assert.equal(criteria[0].probe.expect.host, 'dsh');
     assert.equal(criteria[0].probe.expect.presence, 'present');
-    assert.equal(criteria[0].evidenceRef, '内部治理状态#验证判据');
+    assert.equal(criteria[0].evidenceRef, '.sdd/evidence/x.md#验证判据');
   });
 
   test('test_install_criteria_host_dsh_rejects_marketplace', () => {
@@ -316,7 +316,7 @@ describe('CliInstallCriteriaTest', () => {
     }
   }
 
-  test('test_host_kimi_env_seam（内部任务-241 内部未决-155）', () => {
+  test('test_host_kimi_env_seam（DEV-241 OPEN-155）', () => {
     const custom = join(fx.home, 'custom-kimi');
     mkKimiTree(custom);
     const before = process.env.KIMI_CODE_HOME;
@@ -334,7 +334,7 @@ describe('CliInstallCriteriaTest', () => {
     }
   });
 
-  test('test_host_kimi_data_dir_priority（内部任务-241）', () => {
+  test('test_host_kimi_data_dir_priority（DEV-241）', () => {
     const alt = join(fx.home, 'alt-kimi');
     mkKimiTree(alt);
     const before = process.env.KIMI_CODE_HOME;
@@ -349,7 +349,7 @@ describe('CliInstallCriteriaTest', () => {
     }
   });
 
-  test('test_host_kimi_custom_dir_outside_home_degrades_to_human_check（内部任务-241）', () => {
+  test('test_host_kimi_custom_dir_outside_home_degrades_to_human_check（DEV-241）', () => {
     const outside = join(tmp, 'outside-kimi');
     mkKimiTree(outside);
     const r = runCli(proj, ['install-criteria', '--host', 'kimi', '--home', fx.home, '--data-dir', outside, '--record-ref', 'x#y']);
@@ -358,13 +358,13 @@ describe('CliInstallCriteriaTest', () => {
     assert.ok(criteria.some((c) => c.probe === undefined && String(c.criterion).includes('人工走查')), 'home 外数据根降级人工走查判据');
   });
 
-  test('test_host_data_dir_mutex（内部任务-241）', () => {
+  test('test_host_data_dir_mutex（DEV-241）', () => {
     const r = runCli(proj, ['install-criteria', '--host', 'kimi', '--data-dir', join(fx.home, 'x'), '--marketplace', fx.market, '--record-ref', 'x#y']);
     assert.equal(r.code, 2);
     assert.match(r.stderr, /互斥/);
   });
 
-  test('test_host_mcode_env_seam（内部任务-241）', () => {
+  test('test_host_mcode_env_seam（DEV-241）', () => {
     const custom = join(fx.home, 'custom-mcode');
     for (const plugin of SUITE) mkdirSync(join(custom, 'plugins', plugin), { recursive: true });
     const before = process.env.MINIMAX_DATA_DIR;

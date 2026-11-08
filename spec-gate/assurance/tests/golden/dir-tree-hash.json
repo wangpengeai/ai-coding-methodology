@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedBy": "spec-gate/assurance/tests/gen_golden.py",
-  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（内部决策-051 D4，内部任务-60 计划评审 F7）；tree 描述双侧现造（内容定死、mtime 不入哈希），ignores 已含 DEFAULT_IGNORE 合成口径",
+  "note": "gen_golden.py 生成物禁手改——再生幂等；篡改经再生＋三角归因证伪（ADR-051 D4，DEV-60 计划评审 F7）；tree 描述双侧现造（内容定死、mtime 不入哈希），ignores 已含 DEFAULT_IGNORE 合成口径",
   "cases": [
     {
       "name": "single-file",

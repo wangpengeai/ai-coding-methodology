@@ -23,7 +23,7 @@ function future(n) {
 }
 
 /** 造 v3 单文件声明项目（v3 读取不依赖 .sdd）。 */
-function v3Project({ mode, expiry, taskId = '内部任务-1', tx = 'tx-1' } = {}) {
+function v3Project({ mode, expiry, taskId = 'TASK-1', tx = 'tx-1' } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'scout-hook-'));
   mkdirSync(join(root, '.scout'), { recursive: true });
   writeFileSync(join(root, '.scout', 'mode.json'),
@@ -125,7 +125,7 @@ test('注入：过期模式 → 到期检查点三选一（含 mode-lifecycle �
     assert.ok(ctx.includes(`node '${pluginRoot}/scripts/mode-lifecycle.mjs' --project-root '${root}' renew`), 'T19 renew 完整命令');
     assert.ok(ctx.includes(`node '${pluginRoot}/scripts/mode-lifecycle.mjs' --project-root '${root}' abandon`), 'T19 abandon 完整命令');
     assert.ok(ctx.includes(`（项目根 ${root}）`), '验收②：提醒含被评估根路径');
-    assert.ok(ctx.includes('不阻断'), '内部规则-6：到期只强提醒不阻断');
+    assert.ok(ctx.includes('不阻断'), 'R-M9-6：到期只强提醒不阻断');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -135,7 +135,7 @@ test('注入：v2 声明待迁移 → 提示 migrate-v2 一键迁移', () => {
   const root = mkdtempSync(join(tmpdir(), 'scout-hook-'));
   mkdirSync(join(root, '.scout'), { recursive: true });
   writeFileSync(join(root, '.scout', 'mode.json'),
-    JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: future(30), taskId: '内部任务-V2', transactionId: 't' }));
+    JSON.stringify({ schemaVersion: 2, mode: 'explore', expiry: future(30), taskId: 'TASK-V2', transactionId: 't' }));
   try {
     const r = run(root);
     const ctx = r.envelope?.hookSpecificOutput?.additionalContext ?? '';
@@ -148,7 +148,7 @@ test('注入：v2 声明待迁移 → 提示 migrate-v2 一键迁移', () => {
   }
 });
 
-test('诊断：无声明＋非仓无标记 → absent 轻提醒（R4/内部决策-044；翻转原「零输出」锁死用例）', () => {
+test('诊断：无声明＋非仓无标记 → absent 轻提醒（R4/ADR-044；翻转原「零输出」锁死用例）', () => {
   const root = mkdtempSync(join(tmpdir(), 'scout-hook-'));
   try {
     const r = run(root);
@@ -156,7 +156,7 @@ test('诊断：无声明＋非仓无标记 → absent 轻提醒（R4/内部决�
     const ctx = r.envelope?.hookSpecificOutput?.additionalContext ?? '';
     const pluginRoot = resolve(HERE, '..', '..').replaceAll('\\', '/');
     assert.ok(ctx.includes('【scout 未开启】'), 'absent 诊断行在场');
-    assert.ok(ctx.includes('opt-in'), 'opt-in 指引（内部决策-008）');
+    assert.ok(ctx.includes('opt-in'), 'opt-in 指引（ADR-008）');
     assert.ok(ctx.includes(`node '${pluginRoot}/scripts/mode-lifecycle.mjs' --project-root '${root}' open --mode explore|disposable`), `T19 完整命令：${ctx}`);
   } finally {
     rmSync(root, { recursive: true, force: true });

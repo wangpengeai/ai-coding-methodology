@@ -165,7 +165,7 @@ export function installArgs(fx, extra = []) {
     '--marketplace', fx.market,
     '--registry', fx.registry,
     '--home', fx.home,
-    '--record-ref', '内部治理状态#验证判据',
+    '--record-ref', '.sdd/evidence/x.md#验证判据',
     ...extra,
   ];
 }
@@ -220,7 +220,7 @@ export function mkArchiveTask(root, taskId, daysAgo, { withFinalize = true, with
 }
 
 /** 写活跃 scout 台账条目（scout-graduate 前置；对齐 test_scout_transactions 的 register 结果形态）。 */
-export function writeScoutLedger(root, taskId = '内部任务-1', txId = 'tx-1') {
+export function writeScoutLedger(root, taskId = 'TASK-1', txId = 'tx-1') {
   mkdirSync(join(root, '.sdd'), { recursive: true });
   const ledger = {
     tasks: [{

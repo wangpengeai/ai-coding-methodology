@@ -1,6 +1,6 @@
 {
   "name": "spec-gate",
-  "version": "0.23.4",
+  "version": "1.0.0",
   "description": "规格资产治理与机器校验：规则注册表、模板、台账、证据捕获与 plan 校验门禁，含 SDD/DDD/TDD 适用性判定与聚合门禁 —— 触发条件：项目含 .sdd/ 体系时的规格写作、体系回填、门禁校验与证据捕获。",
   "author": "wangp"
 }

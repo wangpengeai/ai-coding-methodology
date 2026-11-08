@@ -64,8 +64,6 @@ The repository's spec system (`specs/`), development-process records (`docs/`), 
 
 One supported host (event-hook support is documented in the `## 环境要求` section of each plugin README) + Node.js ≥ 21 (the only hard requirement; bash is optional and only affects the shell semantics of verify-gate declared commands, with four-level detection fallback).
 
-Since stage 4 the spec-gate core is fully JavaScript; since stage 5 the zero-Python ratchet is in force, so repository development **does not require Python**. All six plugins use zero third-party packages. The repository enforces LF via `.gitattributes`.
-
 ## License
 
-MIT. `spec-gate/core/` derives historically from sdd-methodology (MIT, wangp); since stage 4 this repository is the sole source of truth, locked by baseline hash (`spec-gate/core-baseline.sha256`). All workflow-side assets follow the "borrow ideas, write our own expression" principle (acknowledgements in `workflow/NOTICE`). Third-party attribution is recorded in the root `LICENSE` supplement and each plugin's `LICENSE`/`NOTICE`.
+MIT. Third-party attribution is recorded in the root `LICENSE` supplement and each plugin's `LICENSE`/`NOTICE`.

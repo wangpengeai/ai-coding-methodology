@@ -36,7 +36,7 @@ export function seedNullBucketLease(repoRoot) {
   const ch = issueChallenge(key, {}); // 空 meta ⇒ 挑战挂 null 桶（激活继承）
   // activateLease 会写 git 同步面的 claims/<taskId>.json；测试种子不得把占位文件留在
   // 真实仓库（内部任务-60 已有一例副产物）。激活后按前后状态复原，只清本夹具新增的文件。
-  const marker = join(repoRoot, 'docs', 'plans', 'claims', '内部任务-999999.json');
+  const marker = join(repoRoot, 'docs', 'plans', 'claims', 'DEV-999999.json');
   const before = existsSync(marker) ? readFileSync(marker, 'utf8') : null;
   // 内部决策-061 D6（内部任务-227）：内部任务-999999 在 traceability 示例编号中被引用（审计源独占）——隔离
   // 状态根预写一行 issued 台账历史 issuance，种子以「续任务通道」显式续用该哨兵号（与真实
@@ -44,13 +44,13 @@ export function seedNullBucketLease(repoRoot) {
   const keyDigest = createHash('sha256').update(String(key)).digest('hex').slice(0, 16);
   const ledger = join(process.env.WF_ROUTING_STATE_DIR, `wf-issued-${keyDigest}.jsonl`);
   mkdirSync(dirname(ledger), { recursive: true });
-  appendFileSync(ledger, `${JSON.stringify({ schemaVersion: 1, ts: Date.now(), taskId: '内部任务-999999', sessionId: null })}\n`);
+  appendFileSync(ledger, `${JSON.stringify({ schemaVersion: 1, ts: Date.now(), taskId: 'DEV-999999', sessionId: null })}\n`);
   const act = activateLease(key, {
     leaseId: ch.leaseId,
-    taskId: '内部任务-999999',
+    taskId: 'DEV-999999',
     skill: 'tdd',
     resume: true,
-    resumeReason: '用户授权：测试夹具续用域内不可达哨兵号 内部任务-999999（隔离状态根预置 issuance）',
+    resumeReason: '用户授权：测试夹具续用域内不可达哨兵号 DEV-999999（隔离状态根预置 issuance）',
     // 内部任务-341/内部决策-070：真实仓项目 skill 必载集合自动补 ack（无项目 skill 时为空集）
     ...(() => {
       const req = requiredProjectSkills({ projectRoot: repoRoot }).required;

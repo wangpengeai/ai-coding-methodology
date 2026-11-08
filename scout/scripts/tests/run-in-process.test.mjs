@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runAsMain } from './helpers/run-in-process.mjs';
 
-test('run-in-process：string 捕获、Buffer 帧转发原流（内部未决-231 不吞帧）', async () => {
+test('run-in-process：string 捕获、Buffer 帧转发原流（OPEN-231 不吞帧）', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'dev337-rip-'));
   const fixture = join(dir, 'fixture-entry.mjs');
   // 夹具：先写一帧 Buffer（模拟运行器协议帧），再写 string（被测输出）；stderr 同构一帧
@@ -32,8 +32,8 @@ test('run-in-process：string 捕获、Buffer 帧转发原流（内部未决-231
     assert.equal(r.code, 0);
     assert.ok(r.logs.includes('captured-string'), 'string 输出被捕获');
     assert.ok(!r.logs.some((l) => l.includes('runner-frame')), 'Buffer 帧不进 logs');
-    assert.ok(fwdOut.some((c) => c instanceof Uint8Array && String.fromCharCode(...c).includes('runner-frame')), 'stdout Buffer 帧转发原流（内部未决-231）');
-    assert.ok(fwdErr.some((c) => c instanceof Uint8Array && String.fromCharCode(...c).includes('runner-frame-err')), 'stderr Buffer 帧转发原流（内部未决-231）');
+    assert.ok(fwdOut.some((c) => c instanceof Uint8Array && String.fromCharCode(...c).includes('runner-frame')), 'stdout Buffer 帧转发原流（OPEN-231）');
+    assert.ok(fwdErr.some((c) => c instanceof Uint8Array && String.fromCharCode(...c).includes('runner-frame-err')), 'stderr Buffer 帧转发原流（OPEN-231）');
   } finally {
     process.stdout.write = realOut;
     process.stderr.write = realErr;

@@ -33,7 +33,7 @@ function future(n) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function writeModeV3(root, expiry, taskId = '内部任务-1', tx = 'tx-1') {
+function writeModeV3(root, expiry, taskId = 'TASK-1', tx = 'tx-1') {
   mkdirSync(join(root, '.scout'), { recursive: true });
   writeFileSync(join(root, '.scout', 'mode.json'), JSON.stringify({ schemaVersion: 3, mode: 'explore', expiry, taskId, transactionId: tx }), 'utf8');
 }
@@ -47,7 +47,7 @@ function readLedger(root) {
 test('register open：建 scout 条目（active/taskType/deadline/transactionId/owner/createdAt）', () => {
   const root = tmpRoot('dev86-st-reg-');
   try {
-    const r = register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open', { owner: 'wangp' });
+    const r = register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open', { owner: 'wangp' });
     assert.ok(r.ok);
     const entry = readLedger(root).tasks[0];
     assert.equal(entry.status, 'active');
@@ -62,8 +62,8 @@ test('register open：建 scout 条目（active/taskType/deadline/transactionId/
 test('register renew：同 taskId 幂等覆盖，owner 保留（终审 F3）', () => {
   const root = tmpRoot('dev86-st-re-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open', { owner: 'wangp' });
-    const r = register(root, '内部任务-1', 'explore', future(30), 'tx-2', 'renew');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open', { owner: 'wangp' });
+    const r = register(root, 'TASK-1', 'explore', future(30), 'tx-2', 'renew');
     assert.ok(r.ok);
     const tasks = readLedger(root).tasks;
     assert.equal(tasks.length, 1);
@@ -76,8 +76,8 @@ test('register renew：同 taskId 幂等覆盖，owner 保留（终审 F3）', (
 test('register abandon：expired/blocked/disposition', () => {
   const root = tmpRoot('dev86-st-ab-');
   try {
-    register(root, '内部任务-1', 'disposable', future(14), 'tx-1', 'open');
-    const r = register(root, '内部任务-1', 'disposable', future(14), 'tx-2', 'abandon', { disposition: '归档，不并入主干' });
+    register(root, 'TASK-1', 'disposable', future(14), 'tx-1', 'open');
+    const r = register(root, 'TASK-1', 'disposable', future(14), 'tx-2', 'abandon', { disposition: '归档，不并入主干' });
     assert.ok(r.ok);
     const entry = readLedger(root).tasks[0];
     assert.equal(entry.status, 'expired');
@@ -89,9 +89,9 @@ test('register abandon：expired/blocked/disposition', () => {
 test('register 非法参数：模式/事件/abandon 缺处置声明', () => {
   const root = tmpRoot('dev86-st-bad-');
   try {
-    assert.equal(register(root, '内部任务-1', 'bogus', future(14), 't', 'open').ok, false);
-    assert.equal(register(root, '内部任务-1', 'explore', future(14), 't', 'graduate').ok, false);
-    assert.equal(register(root, '内部任务-1', 'explore', future(14), 't', 'abandon').ok, false);
+    assert.equal(register(root, 'TASK-1', 'bogus', future(14), 't', 'open').ok, false);
+    assert.equal(register(root, 'TASK-1', 'explore', future(14), 't', 'graduate').ok, false);
+    assert.equal(register(root, 'TASK-1', 'explore', future(14), 't', 'abandon').ok, false);
   } finally { cleanup(root); }
 });
 
@@ -99,8 +99,8 @@ test('register 普通任务同 id 守卫：不覆盖非 scout 条目', () => {
   const root = tmpRoot('dev86-st-guard-');
   try {
     mkdirSync(join(root, '.sdd'), { recursive: true });
-    writeFileSync(join(root, '.sdd', 'ledger.json'), JSON.stringify({ tasks: [{ id: '内部任务-1', status: 'active', title: '普通任务' }] }), 'utf8');
-    const r = register(root, '内部任务-1', 'explore', future(14), 't', 'open');
+    writeFileSync(join(root, '.sdd', 'ledger.json'), JSON.stringify({ tasks: [{ id: 'TASK-1', status: 'active', title: '普通任务' }] }), 'utf8');
+    const r = register(root, 'TASK-1', 'explore', future(14), 't', 'open');
     assert.equal(r.ok, false);
     assert.equal(readLedger(root).tasks[0].title, '普通任务');
   } finally { cleanup(root); }
@@ -111,8 +111,8 @@ test('register 普通任务同 id 守卫：不覆盖非 scout 条目', () => {
 test('graduate 证据前置：空引用拒绝且模式保持', () => {
   const root = tmpRoot('dev86-st-ge-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
-    const r = graduate(root, '内部任务-1', []);
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
+    const r = graduate(root, 'TASK-1', []);
     assert.equal(r.ok, false);
     assert.ok(r.error.includes('证据'));
   } finally { cleanup(root); }
@@ -121,7 +121,7 @@ test('graduate 证据前置：空引用拒绝且模式保持', () => {
 test('graduate 非活跃条目拒绝（空仓）', () => {
   const root = tmpRoot('dev86-st-ge2-');
   try {
-    const r = graduate(root, '内部任务-1', ['内部治理状态']);
+    const r = graduate(root, 'TASK-1', ['.sdd/reports/x.md']);
     assert.equal(r.ok, false);
     assert.ok(r.error.includes('非活跃'));
   } finally { cleanup(root); }
@@ -130,16 +130,16 @@ test('graduate 非活跃条目拒绝（空仓）', () => {
 test('graduate 收敛中央＋关闭本地＋本地留痕（RULE-LEDGER-003）', () => {
   const root = tmpRoot('dev86-st-ge3-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     writeModeV3(root, future(14));
-    const r = graduate(root, '内部任务-1', ['内部治理状态', '内部治理状态'],
+    const r = graduate(root, 'TASK-1', ['.sdd/evidence/grad-1.md', '.sdd/reports/grad.md'],
       { tx: 'tx-fixed', at: '2026-10-18T00:00:00+08:00' });
     assert.ok(r.ok, JSON.stringify(r));
     assert.equal(r.transactionId, 'tx-fixed');
     const entry = readLedger(root).tasks[0];
     assert.equal(entry.status, 'converged');
     assert.equal(entry.finalStatus, 'complete');
-    assert.equal(entry.gateReportRef, '内部治理状态');
+    assert.equal(entry.gateReportRef, '.sdd/evidence/grad-1.md');
     assert.equal((() => { try { readFileSync(join(root, '.scout', 'mode.json')); return true; } catch { return false; } })(), false, '本地声明随毕业关闭');
     const events = readFileSync(join(root, '.scout', 'ledger.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
     const grad = events.find((e) => e.event === 'graduate');
@@ -152,14 +152,14 @@ test('graduate 收敛中央＋关闭本地＋本地留痕（RULE-LEDGER-003）',
 test('graduate 本地留痕失败→回滚（中央 active、模式保持、journal 清除）', () => {
   const root = tmpRoot('dev86-st-ge4-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     writeModeV3(root, future(14));
     _testHooks.afterLedgerWrite = () => {
       const e = new Error('注入故障：本地留痕 append');
       e.code = 'EIO';
       throw e;
     };
-    const r = graduate(root, '内部任务-1', ['内部治理状态']);
+    const r = graduate(root, 'TASK-1', ['.sdd/evidence/g.md']);
     assert.equal(r.ok, false);
     assert.ok(r.error.includes('已回滚'));
     assert.equal(readLedger(root).tasks[0].status, 'active', '中央条目回滚为 active');
@@ -171,17 +171,17 @@ test('graduate 本地留痕失败→回滚（中央 active、模式保持、jour
   }
 });
 
-test('graduate 本地 mode 删除失败→回滚并报错（D08/内部任务-241）', () => {
+test('graduate 本地 mode 删除失败→回滚并报错（D08/DEV-241）', () => {
   const root = tmpRoot('dev241-st-modefail-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     writeModeV3(root, future(14));
     _testHooks.beforeModeUnlink = () => {
       const e = new Error('注入故障：mode 删除');
       e.code = 'EPERM';
       throw e;
     };
-    const r = graduate(root, '内部任务-1', ['内部治理状态']);
+    const r = graduate(root, 'TASK-1', ['.sdd/evidence/x.md']);
     assert.equal(r.ok, false, '删除失败必须 fail-loud，不得 ok:true');
     assert.ok(r.error.includes('已回滚'));
     assert.equal(readLedger(root).tasks[0].status, 'active', '中央条目回滚为 active');
@@ -193,13 +193,13 @@ test('graduate 本地 mode 删除失败→回滚并报错（D08/内部任务-241
   }
 });
 
-test('内部任务-242 §四-3：mode 已缺失时 graduate 幂等成功（ENOENT 不误报失败）', () => {
+test('DEV-242 §四-3：mode 已缺失时 graduate 幂等成功（ENOENT 不误报失败）', () => {
   const root = tmpRoot('dev242-st-modegone-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     writeModeV3(root, future(14));
     rmSync(join(root, '.scout', 'mode.json'), { force: true }); // 幂等/清理路径：mode 已不存在
-    const r = graduate(root, '内部任务-1', ['内部治理状态']);
+    const r = graduate(root, 'TASK-1', ['.sdd/evidence/x.md']);
     assert.equal(r.ok, true, 'ENOENT＝删除目标已达成，须幂等成功');
     assert.equal(readLedger(root).tasks[0].status, 'converged', '中央条目收敛');
     assert.equal((() => { try { readFileSync(join(root, '.scout', 'transactions', 'journal.json')); return true; } catch { return false; } })(), false, 'journal 清除');
@@ -208,25 +208,25 @@ test('内部任务-242 §四-3：mode 已缺失时 graduate 幂等成功（ENOEN
   }
 });
 
-test('D03（内部任务-241）：损坏台账 register 响亮报错且原字节不变（不重置）', () => {
+test('D03（DEV-241）：损坏台账 register 响亮报错且原字节不变（不重置）', () => {
   const root = tmpRoot('dev241-st-corrupt-');
   try {
     mkdirSync(join(root, '.sdd'), { recursive: true });
     const ledgerPath = join(root, '.sdd', 'ledger.json');
     writeFileSync(ledgerPath, '{broken', 'utf8');
-    assert.throws(() => register(root, '内部任务-1', 'explore', future(14), 't', 'open'), /台账不是合法 JSON/);
+    assert.throws(() => register(root, 'TASK-1', 'explore', future(14), 't', 'open'), /台账不是合法 JSON/);
     assert.equal(readFileSync(ledgerPath, 'utf8'), '{broken', '损坏台账不得被重置为 {tasks:[]}');
   } finally { cleanup(root); }
 });
 
-test('D03（内部任务-241）：台账锁被占用 → register 明确报占用且零写入', () => {
+test('D03（DEV-241）：台账锁被占用 → register 明确报占用且零写入', () => {
   const root = tmpRoot('dev241-st-lock-');
   try {
     mkdirSync(join(root, '.sdd'), { recursive: true });
     const lockPath = join(root, '.sdd', 'ledger.lock');
     assert.equal(acquireLock(lockPath, { owner: 'holder' }).ok, true);
     try {
-      const r = register(root, '内部任务-1', 'explore', future(14), 't', 'open');
+      const r = register(root, 'TASK-1', 'explore', future(14), 't', 'open');
       assert.equal(r.ok, false);
       assert.match(r.error, /并发占用/);
       assert.equal((() => { try { readFileSync(join(root, '.sdd', 'ledger.json')); return true; } catch { return false; } })(), false, '锁占用时零写入');
@@ -239,14 +239,14 @@ test('D03（内部任务-241）：台账锁被占用 → register 明确报占�
 test('锁互操作①：新鲜锁预占→JS 实现 graduate 与 mode-lifecycle.open 均拒（单胜）', () => {
   const root = tmpRoot('dev86-st-lock1-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     const lock = join(root, '.scout', 'transactions', 'lock');
     mkdirSync(join(root, '.scout', 'transactions'), { recursive: true });
     writeFileSync(lock, 'other-holder', 'utf8');
-    const g = graduate(root, '内部任务-1', ['内部治理状态']);
+    const g = graduate(root, 'TASK-1', ['.sdd/evidence/x.md']);
     assert.equal(g.ok, false);
     assert.ok(g.error.includes('进行中'), 'JS 实现侧取锁失败');
-    const o = lifecycleOpen(root, { mode: 'explore', expiry: future(14), taskId: '内部任务-1' });
+    const o = lifecycleOpen(root, { mode: 'explore', expiry: future(14), taskId: 'DEV-1' });
     assert.equal(o.ok, false);
     assert.ok(o.error.includes('进行中'), 'mode-lifecycle 同锁单胜');
     assert.equal(readFileSync(lock, 'utf8'), 'other-holder', '锁未被误删/改写');
@@ -257,7 +257,7 @@ test('锁互操作①：新鲜锁预占→JS 实现 graduate 与 mode-lifecycle.
 test('锁互操作②：陈旧锁回收（retired-<8hex> 命名）＋原锁路径可再获取', () => {
   const root = tmpRoot('dev86-st-lock2-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     writeModeV3(root, future(14));
     const lock = join(root, '.scout', 'transactions', 'lock');
     mkdirSync(join(root, '.scout', 'transactions'), { recursive: true });
@@ -266,7 +266,7 @@ test('锁互操作②：陈旧锁回收（retired-<8hex> 命名）＋原锁路�
     utimesSync(lock, old, old);
     let retiredName = null;
     _testHooks.onLockRetired = (p) => { retiredName = basename(p); };
-    const r = graduate(root, '内部任务-1', ['内部治理状态'], { tx: 'tx-reclaimed' });
+    const r = graduate(root, 'TASK-1', ['.sdd/evidence/x.md'], { tx: 'tx-reclaimed' });
     assert.ok(r.ok, JSON.stringify(r));
     assert.match(retiredName ?? '', /^lock\.retired-[0-9a-f]{8}$/, '回收命名形态');
     assert.equal((() => { try { readFileSync(lock); return true; } catch { return false; } })(), false, '事务后锁释放');
@@ -285,7 +285,7 @@ test('锁互操作②：陈旧锁回收（retired-<8hex> 命名）＋原锁路�
 test('scout-tx 直跑：scout-register 退 0 带 JSON', () => {
   const root = tmpRoot('dev86-tx-reg-');
   try {
-    const r = runCli(['--project-root', root, 'scout-register', '--task-id', '内部任务-1', '--mode', 'explore',
+    const r = runCli(['--project-root', root, 'scout-register', '--task-id', 'TASK-1', '--mode', 'explore',
       '--expiry', future(14), '--transaction-id', 'tx-1', '--event', 'open']);
     assert.equal(r.status, 0, r.stderr);
     assert.equal(JSON.parse(r.stdout).ok, true);
@@ -296,10 +296,10 @@ test('scout-tx 直跑：scout-register 退 0 带 JSON', () => {
 test('scout-tx 直跑：scout-graduate 空 evidence 退 1（与 register 对称两态）', () => {
   const root = tmpRoot('dev86-tx-grad-');
   try {
-    const reg = runCli(['--project-root', root, 'scout-register', '--task-id', '内部任务-1', '--mode', 'explore',
+    const reg = runCli(['--project-root', root, 'scout-register', '--task-id', 'TASK-1', '--mode', 'explore',
       '--expiry', future(14), '--transaction-id', 'tx-1', '--event', 'open']);
     assert.equal(reg.status, 0, reg.stderr);
-    const r = runCli(['--project-root', root, 'scout-graduate', '--task-id', '内部任务-1', '--evidence-refs', '[]']);
+    const r = runCli(['--project-root', root, 'scout-graduate', '--task-id', 'TASK-1', '--evidence-refs', '[]']);
     assert.equal(r.status, 1, r.stderr);
     assert.equal(JSON.parse(r.stdout).ok, false);
   } finally { cleanup(root); }
@@ -308,13 +308,13 @@ test('scout-tx 直跑：scout-graduate 空 evidence 退 1（与 register 对称�
 test('scout-tx 直跑：参数错退 2（缺旗标/非法枚举/task-id 形态）', () => {
   const root = tmpRoot('dev86-tx-args-');
   try {
-    assert.equal(runCli(['--project-root', root, 'scout-register', '--task-id', '内部任务-1']).status, 2, '缺旗标');
-    assert.equal(runCli(['--project-root', root, 'scout-register', '--task-id', '内部任务-1', '--mode', 'bogus',
+    assert.equal(runCli(['--project-root', root, 'scout-register', '--task-id', 'TASK-1']).status, 2, '缺旗标');
+    assert.equal(runCli(['--project-root', root, 'scout-register', '--task-id', 'TASK-1', '--mode', 'bogus',
       '--expiry', future(14), '--transaction-id', 't', '--event', 'open']).status, 2, '非法 mode（argparse choices 语义）');
     assert.equal(runCli(['--project-root', root, 'scout-register', '--task-id', 'bad id', '--mode', 'explore',
       '--expiry', future(14), '--transaction-id', 't', '--event', 'open']).status, 2, 'task-id 形态');
     assert.equal(runCli(['--project-root', root, 'scout-bogus']).status, 2, '未知子命令');
-    assert.equal(runCli(['--project-root', root, 'scout-register', '--task-id', '内部任务-1', '--mode', 'explore',
+    assert.equal(runCli(['--project-root', root, 'scout-register', '--task-id', 'TASK-1', '--mode', 'explore',
       '--expiry', future(14), '--transaction-id', 't', '--event', 'open', '--bogus', 'x']).status, 2, '未知旗标');
   } finally { cleanup(root); }
 });
@@ -328,7 +328,7 @@ test('scout-tx 直跑：task-id 受理域对齐 receipts.TASK_ID_RE（TASK_1 受
     assert.equal(reg.status, 0, reg.stderr);
     const before = readFileSync(join(root, '.sdd', 'ledger.json'), 'utf8');
     const g = runCli(['--project-root', root, 'scout-graduate', '--task-id', 'TASK_1', '--evidence-refs', '{}']);
-    assert.equal(g.status, 1, '对象证据按前置缺失退 1（原 Python 实现（迁移史见 内部决策-051）零状态变更）');
+    assert.equal(g.status, 1, '对象证据按前置缺失退 1（原 Python 实现（迁移史见 ADR-051）零状态变更）');
     assert.equal(JSON.parse(g.stdout).ok, false);
     assert.equal(readFileSync(join(root, '.sdd', 'ledger.json'), 'utf8'), before, '台账零变更');
   } finally { cleanup(root); }
@@ -339,14 +339,14 @@ test('scout-tx 直跑：task-id 受理域对齐 receipts.TASK_ID_RE（TASK_1 受
 test('register：converged 条目收到 open/abandon 事件 → 拒绝复活/改写', () => {
   const root = tmpRoot('dev259-st-fence-');
   try {
-    assert.ok(register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open').ok);
+    assert.ok(register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open').ok);
     const ledger = readLedger(root);
     ledger.tasks[0].status = 'converged';
     writeFileSync(join(root, '.sdd', 'ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
-    const rOpen = register(root, '内部任务-1', 'explore', future(20), 'tx-2', 'open');
+    const rOpen = register(root, 'TASK-1', 'explore', future(20), 'tx-2', 'open');
     assert.equal(rOpen.ok, false, JSON.stringify(rOpen));
     assert.match(String(rOpen.error), /收敛|converged/);
-    const rAbandon = register(root, '内部任务-1', 'explore', future(14), 'tx-3', 'abandon', { disposition: '归档' });
+    const rAbandon = register(root, 'TASK-1', 'explore', future(14), 'tx-3', 'abandon', { disposition: '归档' });
     assert.equal(rAbandon.ok, false, JSON.stringify(rAbandon));
     assert.equal(readLedger(root).tasks[0].status, 'converged', 'converged 不得被改写');
   } finally { cleanup(root); }
@@ -355,15 +355,15 @@ test('register：converged 条目收到 open/abandon 事件 → 拒绝复活/改
 test('register abandon：active→expired 写审计字段；expired→expired 幂等成功且不改审计字段', () => {
   const root = tmpRoot('dev259-st-ab-idem-');
   try {
-    assert.ok(register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open').ok);
-    const first = register(root, '内部任务-1', 'explore', future(14), 'tx-2', 'abandon', { disposition: '归档' });
+    assert.ok(register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open').ok);
+    const first = register(root, 'TASK-1', 'explore', future(14), 'tx-2', 'abandon', { disposition: '归档' });
     assert.equal(first.ok, true, JSON.stringify(first));
     assert.equal(first.idempotent, false);
     let entry = readLedger(root).tasks[0];
     assert.equal(entry.status, 'expired');
     assert.equal(entry.finalStatus, 'blocked');
     assert.equal(entry.disposition, '归档');
-    const second = register(root, '内部任务-1', 'explore', future(14), 'tx-3', 'abandon', { disposition: '第二次' });
+    const second = register(root, 'TASK-1', 'explore', future(14), 'tx-3', 'abandon', { disposition: '第二次' });
     assert.equal(second.ok, true, JSON.stringify(second));
     assert.equal(second.idempotent, true);
     entry = readLedger(root).tasks[0];
@@ -376,7 +376,7 @@ test('register abandon：active→expired 写审计字段；expired→expired �
 test('register：新建条目 owner 缺省 unknown 且 gate._checkLedger 零 blocking', () => {
   const root = tmpRoot('dev259-st-owner-');
   try {
-    assert.ok(register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open').ok);
+    assert.ok(register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open').ok);
     assert.equal(readLedger(root).tasks[0].owner, 'unknown');
     const section = _checkLedger(root);
     assert.equal(section.blockingCount, 0, JSON.stringify(section.diagnostics));
@@ -386,15 +386,15 @@ test('register：新建条目 owner 缺省 unknown 且 gate._checkLedger 零 blo
 test('graduate：journal 残留时拒绝（不删本地/中央保持 active）', () => {
   const root = tmpRoot('dev259-st-grad-journal-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     writeModeV3(root, future(14));
     mkdirSync(join(root, '.scout', 'transactions'), { recursive: true });
     writeFileSync(join(root, '.scout', 'transactions', 'journal.json'), JSON.stringify({ schemaVersion: 1, transactionId: 't', op: 'open', state: 'prepared' }));
-    const r = graduate(root, '内部任务-1', ['内部治理状态']);
+    const r = graduate(root, 'TASK-1', ['.sdd/reports/x.md']);
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.match(String(r.error), /journal/);
-    assert.match(String(r.error), /taskId=内部任务-1/, '内部接口-10 §4：错误文案须指出 taskId 上下文');
-    assert.match(String(r.error), /本地\/中央均未变更/, '内部接口-10 §4：须说明本地/中央未变更');
+    assert.match(String(r.error), /taskId=TASK-1/, 'IF-COLLAB-10 §4：错误文案须指出 taskId 上下文');
+    assert.match(String(r.error), /本地\/中央均未变更/, 'IF-COLLAB-10 §4：须说明本地/中央未变更');
     assert.equal(existsSync(join(root, '.scout', 'mode.json')), true, '本地声明不得删除');
     assert.equal(readLedger(root).tasks[0].status, 'active', '中央保持 active');
   } finally { cleanup(root); }
@@ -403,9 +403,9 @@ test('graduate：journal 残留时拒绝（不删本地/中央保持 active）',
 test('graduate：本地 mode.taskId 错配 → 拒绝且不删本地、中央保持 active', () => {
   const root = tmpRoot('dev259-st-grad-mismatch-');
   try {
-    register(root, '内部任务-1', 'explore', future(14), 'tx-1', 'open');
+    register(root, 'TASK-1', 'explore', future(14), 'tx-1', 'open');
     writeModeV3(root, future(14), 'TASK-OTHER');
-    const r = graduate(root, '内部任务-1', ['内部治理状态']);
+    const r = graduate(root, 'TASK-1', ['.sdd/reports/x.md']);
     assert.equal(r.ok, false, JSON.stringify(r));
     assert.match(String(r.error), /不一致/);
     assert.equal(existsSync(join(root, '.scout', 'mode.json')), true, '错配时不得删除本地声明');

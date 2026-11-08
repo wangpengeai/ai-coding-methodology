@@ -179,7 +179,7 @@ test('路由六样例判定面（判别句→所在面文本矩阵）', () => {
   assertSixSampleMatrix(meta);
 });
 
-test('禁行号字面量（内部决策-4 同构：以行名/插件名指代）', () => {
+test('禁行号字面量（D-M18-4 同构：以行名/插件名指代）', () => {
   for (const name of SKILLS) {
     const { text } = readSkill(name);
     assert.ok(text, `${name} 缺失`);

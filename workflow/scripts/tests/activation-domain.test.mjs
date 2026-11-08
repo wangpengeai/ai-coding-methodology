@@ -23,7 +23,7 @@ function makeRoot(prefix) {
   return realpathSync(mkdtempSync(join(tmpdir(), prefix)));
 }
 
-test('git 仓祖先：仍返回仓根（内部决策-022 语义不变）', () => {
+test('git 仓祖先：仍返回仓根（ADR-022 语义不变）', () => {
   const root = makeRoot('act-git-');
   try {
     mkdirSync(join(root, '.git'));
@@ -35,7 +35,7 @@ test('git 仓祖先：仍返回仓根（内部决策-022 语义不变）', () =>
   }
 });
 
-test('.scout/mode.json presence：非 git 目录返回该目录（内部决策-026 放宽）', () => {
+test('.scout/mode.json presence：非 git 目录返回该目录（ADR-026 放宽）', () => {
   const root = makeRoot('act-scout-');
   try {
     mkdirSync(join(root, '.scout'), { recursive: true });
@@ -58,7 +58,7 @@ test('.sdd/ presence：非 git 目录返回标记祖先（子目录上溯语义�
   }
 });
 
-test('无标记非 git 目录：null（内部决策-022 静默语义回归锁死）', () => {
+test('无标记非 git 目录：null（ADR-022 静默语义回归锁死）', () => {
   const root = makeRoot('act-none-');
   try {
     const sub = join(root, 'sub');

@@ -14,7 +14,7 @@ const tmp = () => realpathSync(mkdtempSync(join(tmpdir(), 'dev151-ro-')));
 function project() {
   const root = tmp();
   mkdirSync(join(root, 'docs'));
-  writeFileSync(join(root, 'docs/spec.md'), '# 规格\n\n| 编号 | 需求 | 追溯 |\n|---|---|---|\n| R-1 | 行为 | [内部需求-1] |\n\nTODO: 待办。\n');
+  writeFileSync(join(root, 'docs/spec.md'), '# 规格\n\n| 编号 | 需求 | 追溯 |\n|---|---|---|\n| R-1 | 行为 | [FR-a-1] |\n\nTODO: 待办。\n');
   const config = {
     schemaVersion: '1.0.0', suiteRoot: root, validationRoots: ['docs'],
     documents: [{ path: 'docs/spec.md', documentType: 'note', validationMode: 'baseline' }],
@@ -32,7 +32,7 @@ test('受检树前后摘要一致；内容变化与时间戳无关', () => {
   assert.ok([0, 1].includes(r.status), r.stderr);
   assert.equal(treeDigestFingerprint(before), treeDigestFingerprint(treeDigest(root)));
   const d1 = treeDigest(root);
-  writeFileSync(join(root, 'docs/spec.md'), '# 规格\n\n| 编号 | 需求 | 追溯 |\n|---|---|---|\n| R-1 | 行为 | [内部需求-1] |\n\nTODO: 待办。\n');
+  writeFileSync(join(root, 'docs/spec.md'), '# 规格\n\n| 编号 | 需求 | 追溯 |\n|---|---|---|\n| R-1 | 行为 | [FR-a-1] |\n\nTODO: 待办。\n');
   assert.deepEqual(treeDigest(root), d1);
   writeFileSync(join(root, 'docs/spec.md'), 'changed\n');
   assert.notDeepEqual(treeDigest(root), d1);

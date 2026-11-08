@@ -154,7 +154,7 @@ test('缺省 baselineRef 归一为 b0（§2「空/缺省归一」口径；§2a �
   assert.equal(stored.baselineRef, 'b0');
 });
 
-test('`.algo` 权限按常规目录位落位（mkdtemp 0700 不泄漏到提交态）', { skip: process.platform === 'win32' && 'win32 无 POSIX 权限位：fs.stat 对目录合成 mode 恒 0666，0777&~umask 断言仅在 POSIX 机可观测（内部任务-279；内部任务-278 归因 R1）' }, () => {
+test('`.algo` 权限按常规目录位落位（mkdtemp 0700 不泄漏到提交态）', { skip: process.platform === 'win32' && 'win32 无 POSIX 权限位：fs.stat 对目录合成 mode 恒 0666，0777&~umask 断言仅在 POSIX 机可观测（DEV-279；DEV-278 归因 R1）' }, () => {
   const root = makeRoot();
   assert.equal(applyWrite(root, 'init', { projectId: 'p', contract: CONTRACT() }).ok, true);
   const mode = statSync(join(root, '.algo')).mode & 0o777;

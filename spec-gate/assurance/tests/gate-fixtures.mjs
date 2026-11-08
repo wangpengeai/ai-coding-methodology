@@ -105,7 +105,7 @@ export function fakePlanRunner(diagnostics = []) {
  * @param {string} proj @param {string} [task] @param {{planPath?: string|null}} [opts]
  * @returns {{v: object, c: object}}
  */
-export function prepareChain(proj, task = '内部任务-1', { planPath = null } = {}) {
+export function prepareChain(proj, task = 'TASK-1', { planPath = null } = {}) {
   const ev = evidenceEntry(proj);
   const v = issueVerificationReceipt(proj, task, ev, { profile: 'full', planPath });
   const c = issueCodeReviewReceipt(proj, task, v.receiptId, 's', {
@@ -164,7 +164,7 @@ export function writePlan(proj, relName, body = '# 计划\n\n## 步骤 1：做�
 }
 
 /** 绕过 prepare 直写旧形态草案（三必检节缺失；对齐 `_missing_required_sections` 用例）。 */
-export function writeLegacyDraft(proj, task = '内部任务-1') {
+export function writeLegacyDraft(proj, task = 'TASK-1') {
   const reports = join(proj, '.sdd', 'reports', task);
   mkdirSync(reports, { recursive: true });
   const draft = {

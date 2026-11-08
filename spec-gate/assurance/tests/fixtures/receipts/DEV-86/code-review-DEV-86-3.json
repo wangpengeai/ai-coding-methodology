@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "code-review-内部任务-86-3",
+  "receiptId": "code-review-DEV-86-3",
   "kind": "code-review",
-  "taskId": "内部任务-86",
+  "taskId": "DEV-86",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,14 +15,14 @@
       "documents": "117"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-18-DEV-86-runtime-unification-stage1b-production-scout-twins.md",
       "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
     },
     "algorithmVersion": "1"
   },
   "createdAt": "2026-10-18T11:59:10+08:00",
   "status": "passed",
-  "verificationReceipt": "verification-内部任务-86-8",
+  "verificationReceipt": "verification-DEV-86-8",
   "evidenceProfile": "full",
   "summary": "三维终审终签（全部落盘定稿后）：3 blocking+非阻塞全处置；全量回归绿",
   "reviewInstances": 3,

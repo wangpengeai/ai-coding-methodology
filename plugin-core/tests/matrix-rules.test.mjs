@@ -52,7 +52,7 @@ test('矩阵：能力键开放注册——新增键不破坏既有键', () => {
     rulesVersion: 2,
     rules: [{
       id: 'tool-vocab-map', title: 'x', trigger: { capability: 'custom.surface', gap: false }, strategy: 'map',
-      params: { dsh: { direction: 'widen', table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['内部决策-037'],
+      params: { dsh: { direction: 'widen', table: { A: ['a'] } } }, fidelity: 'lossy', sourceRef: ['ADR-037'],
     }],
   };
   const r = validateRules(rules, widened);
@@ -156,7 +156,7 @@ test('规则库：params 机读化（v2——per-host、规则级字段 schema�
 
 // ---- kimi 列关键取值（内部决策-038 批数据扩列的收敛断言；取值来源=设计文档 §6.1/§6.2 判定表）----
 
-test('矩阵：kimi 列 17 键关键取值（内部决策-038，A-pc-4 四列断言）', () => {
+test('矩阵：kimi 列 17 键关键取值（ADR-038，A-pc-4 四列断言）', () => {
   const caps = loadMatrix().capabilities;
   assert.equal(caps['surface.commands'].kimi, true, 'kimi 命令面原生');
   assert.equal(caps['surface.agents'].kimi, 'optional', 'kimi agent 面可选（默认关是适配层策略）');
@@ -187,7 +187,7 @@ test('规则库：kimi 判定表全录（4 触发含 relayEvents / 6 不触发�
   const notTriggered = ['command-to-skill', 'followup-expansion', 'failure-event-merge', 'timeout-cap-fail-open', 'tool-vocab-map', 'namespace-transform'];
   for (const id of triggered) {
     assert.ok(byId[id].params.kimi, `${id} 应含 params.kimi（判定表触发）`);
-    assert.ok(byId[id].sourceRef.some((ref) => ref.startsWith('内部决策-038')), `${id} sourceRef 应含 内部决策-038`);
+    assert.ok(byId[id].sourceRef.some((ref) => ref.startsWith('ADR-038')), `${id} sourceRef 应含 ADR-038`);
   }
   for (const id of notTriggered) {
     assert.ok(!('kimi' in byId[id].params), `${id} 不应含 params.kimi（判定表不触发）`);

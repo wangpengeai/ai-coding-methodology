@@ -48,7 +48,7 @@ test('判别力：注入领域词的伪约束行必被检出（夹具正例）',
   }
 });
 
-test('真资产域中立扫描零命中 + SKILL/钩子源码无行号字面量（内部决策-4）', () => {
+test('真资产域中立扫描零命中 + SKILL/钩子源码无行号字面量（D-M18-4）', () => {
   const files = [...SCAN_FILES];
   for (const dir of ['skills']) {
     for (const d of readdirSync(join(pluginRoot, dir))) {

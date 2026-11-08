@@ -46,9 +46,9 @@ function projectWith({ mode, events = [], central = null } = {}) {
   return root;
 }
 
-const MODE = (expiry, tx = 'tx-1', taskId = '内部任务-1') => ({ schemaVersion: 3, mode: 'explore', expiry, taskId, transactionId: tx });
-const OPEN_EVENT = (expiry, tx = 'tx-1', taskId = '内部任务-1') => ({ event: 'open', mode: 'explore', expiry, taskId, transactionId: tx, at: '2026-09-28T00:00:00Z' });
-const CENTRAL = (expiry, tx = 'tx-1', taskId = '内部任务-1') => ({ id: taskId, status: 'active', taskType: 'scout-mode', mode: 'explore', deadline: expiry, transactionId: tx });
+const MODE = (expiry, tx = 'tx-1', taskId = 'TASK-1') => ({ schemaVersion: 3, mode: 'explore', expiry, taskId, transactionId: tx });
+const OPEN_EVENT = (expiry, tx = 'tx-1', taskId = 'TASK-1') => ({ event: 'open', mode: 'explore', expiry, taskId, transactionId: tx, at: '2026-09-28T00:00:00Z' });
+const CENTRAL = (expiry, tx = 'tx-1', taskId = 'TASK-1') => ({ id: taskId, status: 'active', taskType: 'scout-mode', mode: 'explore', deadline: expiry, transactionId: tx });
 
 test('一致：v3 有效 + 留痕对齐 + 中央镜像对齐 → 退出 0', () => {
   const expiry = future(14);
@@ -102,7 +102,7 @@ test('违例：pendingSync 积压 → 退出 1 并指向 sync', () => {
   const expiry = future(14);
   const root = projectWith({
     mode: MODE(expiry),
-    events: [OPEN_EVENT(expiry), { event: 'pendingSync', op: 'open', taskId: '内部任务-1', transactionId: 'tx-1', at: '2026-09-28T00:00:00Z' }],
+    events: [OPEN_EVENT(expiry), { event: 'pendingSync', op: 'open', taskId: 'TASK-1', transactionId: 'tx-1', at: '2026-09-28T00:00:00Z' }],
     central: null,
   });
   try {
@@ -141,7 +141,7 @@ test('一致：无模式文件且无留痕事件 → 退出 0', () => {
 test('一致：无模式 + 历史 abandon 留痕（正常历史，不判违例）→ 退出 0', () => {
   const expiry = future(14);
   const root = projectWith({
-    events: [OPEN_EVENT(expiry), { event: 'abandon', mode: 'explore', taskId: '内部任务-1', transactionId: 'tx-1', disposition: '归档', at: '2026-09-28T00:00:00Z' }],
+    events: [OPEN_EVENT(expiry), { event: 'abandon', mode: 'explore', taskId: 'TASK-1', transactionId: 'tx-1', disposition: '归档', at: '2026-09-28T00:00:00Z' }],
     central: null,
   });
   try {
@@ -187,7 +187,7 @@ test('违例：事务待恢复（journal 残留）→ 退出 1 指向 mode-lifec
 });
 
 test('违例：v2 声明待迁移 → 退出 1 指向 migrate-v2', () => {
-  const root = projectWith({ mode: { schemaVersion: 2, mode: 'explore', expiry: future(30), taskId: '内部任务-V2', transactionId: 't' } });
+  const root = projectWith({ mode: { schemaVersion: 2, mode: 'explore', expiry: future(30), taskId: 'TASK-V2', transactionId: 't' } });
   try {
     const r = run(root);
     assert.equal(r.status, 1);
@@ -473,7 +473,7 @@ test('违例：本地声明不可读（mode.json 为目录）→ T17 权限/占�
   }
 });
 
-test('T13：root 存在但为文件 → 退 2 点名「不是目录」（守卫另一臂，内部任务-337）', () => {
+test('T13：root 存在但为文件 → 退 2 点名「不是目录」（守卫另一臂，DEV-337）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'dev337-t13file-'));
   try {
     const fileRoot = join(dir, 'not-a-dir');
@@ -484,12 +484,12 @@ test('T13：root 存在但为文件 → 退 2 点名「不是目录」（守卫�
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('⑪：absent+中央 active 字段不全 → 降级文案含「字段不完整或形态不符」（内部任务-337 文案锁）', () => {
-  const root = projectWith({ central: [{ id: '内部任务-STALE-1', status: 'active', taskType: 'scout-mode' }] });
+test('⑪：absent+中央 active 字段不全 → 降级文案含「字段不完整或形态不符」（DEV-337 文案锁）', () => {
+  const root = projectWith({ central: [{ id: 'TASK-STALE-1', status: 'active', taskType: 'scout-mode' }] });
   try {
     const r = run(root);
     assert.equal(r.status, 1);
     assert.ok(r.stdout.includes('字段不完整或形态不符，无法生成手工命令'), `降级文案单源锁，收到：${r.stdout}`);
-    assert.ok(r.stdout.includes('内部任务-STALE-1'), '条目点名保留');
+    assert.ok(r.stdout.includes('TASK-STALE-1'), '条目点名保留');
   } finally { rmSync(root, { recursive: true, force: true }); }
 });

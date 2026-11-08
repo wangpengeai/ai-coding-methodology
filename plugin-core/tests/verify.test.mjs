@@ -11,6 +11,8 @@ import { spawnSync } from 'node:child_process';
 import { tempRoot, removeRoot, writeFile, REPO_ROOT } from './helpers.mjs';
 
 const CLI = join(REPO_ROOT, 'plugin-core', 'cli.mjs');
+// 公开包守卫（内部任务-365）：仓级 scripts/ 未随公开包发布；源仓资产在位时照常执行。
+const HAS_REPO_SCRIPTS = existsSync(join(REPO_ROOT, 'scripts', 'check-repo-consistency.mjs'));
 
 function runCli(root, args) {
   // 刻意不经 shell 拼接（防代码页打坏参数），env 透传
@@ -120,12 +122,12 @@ test('CLI 错误边界：manifest 校验失败 → 退 1 且单行 [plugin-core]
     assert.equal(r.stderr.trim().split('\n').length, 1, `预期内错误须单行输出：${r.stderr}`);
     // 内部任务-333：入口退出纪律源扫描（kimi cli:1169 内部任务-241 先例）——回归 process.exit(main 即红
     const cliSrc = readFileSync(CLI, 'utf8');
-    assert.ok(!cliSrc.includes('process.exit(main'), 'cli.mjs 入口不得 process.exit(main（管道截断；内部任务-241 纪律）');
+    assert.ok(!cliSrc.includes('process.exit(main'), 'cli.mjs 入口不得 process.exit(main（管道截断；DEV-241 纪律）');
     assert.ok(cliSrc.includes('process.exitCode'), 'cli.mjs 入口须以 exitCode 赋值退出');
   } finally { removeRoot(root); }
 });
 
-test('consistency 第 13 块存活锚（终审处置）：pc-* 全部规则须出现在 checked.checks——整块被删即红', () => {
+test('consistency 第 13 块存活锚（终审处置）：pc-* 全部规则须出现在 checked.checks——整块被删即红', { skip: HAS_REPO_SCRIPTS ? false : '公开包不含仓级 scripts/（源仓照跑）' }, () => {
   // 外部消费者形态（release-suite 防回退锚同款）：块内恒真锚在被删时随块消失，唯有跨文件断言真防跳过
   const r = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'check-repo-consistency.mjs')], { encoding: 'utf8' });
   assert.equal(r.status, 0, `一致性本身须绿：${r.stdout}${r.stderr}`);

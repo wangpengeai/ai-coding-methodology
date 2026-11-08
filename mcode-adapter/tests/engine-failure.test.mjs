@@ -205,7 +205,7 @@ describe('引擎不可得的失败可见面（批 3 步骤 4）', () => {
 
   // ── 内部任务-347 批 C（内部未决-285）：tmp 残留清扫 ──
 
-  it('内部未决-285 sweepStaleTmp：死 pid＋超龄清、活 pid（含 EPERM 语义）与新鲜件留', () => {
+  it('OPEN-285 sweepStaleTmp：死 pid＋超龄清、活 pid（含 EPERM 语义）与新鲜件留', () => {
     const dir = tempRoot('sweep-mcode');
     try {
       const mk = (name, ageMs) => {
@@ -225,7 +225,7 @@ describe('引擎不可得的失败可见面（批 3 步骤 4）', () => {
     } finally { removeRoot(dir); }
   });
 
-  it('内部未决-285 sweepStaleTmp EPERM 语义：System pid（存在但拒权限）视为存活跳过', () => {
+  it('OPEN-285 sweepStaleTmp EPERM 语义：System pid（存在但拒权限）视为存活跳过', () => {
     if (process.platform !== 'win32') return; // EPERM 夹具只在 Windows 稳定（pid4=System）
     const dir = tempRoot('sweep-mcode-epm');
     try {

@@ -100,7 +100,7 @@ node workflow/hooks/check-careful.mjs --selftest && node workflow/hooks/session-
 - **保密选择不固定**：内部路径 glob / 内部 ID 正则 / 内部术语正则 / 悬空引用豁免 / 扫描面 / 许可要求全部由 `policy.json` 用户自选，工具不内置任何保密词表或固定档位；空内部规则集须显式 `acknowledgeNoInternalRules` 确认（防零规则假绿）。
 - **内部路径规则分面（内部决策-062 修正案 3）**：`internal.pathPatterns` 承担源路径与包内路径保护（恒全量）；可选 `internal.textPathPatterns`（glob 数组）只作用「包内文本中的路径样 token」检测——缺省或显式空数组 `[]` 均回落 `pathPatterns`（不静默关闭），提供时文本面与源保护解耦；`contract.git.commitMessage/author` 扫描**恒用 `pathPatterns`**（安全边界不随文本分面收窄）；dot 前缀路径 token 与扩展名限定家族已在修正案 4 纳入文本面（见下条）。
 - **投影必须从干净检出执行**：CDM `dir` 展开会纳入 ignored 文件与源侧 symlink（如 `node_modules/.bin`），活跃工作树并发写会触发「源仓在投影期间发生变化」只读断言失败；推荐先做检查点提交，再从该 commit `git clone` 出投影源树。
-- **扫描面补充与内容级清洗（内部决策-062 修正案 4）**：`scan.include`（glob）与 `scan.extensions` 并集构成文本词表面（无扩展名/`.sha256`/许可文件可纳入）；路径 token 首字符允许 `.`（dot 目录文本规则生效）；可选 `policy.rewrite.rules[]`（用户完全自选，工具零内置）在投影 staging 内静态改写——文档/测试/夹具按全文本面、生产代码仅注释面（字符串/模板/正则不触碰）；改写后重算 MANIFEST、目标面残留由 `rewrite-residual` 恒 blocking（export 与 lint 同判据），未覆盖面残留计入导出 JSON `rewrite.untargetedResidual` 如实披露。
+- **扫描面补充与内容级清洗（内部决策-062 修正案 4/5）**：`scan.include`（glob）与 `scan.extensions` 并集构成文本词表面（无扩展名/`.sha256`/许可文件可纳入）；路径 token 首字符允许 `.`（dot 目录文本规则生效）；可选 `policy.rewrite.rules[]`（用户完全自选，工具零内置）在投影 staging 内静态改写——文档（`.md/.txt/.html`，含测试目录下 Markdown）全文改写、生产与测试 JS 仅注释面（字符串/模板/正则不触碰）、测试/fixture 数据文件（枚举扩展名 `.json/.jsonc/.json5/.jsonl/.ya?ml/.toml/.ini/.conf/.lock`）与其他语言源码不改写（其余未知扩展名沿用 doc 面；功能数据请用 `rewrite.exclude`）；可选 `policy.rewrite.exclude`（glob）命中文件整文件不改写。改写后重算 MANIFEST、目标面残留由 `rewrite-residual` 恒 blocking（export 与 lint 同判据），未覆盖面残留计入导出 JSON `rewrite.untargetedResidual` 如实披露。
 - **CLI 输出完整性（内部任务-333 同族）**：`deliver-export`/`deliver-lint` 直跑以 `process.exitCode` 退出（`--help` 除外），POSIX 管道捕获 >64KiB violations JSON 不再截断；退出码语义不变。
 - 命令（在**被治理项目根**执行）：
 
@@ -113,7 +113,7 @@ node workflow/hooks/check-careful.mjs --selftest && node workflow/hooks/session-
 - 退出码：`0` 通过／`1` 内容违例（包内 lint blocking）／`2` 配置、参数或工具错误。
 - **悬空引用恒 blocking、无降级开关**：交付包内文本文档的四形态相对引用（Markdown inline 链接/图片、引用式定义、HTML href·src）必须解析到包内；源仓实存但未进包的文件被引用即 `removed-doc-reference`——**移除文档后不会留下悬空引用**。
 - 导出事务：`--out` 同父目录 staging → 生成交付报告/审计包/`MANIFEST.sha256.json` → 包内 lint 通过才原子落位；失败不留半成品；默认初始化全新 git 历史（单 commit、无内部提交信息），`--no-git` 显式降级。源仓只读（投影前后源树除源 `.git/` 外不变、源 `.git` 历史不变）。
-- 限制（如实）：文本面机检，不覆盖正文语义/图片与二进制内嵌信息/未配置规则；不做内容自动改写（内部未决-184）、不做许可证识别；真实甲方/第三方审计演练见 内部未决-185。规格：`内部规格 内部决策-062`、`内部规格 内部模块-26`、`内部规格 内部接口-25`。
+- 限制（如实）：文本面机检，不覆盖正文语义/图片与二进制内嵌信息/未配置规则；不做 AST 级语义改写与许可证识别（内部未决-184）；真实甲方/第三方审计演练见 内部未决-185。规格：`内部规格 内部决策-062`、`内部规格 内部模块-26`、`内部规格 内部接口-25`。
 
 ## 许可
 

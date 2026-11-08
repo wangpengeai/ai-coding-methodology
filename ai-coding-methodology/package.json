@@ -1,6 +1,6 @@
 {
   "name": "ai-coding-methodology",
-  "version": "0.23.4",
+  "version": "1.0.0",
   "type": "module",
   "description": "Bring six AI coding methodology plugins (workflow engine, spec gating, exploration mode, team governance, algorithm iteration, research loop) from ZCode into DeepSeek Harness — hooks, skills, commands and agents, with the ZCode side left untouched.",
   "keywords": [

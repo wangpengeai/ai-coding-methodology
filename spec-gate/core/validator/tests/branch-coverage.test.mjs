@@ -87,17 +87,17 @@ test('sdd_check.main/checkSuite/checkLedger：help/未接入/坏 JSON/非法 bou
     assert.equal(silently(() => sddCheckMain(['--project', project])).code, 2, '非法 boundaries 退 2');
     writeFileSync(join(project, '.sdd', 'project.json'), JSON.stringify({ boundaries: [] }), 'utf8');
     // 业务分支：坏 suite / 坏 ledger 各自抛错或产出诊断（不静默跳过）
-    assert.throws(() => checkSuite(project, '内部治理状态'), /suite 配置不存在/, 'suite 缺失应显式报错');
+    assert.throws(() => checkSuite(project, '.sdd/suite.json'), /suite 配置不存在/, 'suite 缺失应显式报错');
     writeFileSync(join(project, '.sdd', 'suite.json'), '{bad', 'utf8');
     let badSuite = null;
-    try { badSuite = checkSuite(project, '内部治理状态'); } catch (error) { badSuite = [{ message: String(error.message) }]; }
+    try { badSuite = checkSuite(project, '.sdd/suite.json'); } catch (error) { badSuite = [{ message: String(error.message) }]; }
     assert.ok(Array.isArray(badSuite) && badSuite.length > 0, '坏 suite JSON 应可见（抛错或诊断）');
     let ledgerDiag = null;
-    try { ledgerDiag = checkLedger(project, '内部治理状态', new Date().toISOString()); } catch (error) { ledgerDiag = [{ message: String(error.message) }]; }
+    try { ledgerDiag = checkLedger(project, '.sdd/ledger.json', new Date().toISOString()); } catch (error) { ledgerDiag = [{ message: String(error.message) }]; }
     assert.ok(Array.isArray(ledgerDiag) && ledgerDiag.length > 0, 'ledger 缺失/坏件应可见');
     writeFileSync(join(project, '.sdd', 'ledger.json'), JSON.stringify({ tasks: 'bad' }), 'utf8');
     let badLedger = null;
-    try { badLedger = checkLedger(project, '内部治理状态', new Date().toISOString()); } catch (error) { badLedger = [{ message: String(error.message) }]; }
+    try { badLedger = checkLedger(project, '.sdd/ledger.json', new Date().toISOString()); } catch (error) { badLedger = [{ message: String(error.message) }]; }
     assert.ok(Array.isArray(badLedger) && badLedger.length > 0, '坏 ledger 形状应可见');
   } finally { rmSync(home, { recursive: true, force: true, maxRetries: 3 }); }
 });
@@ -123,7 +123,7 @@ test('capture_evidence.main/redactText/summarize：help/缺参/不存在目录/�
   } finally { rmSync(home, { recursive: true, force: true, maxRetries: 3 }); }
 });
 
-test('内部任务-242 C01/C08＋安全复审 S-3/S-4：别名/组合短旗标/criteria 脱敏＋信号退出码映射', () => {
+test('DEV-242 C01/C08＋安全复审 S-3/S-4：别名/组合短旗标/criteria 脱敏＋信号退出码映射', () => {
   const home = mkdtempSync(join(tmpdir(), 'dev242-c01-'));
   const out = join(home, 'evidence.jsonl');
   try {
@@ -156,7 +156,7 @@ test('内部任务-242 C01/C08＋安全复审 S-3/S-4：别名/组合短旗标/c
   }
 });
 
-test('内部任务-242 C05/C06/C07/C10：分隔行列数/行切分同源/围栏 A 行/expandRefs 压缩形态', () => {
+test('DEV-242 C05/C06/C07/C10：分隔行列数/行切分同源/围栏 A 行/expandRefs 压缩形态', () => {
   // C05：分隔行列数与表头不一致 → blocking（旧实现只查数据行）
   const badSep = checkMarkdownStructure('x.md', '|a|b|\n|---|\n|1|2|\n');
   assert.ok(badSep.some((d) => d.severity === 'blocking' && d.fixHint.includes('分隔行')), `分隔行列数须报：${JSON.stringify(badSep)}`);
@@ -170,19 +170,19 @@ test('内部任务-242 C05/C06/C07/C10：分隔行列数/行切分同源/围栏 
   // C07 + C10：expandRefs 斜杠多段/范围展开；围栏内 A 行不得冒充追溯
   const docText = [
     '## 2 需求', '', '| 编号 | 描述 |', '|---|---|',
-    '| 内部规则-1 | a |', '| 内部规则-2 | b |', '| 内部规则-3 | c |', '| 内部规则-9 | d |', '',
+    '| R-M7-1 | a |', '| R-M7-2 | b |', '| R-M7-3 | c |', '| R-M7-9 | d |', '',
     '## 6 验收表', '', '| 编号 | 行为 | 锁定方式 |', '|---|---|---|',
-    '| 内部验收-1 | 压缩斜杠 | 内部规则-1/2/3 |',
-    '| 内部验收-2 | 范围 | 内部规则-2至3 |', '',
-    '~~~text', '| 内部验收-9 | 围栏示例 | 内部规则-9 |', '~~~', '',
+    '| A-M7-1 | 压缩斜杠 | R-M7-1/2/3 |',
+    '| A-M7-2 | 范围 | R-M7-2至3 |', '',
+    '~~~text', '| A-M7-9 | 围栏示例 | R-M7-9 |', '~~~', '',
   ].join('\n');
   const diags = checkTraceability('m.md', docText, 0, { documentType: 'module-volume' });
   const lackA = diags.filter((d) => d.severity === 'warning' && d.fixHint.includes('尚无 A 行追溯'));
-  assert.equal(lackA.length, 1, `仅 内部规则-9 缺 A（围栏 A 行不得冒充）：${JSON.stringify(lackA)}`);
-  assert.ok(lackA[0].fixHint.includes('内部规则-9'), '缺口须为 内部规则-9（内部规则-1/2/3 被压缩展开覆盖）');
+  assert.equal(lackA.length, 1, `仅 R-M7-9 缺 A（围栏 A 行不得冒充）：${JSON.stringify(lackA)}`);
+  assert.ok(lackA[0].fixHint.includes('R-M7-9'), '缺口须为 R-M7-9（R-M7-1/2/3 被压缩展开覆盖）');
 });
 
-test('内部任务-242 C09：非 ZCode 布局按 plugin.manifest.json 回退定位并通过结构校验', () => {
+test('DEV-242 C09：非 ZCode 布局按 plugin.manifest.json 回退定位并通过结构校验', () => {
   const root = mkdtempSync(join(tmpdir(), 'dev242-c09-'));
   const pluginDir = join(root, 'my-plugin');
   const old = process.env.SDD_AC_PLUG_ROOT;
@@ -209,7 +209,7 @@ test('内部任务-242 C09：非 ZCode 布局按 plugin.manifest.json 回退定�
   }
 });
 
-test('内部任务-242 内部未决-204：sdd_init --dry-run 零写盘＋未知旗标退 2', () => {
+test('DEV-242 OPEN-204：sdd_init --dry-run 零写盘＋未知旗标退 2', () => {
   const project = mkdtempSync(join(tmpdir(), 'dev242-204-'));
   try {
     const dry = silently(() => sddInitMain(['--project', project, '--dry-run']));
@@ -225,7 +225,7 @@ test('内部任务-242 内部未决-204：sdd_init --dry-run 零写盘＋未知�
   }
 });
 
-test('内部任务-242 C04/E03：校验器工具错误/未知退出码→ConfigError（不退 1 内容诊断）', () => {
+test('DEV-242 C04/E03：校验器工具错误/未知退出码→ConfigError（不退 1 内容诊断）', () => {
   const project = mkdtempSync(join(tmpdir(), 'dev242-c04-'));
   const old = process.env.SDD_CHECK_VALIDATOR;
   try {
@@ -235,22 +235,22 @@ test('内部任务-242 C04/E03：校验器工具错误/未知退出码→ConfigE
     const stub = join(project, 'stub-validator.mjs');
     writeFileSync(stub, 'process.exit(3);\n', 'utf8');
     process.env.SDD_CHECK_VALIDATOR = stub;
-    assert.throws(() => checkSuite(project, '内部治理状态'), ConfigError, '未知退出码 3 属工具错误');
+    assert.throws(() => checkSuite(project, '.sdd/suite.json'), ConfigError, '未知退出码 3 属工具错误');
     writeFileSync(stub, "process.stdout.write(JSON.stringify({error:'boom'})); process.exit(2);\n", 'utf8');
-    assert.throws(() => checkSuite(project, '内部治理状态'), ConfigError, 'status=2 属工具错误');
+    assert.throws(() => checkSuite(project, '.sdd/suite.json'), ConfigError, 'status=2 属工具错误');
     writeFileSync(stub, 'process.exit(1);\n', 'utf8');
-    assert.throws(() => checkSuite(project, '内部治理状态'), /输出不可解析/, 'S-7：status=1 无输出属工具/协议故障');
+    assert.throws(() => checkSuite(project, '.sdd/suite.json'), /输出不可解析/, 'S-7：status=1 无输出属工具/协议故障');
     writeFileSync(stub, "process.stdout.write(JSON.stringify({diagnostics:[]}));\n", 'utf8');
-    assert.throws(() => checkSuite(project, '内部治理状态'), /报告形态非法/, 'S-7：缺 blockingCount 属工具/协议故障');
+    assert.throws(() => checkSuite(project, '.sdd/suite.json'), /报告形态非法/, 'S-7：缺 blockingCount 属工具/协议故障');
     writeFileSync(stub, "process.stdout.write(JSON.stringify({diagnostics:[],blockingCount:0}));\n", 'utf8');
-    assert.deepEqual(checkSuite(project, '内部治理状态'), [], '正常报告返回诊断数组');
+    assert.deepEqual(checkSuite(project, '.sdd/suite.json'), [], '正常报告返回诊断数组');
   } finally {
     if (old === undefined) delete process.env.SDD_CHECK_VALIDATOR; else process.env.SDD_CHECK_VALIDATOR = old;
     rmSync(project, { recursive: true, force: true, maxRetries: 3 });
   }
 });
 
-test('内部任务-242 C03：边界扫描收录 .mjs/.cjs 源文件', () => {
+test('DEV-242 C03：边界扫描收录 .mjs/.cjs 源文件', () => {
   assert.ok(SOURCE_EXTENSIONS.has('.mjs'), '.mjs 属源文件');
   assert.ok(SOURCE_EXTENSIONS.has('.cjs'), '.cjs 属源文件');
   const root = mkdtempSync(join(tmpdir(), 'dev242-c03-'));
@@ -266,7 +266,7 @@ test('内部任务-242 C03：边界扫描收录 .mjs/.cjs 源文件', () => {
   }
 });
 
-test('内部任务-242 C02：受检文件缺失→RULE-PACK-002；非 UTF-8→RULE-PACK-002；目录→ConfigError（工具错误）', () => {  const root = mkdtempSync(join(tmpdir(), 'dev242-c02-'));
+test('DEV-242 C02：受检文件缺失→RULE-PACK-002；非 UTF-8→RULE-PACK-002；目录→ConfigError（工具错误）', () => {  const root = mkdtempSync(join(tmpdir(), 'dev242-c02-'));
   try {
     const missing = validateDocument(root, { path: 'nope.md' }, 'draft', []);
     assert.ok(missing.some((d) => d.ruleId === 'RULE-PACK-002' && d.severity === 'blocking'), '缺失文件按内容诊断');
@@ -280,7 +280,7 @@ test('内部任务-242 C02：受检文件缺失→RULE-PACK-002；非 UTF-8→RU
   }
 });
 
-test('内部任务-347 内部未决-152⑤：噪音词在行内代码中不计（RULE-SPEC-004 误报方向收口）', () => {
+test('DEV-347 OPEN-152⑤：噪音词在行内代码中不计（RULE-SPEC-004 误报方向收口）', () => {
   const root = mkdtempSync(join(tmpdir(), 'dev347-o152e-'));
   try {
     // 正文裸写命中；行内代码与围栏内不命中
@@ -331,5 +331,5 @@ test('buildReport/suiteModeChecks/parseArgs 边界分支（CR-12 余量补测）
   assert.throws(() => validatorMain(['--bogus']), /unrecognized arguments/);
   assert.throws(() => validatorMain(['--config']), /expected one argument/);
   assert.throws(() => validatorMain(['--format', 'xml']), /invalid choice/);
-  assert.equal(silently(() => validatorMain(['--mode=plan', '--plan=/nonexistent-plan-xyz.md', '--config=内部治理状态'])).code, 2, '不存在计划须退 2');
+  assert.equal(silently(() => validatorMain(['--mode=plan', '--plan=/nonexistent-plan-xyz.md', '--config=.sdd/suite.json'])).code, 2, '不存在计划须退 2');
 });

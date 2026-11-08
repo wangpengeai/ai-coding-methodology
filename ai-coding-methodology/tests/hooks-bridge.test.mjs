@@ -300,7 +300,7 @@ test('buildPayload：五事件信封形态（camelCase、hook_event_name 与事�
   assert.deepEqual(
     post.tool_result,
     { exit_code: 3, is_error: false, stdout: 'boom\n[exit code: 3]', stderr: '' },
-    '内部未决-46：结构化面 = 退出码 + 失败事实 + 文本，stderr 恒空串',
+    'OPEN-46：结构化面 = 退出码 + 失败事实 + 文本，stderr 恒空串',
   );
   const postFlag = buildPayload('PostToolUse', {
     sessionId: 's1', cwd: 'C:/p', toolName: 'edit', toolInput: { file_path: 'a.txt' }, callId: 'c2',
@@ -373,7 +373,7 @@ test('decodeHookOutput：退出码 0 的结构化信封取 permissionDecision �
   assert.equal(ctx.additionalContext, '元技能全文');
 });
 
-test('decodeHookOutput：信封事件名不一致时丢弃事件域字段（内部接口-1 §3 信封校验）', () => {
+test('decodeHookOutput：信封事件名不一致时丢弃事件域字段（IF-HOST-1 §3 信封校验）', () => {
   const mismatched = JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: '不该注入' } });
   const out = decodeHookOutput(0, mismatched, '', 'PreToolUse');
   assert.equal(out.additionalContext, undefined);
@@ -443,7 +443,7 @@ test('handlerCommandLine：args 中的插件根占位符先替换后引用', () 
   );
 });
 
-test('内部未决-243（内部任务-308）：裸 node 命令改写为 process.execPath（其余命令与占位符不变）', () => {
+test('OPEN-243（DEV-308）：裸 node 命令改写为 process.execPath（其余命令与占位符不变）', () => {
   const prefix = process.platform === 'win32' ? '& ' : '';
   const nodeCmd = quoteArg(process.execPath);
   const line = handlerCommandLine({ command: 'node', args: ['${ZCODE_PLUGIN_ROOT}/hooks/a.mjs'] }, { ZCODE_PLUGIN_ROOT: 'X:/p' });
@@ -509,7 +509,7 @@ test('readManifestHookConfig：无可用中立源返回 null 三态（缺失 / J
   assert.equal(readManifestHookConfig(arrayTop), null, '顶层为数组 ⇒ null');
 });
 
-test('内部未决-276：中立清单 hooks 非数组须记诊断（不得静默零声明）', (t) => {
+test('OPEN-276：中立清单 hooks 非数组须记诊断（不得静默零声明）', (t) => {
   const root = makeTemp(t);
   writeFileSync(join(root, 'plugin.manifest.json'), JSON.stringify({ name: 'x', hooks: {} }), 'utf8');
   const diag = { dropped: [] };
@@ -517,7 +517,7 @@ test('内部未决-276：中立清单 hooks 非数组须记诊断（不得静默
   assert.ok(diag.dropped.some((d) => d.reason === 'hooks-not-array'), '须记 hooks-not-array 诊断（不静默）');
 });
 
-test('readHookConfig：中立源优先——清单与生成物声明不同时以清单为准（内部决策-036 唯一编辑面）', (t) => {
+test('readHookConfig：中立源优先——清单与生成物声明不同时以清单为准（ADR-036 唯一编辑面）', (t) => {
   const root = makeManifestPlugin(
     t,
     [{ event: 'PreToolUse', matcher: 'Bash', type: 'process', command: 'node', args: ['中性.mjs'], timeoutMs: 1111, statusMessage: '中立' }],
@@ -832,7 +832,7 @@ test('apply：真实 workflow 护栏——危险命令 deny，文案为 ZCode �
 
 // ── 内部未决-95：委派深度判据漂移可观测（内部任务-48） ────────────────────────────────
 
-test('内部未决-95：委派深度判据漂移一次性脱敏告警（origin=subagent 而两深度源皆缺失/非法）', async (t) => {
+test('OPEN-95：委派深度判据漂移一次性脱敏告警（origin=subagent 而两深度源皆缺失/非法）', async (t) => {
   // 为什么用 fixture 单插件面：漂移告警是适配层观测行为，不依赖真实钩子内容——最小
   // exit(0) 钩只保证 UPS/Stop 两事件面注册，判据全在 agent 夹具形态上。
   const root = makeSinglePluginSuite(
@@ -1056,7 +1056,7 @@ test('runHandler：请求带 per-call 沙箱策略覆盖（R-hooks-2——不覆
   assert.ok(Object.isFrozen(HOOK_SANDBOX_POLICY), '覆盖常量须只读：运行期不得被改掉策略');
 });
 
-test('宿主契约（内部未决-40）：dsh-pwsh-sandbox 的 resolve() 仍按 `request.sandboxPolicy` 盖章', async () => {
+test('宿主契约（OPEN-40）：dsh-pwsh-sandbox 的 resolve() 仍按 `request.sandboxPolicy` 盖章', async () => {
   // 为什么要有（2026-09-29 内部任务-DSHADAPTER-2，收尾评审 C-1/M-1 + 内部规格 内部未决-40）：
   // 上批的适配层用例只断言"本层请求带了该字段"，不碰宿主实现；宿主一旦改名或取消按调用覆盖，
   // 本层会**静默**退回 P2 修复前的失效形态（钩子写不了状态目录 → exit 0 + stdout/stderr 皆空 +
@@ -1066,9 +1066,9 @@ test('宿主契约（内部未决-40）：dsh-pwsh-sandbox 的 resolve() 仍按 
   // 局限（如实记）：这是源码级锚定（非实例化回环）；宿主若换成等价但改名的实现，本用例会红并
   // 提示人工复核，而不是漏过。
   const host = await loadEngine('@deepseek-ai/dsh-pwsh-sandbox');
-  assert.ok(host !== undefined, '宿主包 @deepseek-ai/dsh-pwsh-sandbox 抽取失败：无法校验契约（内部未决-40 钉子不允许静默跳过）');
+  assert.ok(host !== undefined, '宿主包 @deepseek-ai/dsh-pwsh-sandbox 抽取失败：无法校验契约（OPEN-40 钉子不允许静默跳过）');
   const executor = host.default ?? host.SandboxPwshExecutor;
-  assert.equal(typeof executor?.prototype?.resolve, 'function', '宿主执行器应有 resolve()（形态已变，请复核 内部未决-40）');
+  assert.equal(typeof executor?.prototype?.resolve, 'function', '宿主执行器应有 resolve()（形态已变，请复核 OPEN-40）');
   const src = String(executor.prototype.resolve);
   // 锚点必须精确到「按调用覆盖」这一形态：`sandboxPolicy` 裸串在宿主 resolve 源码里出现三处
   // （结果键、request 字段、ctx 兜底），只锚裸串时"宿主取消按调用覆盖"（改成直接取 ctx 兜底）与
@@ -1076,10 +1076,10 @@ test('宿主契约（内部未决-40）：dsh-pwsh-sandbox 的 resolve() 仍按 
   // 正确性阻塞 1 的实测结论）。故锚 `request.sandboxPolicy ??` 的完整读法。
   assert.ok(
     /request\.sandboxPolicy\s*\?\?/.test(src),
-    '宿主 resolve() 须仍以 `request.sandboxPolicy ?? …` 读按调用覆盖——裸串锚不住"取消覆盖"与"字段改名"两种变更（内部未决-40）',
+    '宿主 resolve() 须仍以 `request.sandboxPolicy ?? …` 读按调用覆盖——裸串锚不住"取消覆盖"与"字段改名"两种变更（OPEN-40）',
   );
   // 直通分支在 execute()（resolve 只盖章策略；实测 resolve 源码不含该字面量，故分函数锚定）
-  assert.equal(typeof executor?.prototype?.execute, 'function', '宿主执行器应有 execute()（形态已变，请复核 内部未决-40）');
+  assert.equal(typeof executor?.prototype?.execute, 'function', '宿主执行器应有 execute()（形态已变，请复核 OPEN-40）');
   assert.ok(
     String(executor.prototype.execute).includes('danger-full-access'),
     '宿主 execute() 须仍保留 danger-full-access 的直通分支——删除即本层覆盖不再免沙箱',
@@ -1093,7 +1093,7 @@ test('宿主契约（内部未决-40）：dsh-pwsh-sandbox 的 resolve() 仍按 
   const hostPosix = await loadEngine('@deepseek-ai/dsh-bash-sandbox');
   assert.ok(hostPosix !== undefined, '宿主包 @deepseek-ai/dsh-bash-sandbox 抽取失败：POSIX 侧契约无法校验（不允许静默跳过）');
   const posixExecutor = hostPosix.default ?? hostPosix.SandboxBashExecutor;
-  assert.equal(typeof posixExecutor?.prototype?.resolve, 'function', 'POSIX 执行器应有 resolve()（形态已变，请复核 内部未决-40）');
+  assert.equal(typeof posixExecutor?.prototype?.resolve, 'function', 'POSIX 执行器应有 resolve()（形态已变，请复核 OPEN-40）');
   assert.ok(
     /request\.sandboxPolicy\s*\?\?/.test(String(posixExecutor.prototype.resolve)),
     'POSIX 宿主 resolve() 须仍以 `request.sandboxPolicy ?? …` 读按调用覆盖（裸串锚不住字段改名——同 Windows 侧判据）',
@@ -1178,7 +1178,7 @@ test('fail-open 兜底：监听器内部抛错绝不外溢到宿主（五个事�
   );
 });
 
-test('resolveAvailableTools：公开 API tools.get 逐候选探测（内部任务-273 H-02；分支全覆盖）', async () => {
+test('resolveAvailableTools：公开 API tools.get 逐候选探测（DEV-273 H-02；分支全覆盖）', async () => {
   const { resolveAvailableTools, resolveService } = await import('../src/index.mjs');
   const withTools = (tools) => ({ get: (n) => (n === 'tools' ? tools : undefined) });
 
@@ -1218,7 +1218,7 @@ test('resolveAvailableTools：公开 API tools.get 逐候选探测（内部任�
   assert.equal(resolveService({}, 'tools'), undefined);
 });
 
-test('内部任务-273 H-08：插件根受信边界——node_modules 基址不参与同级发现、pluginRoots 相对路径被拒', async () => {
+test('DEV-273 H-08：插件根受信边界——node_modules 基址不参与同级发现、pluginRoots 相对路径被拒', async () => {
   const { discoverPlugins, resolvePluginRoots, isPluginRoot } = await import('../src/index.mjs');
   const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
@@ -1874,7 +1874,7 @@ test('注入消息字段集合 = 宿主工厂**真实输出**的键集合（宿�
   assert.deepEqual(
     Object.keys(hostUser).sort(),
     ['content', 'id', 'role', 'source'],
-    '宿主工厂输出形状变化 ⇒ 本批登记的契约（内部接口-1 第二宿主实例化登记「注入消息信封」）须同步复核',
+    '宿主工厂输出形状变化 ⇒ 本批登记的契约（IF-HOST-1 第二宿主实例化登记「注入消息信封」）须同步复核',
   );
 });
 
@@ -1926,7 +1926,7 @@ test('fail-open 兜底：tools/execute 中间件返回链值、next 恰调用一
   assert.deepEqual(out, { kind: 'continue' }, '必须**返回**链值（`next();` 不 return ⇒ undefined ⇒ 宿主把成功调用判为失败）');
 });
 
-test('宿主结构化面（内部未决-46）：result.value.exitCode / isError 装配进负载并落账', async (t) => {
+test('宿主结构化面（OPEN-46）：result.value.exitCode / isError 装配进负载并落账', async (t) => {
   // 为什么要有：单测只证 `buildPayload` 形态，证不了"真实 post-execute 的形状 → 适配层取值
   // → 负载 → 真实钩子 → 账本"。本用例把整链钉住：宿主 `ToolExecutionResult` 没有顶层
   // exitCode，真退出码在 `result.value.exitCode`；edit 类失败只有 `result.isError`。
@@ -2026,7 +2026,7 @@ test('调用层拒绝抑制（批 3 步骤 2）：未派发 ⇒ 失败位不透�
   assert.deepEqual(Object.keys(buildPayload('PostToolUse', {}).tool_result).sort(), ['is_error', 'stderr', 'stdout'], '合成 tool_result 键集不变');
 });
 
-test('内部未决-60（内部任务-59）：未派发调用重复三次 ⇒ 不派发钩子 ⇒ 账本零行（含 retry-loop 通道）', async (t) => {
+test('OPEN-60（DEV-59）：未派发调用重复三次 ⇒ 不派发钩子 ⇒ 账本零行（含 retry-loop 通道）', async (t) => {
   // 判据＝**是否经过宿主派发点** `tools/execute`（同上一用例）。本用例锁的是**本批新收口的通道**：
   // 修复前 `post-tool.mjs` 的重试环推进**先于** `classifyResult` 且不受派发门控 ⇒ 未派发调用
   // 在同一会话内第 3 次即落一条 `retry-loop`（内部任务-59 步骤 1.3 的真机探针因共享桶租约未复现，
@@ -2062,11 +2062,11 @@ test('内部未决-60（内部任务-59）：未派发调用重复三次 ⇒ 不
   assert.equal(nextCount, 3, '三次调用均走到 next（本层不阻断链路）');
   const ledger = join(tmp, '.workflow', 'incidents.jsonl');
   const rows = existsSync(ledger) ? readFileSync(ledger, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)) : [];
-  assert.deepEqual(rows.filter((r) => r.kind === 'retry-loop'), [], '未派发 ⇒ 不得落 retry-loop 行（内部任务-59 核心行为）');
+  assert.deepEqual(rows.filter((r) => r.kind === 'retry-loop'), [], '未派发 ⇒ 不得落 retry-loop 行（DEV-59 核心行为）');
   assert.deepEqual(rows.filter((r) => r.kind === 'tool-failure'), [], '未派发 ⇒ 不得落 tool-failure 行（既有行为保持）');
 });
 
-test('内部未决-60（内部任务-59）哨兵：PostToolUse 全暗 ⇒ 恰好告警一次；有派发 ⇒ 零告警；重复 ⇒ 不重复', async (t) => {
+test('OPEN-60（DEV-59）哨兵：PostToolUse 全暗 ⇒ 恰好告警一次；有派发 ⇒ 零告警；重复 ⇒ 不重复', async (t) => {
   // 为什么要有哨兵：派发判据押在 `exec` 对象身份（WeakSet）上，宿主契约漂移会让整个 PostToolUse
   // 观测面静默全暗、零信号（内部规则-1 的观测面失效）——本用例锁「全暗恰好一次告警」与「正常面零告警」。
   const tmp = mkdtempSync(join(tmpdir(), 'acm-dark-'));
@@ -2113,7 +2113,7 @@ test('内部未决-60（内部任务-59）哨兵：PostToolUse 全暗 ⇒ 恰好
   assert.equal(ctx.warnings.length, before, '有派发 ⇒ 零新增告警（含 10 次以上事件）');
 });
 
-test('内部未决-60（内部任务-59 回归修复）：事实面不可用时 fail-open —— 未派发调用照常派发钩子（观测面不暗）', async (t) => {
+test('OPEN-60（DEV-59 回归修复）：事实面不可用时 fail-open —— 未派发调用照常派发钩子（观测面不暗）', async (t) => {
   // 真机实证（2026-10-13 第二次重启后）：本宿主该版本/装配**不发生** `tools/execute` ⇒ `executed` 恒 false；
   // 若无条件早退，整个 PostToolUse 观测面静默全暗（两次确定失败调用零落账、环状态零更新）。
   // 本用例锁修复后的行为：事实面从未工作 ⇒ **不过早派发门控**（回到改动前"照常派发"），故三条未派发
@@ -2154,7 +2154,7 @@ test('内部未决-60（内部任务-59 回归修复）：事实面不可用时 
   assert.equal(
     rows.filter((r) => r.kind === 'retry-loop').length,
     1,
-    '内部任务-273 H-01：fail-open 场景不标 not-dispatched ⇒ 核心照常推进环（1 条 retry-loop，而非旧 0 行全暗）',
+    'DEV-273 H-01：fail-open 场景不标 not-dispatched ⇒ 核心照常推进环（1 条 retry-loop，而非旧 0 行全暗）',
   );
   // 失败位同门回退：事实面不可判定时 isError 照常透传，核心件产出结构化失败事实（不再静默丢弃）。
   await ctx.emit(
@@ -2168,7 +2168,7 @@ test('内部未决-60（内部任务-59 回归修复）：事实面不可用时 
   assert.ok(ctx.warnings.some((m) => String(m).includes('宿主未发生 tools/execute')), '同时留下"事实面未工作"告警（可观测）');
 });
 
-test('buildPayload：委派深度按键携带（内部任务-20 A1/F4）', () => {
+test('buildPayload：委派深度按键携带（DEV-20 A1/F4）', () => {
   // 为什么要有：宿主负载基础面不含 delegation 信息（buildPayload 只吃适配层传参），
   // 钩侧收窄注入面的唯一结构化判据就是本键——键的有无与取值形态是跨层契约。
   const up = buildPayload('UserPromptSubmit', { sessionId: 's1', cwd: 'C:/p', prompt: 'hi', delegationDepth: 1 });
@@ -2182,7 +2182,7 @@ test('buildPayload：委派深度按键携带（内部任务-20 A1/F4）', () =>
   assert.ok(!Object.hasOwn(buildPayload('Stop', { sessionId: 's1', cwd: 'C:/p', delegationDepth: '2' }), 'delegation_depth'), '字符串不产键（不得强转）');
 });
 
-test('内部任务-227 parent_session_id 负载扩展：委派子会话父 id 按键携带（A-da-15 锚）', () => {
+test('DEV-227 parent_session_id 负载扩展：委派子会话父 id 按键携带（A-da-15 锚）', () => {
   // 内部决策-061 D3（内部任务-227）：DSH 委派子会话需要在 UPS 负载带父会话 id，供 user-prompt 解析继承
   // 交付任务号；顶层会话/其余三宿主不传该字段 ⇒ 键缺席，负载零变化。
   const up = buildPayload('UserPromptSubmit', { sessionId: 's-child', cwd: 'C:/p', prompt: 'hi', delegationDepth: 1, parentSessionId: 'parent-1' });
@@ -2594,7 +2594,7 @@ async function seedToolFailureRows(t, headerOf) {
   return raw.split('\n').filter(Boolean).map((line) => JSON.parse(line));
 }
 
-test('内部模块-15 v2 tool 事件委派字段与观测事实供给', async (t) => {
+test('M15 v2 tool 事件委派字段与观测事实供给', async (t) => {
   // A-da-16 / 内部验收-27 主锚（内部任务-192 P2，内部决策-063 D5.3/D8.1）。四面：①负载条件键（委派维成对、
   // 顶层零键）；②`dispatch_fact` 三态；③真实链路归因落账（委派记录带 depth/parent、顶层不带）；
   // ④能力域声明 env 进钩子子进程（`WF_OBSERVATION_CAPABILITIES`）。
@@ -2625,9 +2625,9 @@ test('内部模块-15 v2 tool 事件委派字段与观测事实供给', async (t
   const delRec = failures.find((row) => row.session === 'm15v2-del');
   const topRec = failures.find((row) => row.session === 'm15v2-top');
   assert.equal(delRec?.delegationDepth, 1, '委派会话记录带 delegationDepth');
-  assert.equal(delRec?.parentSession, 'par-1', '委派会话记录带 parentSession（内部决策-063 D5.2 归因）');
+  assert.equal(delRec?.parentSession, 'par-1', '委派会话记录带 parentSession（ADR-063 D5.2 归因）');
   assert.equal(delRec?.dispatchFact, 'dispatched', '已派发 ⇒ 记录 dispatchFact=dispatched');
-  assert.equal(delRec?.observationSource, 'hook:post-tool', '观测来源随记录落账（内部接口-19 v2）');
+  assert.equal(delRec?.observationSource, 'hook:post-tool', '观测来源随记录落账（IF-COLLAB-19 v2）');
   assert.ok(topRec && !Object.hasOwn(topRec, 'delegationDepth') && !Object.hasOwn(topRec, 'parentSession'), '顶层记录不产委派字段（缺键而非空值）');
   // ④ 能力域声明进钩子子进程 env（R-da-16 ③：适配层必须声明四域）。
   const capBody = [
@@ -2648,11 +2648,11 @@ test('内部模块-15 v2 tool 事件委派字段与观测事实供给', async (t
   await capCtx.emit('tools/execute', capExec, async () => ({ kind: 'continue' }));
   await capCtx.emit('tools/post-execute', capExec, { isError: false, content: [{ type: 'text', text: 'ok' }] }, async () => ({ kind: 'accept' }));
   const captured = JSON.parse(readFileSync(join(roots.workflow, 'cap-env.json'), 'utf8'));
-  assert.deepEqual(captured, { ...DSH_OBSERVATION_CAPABILITIES }, '钩子子进程必须收到 DSH 四域能力声明（内部接口-1 DSH 列）');
+  assert.deepEqual(captured, { ...DSH_OBSERVATION_CAPABILITIES }, '钩子子进程必须收到 DSH 四域能力声明（IF-HOST-1 DSH 列）');
   assert.deepEqual(Object.keys(captured).sort(), ['failureFacts', 'hookFailure', 'injection', 'selfCheck'], '键集＝四能力域');
 });
 
-test('内部模块-15 v2 全暗哨兵经 emit 落账', async (t) => {
+test('M15 v2 全暗哨兵经 emit 落账', async (t) => {
   // 内部验收-26 第二锚（内部任务-192 P2，内部决策-063 D8.3 / R-da-16 ②）：PostToolUse 观测面全暗哨兵——
   // 除既有 logWarn 外经 内部接口-26 `emit` 上报一条 `observation-degraded`（每会话至多一次、
   // 含能力缺口与计数摘要、无原文键）；emit 失败 fail-open：写兜底旁路 `内部工作流状态`
@@ -2697,7 +2697,7 @@ test('内部模块-15 v2 全暗哨兵经 emit 落账', async (t) => {
   const { command, args, options } = calls[0];
   assert.equal(command, process.execPath, 'emit 经 node 子进程（跨单元调 CLI，不直接写账本）');
   assert.ok(args[0].endsWith(join('scripts', 'incident-cli.mjs')), `emit 目标＝workflow 侧 CLI（实际 ${args[0]}）`);
-  assert.deepEqual(args.slice(1), ['emit', '--project-root', REPO_ROOT], 'emit 子命令形态（内部接口-26 §2）');
+  assert.deepEqual(args.slice(1), ['emit', '--project-root', REPO_ROOT], 'emit 子命令形态（IF-COLLAB-26 §2）');
   const fact = JSON.parse(options.input);
   assert.equal(fact.kind, 'observation-degraded', '上报 kind＝observation-degraded');
   assert.equal(fact.observationSource, 'adapter:dsh', '观测来源＝adapter:dsh');
@@ -2743,7 +2743,7 @@ test('内部模块-15 v2 全暗哨兵经 emit 落账', async (t) => {
   assert.equal(lostCtx.warnings.filter((m) => String(m).includes('兜底旁路')).length, 1, 'emit 失败告警每 apply 至多一次（logWarn 一次）');
 });
 
-test('内部模块-15 v2 emit 失败兜底文件 200 行上限（滚动丢弃最旧并计数）', () => {
+test('M15 v2 emit 失败兜底文件 200 行上限（滚动丢弃最旧并计数）', () => {
   // 内部决策-063 修正案 1 决策 14：保留上限 200 行（超出滚动丢弃最旧行并计数），不抛错。
   // 直接测低层原语（emit 器在失败分支调用它），使上限可判定而不必伪造 200 次 spawn。
   assert.equal(LOST_FACTS_MAX_LINES, 200, '保留上限＝200 行（规格常量）');
@@ -2805,7 +2805,7 @@ test('内部模块-15 v2 emit 失败兜底文件 200 行上限（滚动丢弃最
   }
 });
 
-test('内部模块-15 v2 lost 原子轮转与路径单源对拍（tmp+rename / 写失败 fail-open / 与核心 lostFactsPath 同源）', async (t) => {
+test('M15 v2 lost 原子轮转与路径单源对拍（tmp+rename / 写失败 fail-open / 与核心 lostFactsPath 同源）', async (t) => {
   // 内部决策-063 修正案 3 决策 22.1/22.6（内部任务-195）：适配层写面＝先 append 保不丢行、超限同目录
   // tmp+rename 原子替换；路径规则两侧各持实现（跨插件边界不 import）但必须逐字一致。
   const core = await import('../../workflow/scripts/lib/incident-store.mjs');
@@ -2855,7 +2855,7 @@ test('内部模块-15 v2 lost 原子轮转与路径单源对拍（tmp+rename / �
   }
 });
 
-test('内部模块-15 v2 能力域声明与镜像常量对拍（DSH env JSON）', () => {
+test('M15 v2 能力域声明与镜像常量对拍（DSH env JSON）', () => {
   // 步骤 12 对拍（内部决策-063 修正案 1 决策 13）：DSH 适配层 env 声明 JSON 与核心消费的
   // 镜像常量（域键集/五态闭集/声明形态）一致；否则运行时 resolver 会把合法声明当非法降级。
   const caps = DSH_OBSERVATION_CAPABILITIES;
@@ -2864,7 +2864,7 @@ test('内部模块-15 v2 能力域声明与镜像常量对拍（DSH env JSON）'
   assert.equal(contract.ok, true, '镜像 JSON 可加载');
   assert.deepEqual(contract.domains, CAPABILITY_DOMAINS, '镜像 capabilityDomains 与常量同源');
   assert.deepEqual(contract.values, CAPABILITY_VALUES, '镜像 capabilityValues 与常量同源（五态闭集）');
-  assert.ok(String(contract.sourceRef).includes('内部接口-1'), '镜像声明唯一人工源＝内部接口-1 能力登记表');
+  assert.ok(String(contract.sourceRef).includes('IF-HOST-1'), '镜像声明唯一人工源＝IF-HOST-1 能力登记表');
   for (const [domain, value] of Object.entries(caps)) {
     assert.equal(typeof value, 'string', `${domain} 取值须为字符串`);
     assert.ok(DECLARATION_GRAMMAR.test(value), `${domain}=${value} 须满足声明形态（镜像 declarationGrammar）`);
@@ -2882,7 +2882,7 @@ test('内部模块-15 v2 能力域声明与镜像常量对拍（DSH env JSON）'
     assert.ok(CAPABILITY_VALUES.includes(row.domains[domain]), `镜像 dsh.${domain} 须在五态闭集内`);
   }
   assert.equal(caps.failureFacts, 'adapter');
-  assert.equal(row.domains.failureFacts, 'adapter', '失败事实供给：适配层合成结构化面（内部接口-1 DSH 列）');
+  assert.equal(row.domains.failureFacts, 'adapter', '失败事实供给：适配层合成结构化面（IF-HOST-1 DSH 列）');
   assert.match(caps.hookFailure, /^adapter/, '钩失败观测面＝适配层供给（emit 上报）');
   assert.equal(row.domains.hookFailure, 'adapter', '镜像同步「适配层供给」');
   assert.equal(caps.injection, 'immediate');
@@ -2892,7 +2892,7 @@ test('内部模块-15 v2 能力域声明与镜像常量对拍（DSH env JSON）'
   assert.equal(row.domains.selfCheck, 'degraded', '适配层测试未入 release-suite ⇒ 五态记降级可用');
 });
 
-test('内部模块-15 v2 DSH 派发失败 producer：spawn 抛错/超时/信封损坏三态（去重/无原文/不阻断）', async () => {
+test('M15 v2 DSH 派发失败 producer：spawn 抛错/超时/信封损坏三态（去重/无原文/不阻断）', async () => {
   // 内部决策-063 修正案 3 决策 23.1（内部任务-195）：钩失败观测面补齐——三态经注入 reporter 上报
   // hook-failure；每会话同类至多一次（键 `${sessionId}:${reason}`）；字段无原文；失败不阻断派发。
   const { createDispatchFailureReporter, runSingleHandler } = await import('../src/hooks-bridge.mjs');
@@ -3035,7 +3035,7 @@ test('apply 桥接面：agentControlBridge 开启时经 fake 服务注册三工�
   assert.ok(injected.length >= 1, '首轮通道提示应注入（含「子代理」字样）');
 });
 
-test('内部任务-268 osObservation 环境缝注入', async (t) => {
+test('DEV-268 osObservation 环境缝注入', async (t) => {
   // 适配层真正要证的行为：dispatch 对 team-governance SessionStart 处理器注入 AI_CODING_OS_OBSERVE=0；
   // true 态与 team-governance 未启用时不注入（夹具：临时 team-governance 根 + 把 env 落文件）。
   // 外部预置该 env 会让「开启态=ABSENT」假红：用例内暂存/删除并恢复。
@@ -3072,7 +3072,7 @@ test('内部任务-268 osObservation 环境缝注入', async (t) => {
 
 
 // ===== 内部任务-272 内部未决-235：Stop 透传宿主轮号 turnId（A-da-3 唯一锁定用例） =====
-test('内部任务-272 Stop 透传宿主轮号 turnId：键门矩阵与 trim 极性', () => {
+test('DEV-272 Stop 透传宿主轮号 turnId：键门矩阵与 trim 极性', () => {
   assert.equal(turnIdOf(7), '7');
   for (const bad of [0, -1, 1.5, '1', null, undefined, Number.NaN]) assert.equal(turnIdOf(bad), undefined);
   const withTurn = buildPayload('Stop', { sessionId: 's1', cwd: 'C:/p', turnId: '7' });
@@ -3084,7 +3084,7 @@ test('内部任务-272 Stop 透传宿主轮号 turnId：键门矩阵与 trim 极
   }
 });
 
-test('内部任务-272 Stop 透传宿主轮号 turnId：端到端语义（缺省不产键／显式产键）', () => {
+test('DEV-272 Stop 透传宿主轮号 turnId：端到端语义（缺省不产键／显式产键）', () => {
   const absent = buildPayload('Stop', { sessionId: 's1', cwd: 'C:/p' });
   assert.ok(!('turnId' in absent), '缺省不产键');
   const present = buildPayload('Stop', { sessionId: 's1', cwd: 'C:/p', turnId: turnIdOf(3) });
@@ -3093,7 +3093,7 @@ test('内部任务-272 Stop 透传宿主轮号 turnId：端到端语义（缺省
 
 
 // ===== 内部任务-272 内部未决-235：Stop turnId 真端到端（A-da-3 集成面；B3 阶段门修复） =====
-test('内部任务-272 Stop 透传宿主轮号 turnId：端到端回显（apply 层 emit turn=7）', async (t2) => {
+test('DEV-272 Stop 透传宿主轮号 turnId：端到端回显（apply 层 emit turn=7）', async (t2) => {
   const roots = makeSinglePluginSuite(
     t2,
     { Stop: [{ hooks: [{ type: 'process', command: process.execPath, args: ['hooks/stop-echo.mjs', '__OUT__'], timeoutMs: 5000 }] }] },
@@ -3121,7 +3121,7 @@ test('内部任务-272 Stop 透传宿主轮号 turnId：端到端回显（apply 
 
 
 // ===== 内部任务-272 B2/B4：apply + 损坏清单根 → byLevel warn（穿透 index 生产接线） =====
-test('内部任务-272 声明面诊断：apply 装配 + 损坏清单根 → warn 含插件名', async (t2) => {
+test('DEV-272 声明面诊断：apply 装配 + 损坏清单根 → warn 含插件名', async (t2) => {
   const roots = makeSinglePluginSuite(t2, {}, {});
   writeFileSync(join(roots.workflow, 'plugin.manifest.json'), '{broken', 'utf8');
   const ctx = makeFakeCtx();
@@ -3142,7 +3142,7 @@ function planCtx(planState) {
   return ctx;
 }
 
-test('内部任务-272 plan 模式门控：首轮协议在 plan active 时不注入（装配级）', async (t2) => {
+test('DEV-272 plan 模式门控：首轮协议在 plan active 时不注入（装配级）', async (t2) => {
   const roots = makeSinglePluginSuite(t2, {}, {});
   const ctx = planCtx({ active: true });
   await apply(ctx, { pluginRoots: roots, projectDir: REPO_ROOT });
@@ -3151,7 +3151,7 @@ test('内部任务-272 plan 模式门控：首轮协议在 plan active 时不注
   assert.equal((out.messages ?? []).length, 0, 'plan active：协议不注入');
 });
 
-test('内部任务-272 plan 模式门控：plan off 时首轮协议注入（装配级差分）', async (t2) => {
+test('DEV-272 plan 模式门控：plan off 时首轮协议注入（装配级差分）', async (t2) => {
   const roots = makeSinglePluginSuite(t2, {}, {});
   const ctx = planCtx({ active: false });
   await apply(ctx, { pluginRoots: roots, projectDir: REPO_ROOT });
@@ -3160,7 +3160,7 @@ test('内部任务-272 plan 模式门控：plan off 时首轮协议注入（装�
   assert.ok((out.messages ?? []).length > 0, 'plan off：协议注入（差分证明门控生效）');
 });
 
-test('内部任务-273 批次B M-02/M-03：超时/失败日志带处理器身份；取消不记失败、取消窗口内真失败双记', async () => {
+test('DEV-273 批次B M-02/M-03：超时/失败日志带处理器身份；取消不记失败、取消窗口内真失败双记', async () => {
   const logs = [];
   const logger = { info: (_f, m) => logs.push(['info', String(m)]), warn: (_f, m) => logs.push(['warn', String(m)]), error: () => {}, debug: () => {} };
   const reports = [];
@@ -3202,7 +3202,7 @@ test('内部任务-273 批次B M-02/M-03：超时/失败日志带处理器身份
   assert.equal(reports.length, 0, 'AbortError 不得上报 spawn-error');
 });
 
-test('内部任务-273 批次B M-01：Stop 阻断但 agent 无 steer ⇒ 一次性 warn（不静默）', async (t) => {
+test('DEV-273 批次B M-01：Stop 阻断但 agent 无 steer ⇒ 一次性 warn（不静默）', async (t) => {
   const root = makeFixturePlugin(t, { Stop: [{ hooks: [{ type: 'process', command: process.execPath, args: ['${ZCODE_PLUGIN_ROOT}/hooks/deny.mjs'] }] }] }, {
     'hooks/deny.mjs': "process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'Stop', permissionDecision: 'deny', systemMessage: '别停' } }) + '\\n');\n",
   });
@@ -3217,7 +3217,7 @@ test('内部任务-273 批次B M-01：Stop 阻断但 agent 无 steer ⇒ 一次�
   assert.equal(hits.length, 1, `缺 steer 能力须恰 warn 一次；实际 ${JSON.stringify(warns)}`);
 });
 
-test('宿主契约钉子（内部任务-273 H-02）：tools 服务实现面只有 get，虚构成员只出现在 view 结果内', async () => {
+test('宿主契约钉子（DEV-273 H-02）：tools 服务实现面只有 get，虚构成员只出现在 view 结果内', async () => {
   // 为什么要有（计划步骤 2）：H-02 修复的宿主侧依据必须由真宿主抽取副本钉住，否则「宿主服务没有
   // restrictableNames/listNames」只由假件自证。姿态同 内部未决-46 钉子：宿主不可得 fail-loud，不静默跳过。
   const engine = await import('./helpers/dsh-engine.mjs');
@@ -3259,7 +3259,7 @@ async function bumpManifestMtime(pluginRoot) {
   utimesSync(p, future, future);
 }
 
-test('内部任务-285 declarationSignature：manifest 优先、无清单回落 hooks.json、双缺 null、坏 JSON 只 stat 不解析', async (t) => {
+test('DEV-285 declarationSignature：manifest 优先、无清单回落 hooks.json、双缺 null、坏 JSON 只 stat 不解析', async (t) => {
   const hb = await import('../src/hooks-bridge.mjs');
   assert.equal(typeof hb.declarationSignature, 'function', 'declarationSignature 必须导出（R-da-18）');
   const sig = hb.declarationSignature;
@@ -3277,7 +3277,7 @@ test('内部任务-285 declarationSignature：manifest 优先、无清单回落 
   assert.equal(sig(emptyRoot), null, '清单与生成物皆无时返回 null');
 });
 
-test('内部任务-285 钩子声明热加载：manifest 签名变化 → 既有事件处理器重建并 logInfo；坏 JSON 保留旧清单（装配级）', async (t) => {
+test('DEV-285 钩子声明热加载：manifest 签名变化 → 既有事件处理器重建并 logInfo；坏 JSON 保留旧清单（装配级）', async (t) => {
   const hookBody = (tag) => `process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'ask', systemMessage: '${tag}' } }) + '\\n');\nprocess.exit(0);\n`;
   const root = makeTemp(t);
   mkdirSync(join(root, 'hooks'), { recursive: true });
@@ -3308,7 +3308,7 @@ test('内部任务-285 钩子声明热加载：manifest 签名变化 → 既有�
   assert.ok(ctx.byLevel('warn').some((m) => String(m).includes('钩子声明')), '重载失败须有可见告警（不静默）');
 });
 
-test('内部任务-285 热加载边界：apply 期零声明事件不随声明追加而热生效（已登记边界，非缺陷）', async (t) => {
+test('DEV-285 热加载边界：apply 期零声明事件不随声明追加而热生效（已登记边界，非缺陷）', async (t) => {
   const marker = join(makeTemp(t), 'ups-marker.txt');
   const ssBody = "process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: 'SS-RELOAD' } }) + '\\n');\nprocess.exit(0);\n";
   const upsBody = `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker)}, 'called');\nprocess.exit(0);\n`;
@@ -3338,7 +3338,7 @@ test('内部任务-285 热加载边界：apply 期零声明事件不随声明追
 
 // ── 内部任务-352（2026-11-08）：ask 答复 PostToolUse 信封 → 适配层解码面（内部规则-6）──
 
-test('内部任务-352：ask 答复信封经 decodeHookOutput 解码（真实钩子子进程）', async () => {
+test('DEV-352：ask 答复信封经 decodeHookOutput 解码（真实钩子子进程）', async () => {
   const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
   const { pathToFileURL: toUrl } = await import('node:url');
   const { projectKey } = await import(toUrl(join(repo, 'workflow', 'hooks', 'routing-lib.mjs')).href);

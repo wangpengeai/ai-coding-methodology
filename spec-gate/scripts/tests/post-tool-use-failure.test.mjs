@@ -21,11 +21,11 @@ function fixture() {
   mkdirSync(join(root, 'specs'), { recursive: true });
   const target = join(root, 'specs', 'x.md');
   writeFileSync(target, '# 规格\n\nR-1 示例\n', 'utf8');
-  writeFileSync(join(root, '.sdd', 'project.json'), JSON.stringify({ suiteConfig: '内部治理状态' }), 'utf8');
+  writeFileSync(join(root, '.sdd', 'project.json'), JSON.stringify({ suiteConfig: '.sdd/suite.json' }), 'utf8');
   writeFileSync(join(root, '.sdd', 'suite.json'), JSON.stringify({
     schemaVersion: 1,
     suiteRoot: '..',
-    documents: [{ path: '内部规格' }],
+    documents: [{ path: 'specs/x.md' }],
   }), 'utf8');
   return { root, target };
 }
@@ -41,7 +41,7 @@ function runHook(root, target, env) {
   return { status: r.status, stderr: r.stderr ?? '', stdout: r.stdout ?? '' };
 }
 
-test('异常注入：校验器抛错/不可用仍退 0 且 stderr 仅一行提示（内部规则-10）', () => {
+test('异常注入：校验器抛错/不可用仍退 0 且 stderr 仅一行提示（R-M7-10）', () => {
   const { root, target } = fixture();
   try {
     // 显式 block 档 + 校验器不可用：阻断未生效必须被看见（恰一行 stderr，仍退 0）
@@ -64,7 +64,7 @@ test('异常注入：校验器抛错/不可用仍退 0 且 stderr 仅一行提�
   }
 });
 
-test('E01（内部任务-241）：有诊断时 stdout 为完整可解析信封且退出码 0（写后 exit 截断回归）', () => {
+test('E01（DEV-241）：有诊断时 stdout 为完整可解析信封且退出码 0（写后 exit 截断回归）', () => {
   const { root, target } = fixture();
   try {
     // 触发文档级诊断（TODO 禁语，RULE-内部未决-001 族）→ hook 须经 additionalContext 注入

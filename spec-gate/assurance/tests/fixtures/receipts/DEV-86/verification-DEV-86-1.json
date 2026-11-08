@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0.0",
-  "receiptId": "verification-内部任务-86-1",
+  "receiptId": "verification-DEV-86-1",
   "kind": "verification",
-  "taskId": "内部任务-86",
+  "taskId": "DEV-86",
   "revision": {
     "sourceRevision": {
       "algorithm": "git-head-worktree-v1",
@@ -15,7 +15,7 @@
       "documents": "117"
     },
     "planSha256": {
-      "path": "内部计划",
+      "path": "docs/plans/2026-10-18-DEV-86-runtime-unification-stage1b-production-scout-twins.md",
       "sha256": "sha256:5358282824ee172a4acd9f8c0ea2f2ae5fc63048767ee7f74e768ed3ad9f931f"
     },
     "algorithmVersion": "1"
@@ -25,27 +25,27 @@
   "evidenceProfile": "full",
   "evidenceRefs": [
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-a/production-test.log",
       "sha256": "sha256:389cbadf98146b75e9e6a1cd32f98ce92c3ab2510d5513954e88003b1c00c3f7",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-a/gen-golden-run1.log",
       "sha256": "sha256:db66e68a5d856bea7eba6bdcf7c4cdec73a512b70bb9f8c91ff9a032e670943c",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-a/gen-golden-status.log",
       "sha256": "sha256:f2a7a6a2865e1c262f2c672867e938d9192d41ec9d46ad3f6b78bff2d352e630",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-a/cli-smoke.log",
       "sha256": "sha256:1507e701b9827f4140eb641726efa212d5cae1d721ef1b9057d341e46ec34e66",
       "exitCode": 0
     },
     {
-      "path": "内部证据",
+      "path": "docs/plans/evidence/DEV-86/stage-a/consistency.log",
       "sha256": "sha256:5c9fef83e9d29d8929f0df5d7058c0bbf20b8d18f2b3700ddab7484ddb662390",
       "exitCode": 0
     }

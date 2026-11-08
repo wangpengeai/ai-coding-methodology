@@ -16,7 +16,7 @@ const ROOT = process.cwd();
 const t = (p) => isTrustedCommand(p, { root: ROOT }).trusted;
 const cls = (cmd) => classifyShellWrite(cmd, { root: ROOT }).cls;
 
-test('内部任务-261 受信写者清单单源：精确路径+子命令匹配，前缀/通配/重定向/换行不授信', () => {
+test('DEV-261 受信写者清单单源：精确路径+子命令匹配，前缀/通配/重定向/换行不授信', () => {
   assert.equal(t('node workflow/scripts/mechanical-edit.mjs --spec x.json --state-dir s'), true);
   assert.equal(t('node workflow/scripts/evidence-gen.mjs --files a --out o --state-dir s --write'), true);
   assert.equal(t('node plugin-core/cli.mjs materialize'), true);
@@ -73,7 +73,7 @@ test('C4 heredoc 喂解释器含写 API 命中（含 node - <<）；纯文本 he
   assert.equal(cls("cat <<'EOF'\nhello\nEOF"), null);
 });
 
-test('内部未决-279（内部任务-308）：解释器与 << 之间夹选项仍识别 C4；只读命令仍 skip', () => {
+test('OPEN-279（DEV-308）：解释器与 << 之间夹选项仍识别 C4；只读命令仍 skip', () => {
   const body = "require('fs').writeFileSync('a','x')";
   assert.equal(cls(`node --input-type=module <<'EOF'\n${body}\nEOF`), 'C4', 'flag 夹在解释器与 heredoc 之间不得判 null');
   assert.equal(cls(`node --require ./x.cjs <<'EOF'\n${body}\nEOF`), 'C4', '带值选项（--require ./x.cjs）同样识别');
@@ -106,7 +106,7 @@ test('C2/C3/C4 目标作用域：仓外(tmp)负例；相对路径按 cwd 解析�
   assert.equal(classifyShellWrite("node -e \"require('fs').writeFileSync('a.txt','x')\"", { root: ROOT }).cls, 'C3');
   assert.equal(classifyShellWrite("sed -i 's/a/b/' docs/x.md", { root: ROOT }).cls, 'C2');
   // cwd 子目录：../内部计划 实际落在仓内 → C1；../../outside.md 仓外 → null
-  assert.equal(classifyShellWrite('echo hi > ../内部计划', { root: ROOT, cwd: sub }).cls, 'C1', 'cwd 相对路径须解析到仓内');
+  assert.equal(classifyShellWrite('echo hi > ../docs/plans/z.md', { root: ROOT, cwd: sub }).cls, 'C1', 'cwd 相对路径须解析到仓内');
   assert.equal(classifyShellWrite('echo hi > ../../dev261-outside.md', { root: ROOT, cwd: sub }).cls, null, 'cwd 相对路径解析到仓外不归闸');
   // 混写：仓外绝对路径 + 引号内仓内相对路径（带扩展名）仍须归类（N1）
   assert.equal(classifyShellWrite("node -e \"require('fs').writeFileSync('/tmp/dev261-x','x');require('fs').writeFileSync('docs/y.md','y')\"", { root: ROOT }).cls, 'C3', '混写含仓内相对路径须归类');
@@ -168,7 +168,7 @@ test('redirect 引号目标与未知模式兜底分支', () => {
 });
 
 // ── 内部任务-285：受检路径（git 跟踪）分级与窄声明矩阵（纯函数，isTracked 注入） ─────────────
-test('内部任务-285 目标解析扩展：C2 操作数、C3/C4 文本候选、C1 重定向目标', async () => {
+test('DEV-285 目标解析扩展：C2 操作数、C3/C4 文本候选、C1 重定向目标', async () => {
   const { inPlaceTargets, scriptContentCandidates } = await import('../lib/write-policy.mjs');
   assert.deepEqual(inPlaceTargets("sed -i 's/a/b/' a.txt b.md").sort(), ['a.txt', 'b.md']);
   assert.deepEqual(inPlaceTargets("perl -pi -e 's/x/y/g' services/x.go").sort(), ['services/x.go']);
@@ -185,7 +185,7 @@ test('内部任务-285 目标解析扩展：C2 操作数、C3/C4 文本候选、
 });
 
 // ── 内部任务-339（内部未决-254②）：C2 命中与目标抽取 token 单源（引号感知，IN_PLACE_RES 整条正则退役） ──
-test('内部任务-339 内部未决-254②：C2 token 单源——选项置换/引号清理/-f 实参/{print}/s{}{} 五正例与 sed -n/--quiet/引号内字面量三负例', async () => {
+test('DEV-339 OPEN-254②：C2 token 单源——选项置换/引号清理/-f 实参/{print}/s{}{} 五正例与 sed -n/--quiet/引号内字面量三负例', async () => {
   const { inPlaceTargets } = await import('../lib/write-policy.mjs');
   // 五正例：全部应判 C2（现行：①②③判 null＝漏拦，④⑤目标误含非文件 token）
   assert.equal(cls("sed 's|a|b|' -i f"), 'C2', 'GNU 选项置换（-i 后置）');
@@ -205,7 +205,7 @@ test('内部任务-339 内部未决-254②：C2 token 单源——选项置换/�
 });
 
 // ── 内部任务-339（内部未决-254①⑥）：混合形态重定向受检目标逐目标恒拒＋只读内联负例锁定 ──
-test('内部任务-339 内部未决-254①⑥：混合形态 redirects 逐目标受检恒拒与只读内联负例', () => {
+test('DEV-339 OPEN-254①⑥：混合形态 redirects 逐目标受检恒拒与只读内联负例', () => {
   // ① 混合形态：cls 仍为 C2，但 redirects 含 tracked.txt；受检 tracked.txt 恒拒（窄声明也不放行）
   const mixed = classifyShellWrite("sed -i 'x' f > tracked.txt", { root: ROOT });
   assert.equal(mixed.cls, 'C2');
@@ -230,7 +230,7 @@ test('内部任务-339 内部未决-254①⑥：混合形态 redirects 逐目标
 });
 
 // ── 内部任务-339 S1 阶段复审 #1/#2 回归锁 ─────────────────────────────────────────────
-test('内部任务-339 stage 复审：引号包裹的被执行载荷与路径前缀工具形态不丢 C2；echo 数据性引号实参保持放行', () => {
+test('DEV-339 stage 复审：引号包裹的被执行载荷与路径前缀工具形态不丢 C2；echo 数据性引号实参保持放行', () => {
   // 旧整条正则按字面命中的「被执行」形态——token 化不得丢失（拦→不拦禁令）
   assert.equal(cls("sh -c 'sed -i s/a/b/ f'"), 'C2', 'sh -c 引号载荷内的就地编辑');
   assert.equal(cls('bash -c "sed -i \'s/a/b/\' f"'), 'C2', 'bash -c 双层引号形态');
@@ -256,7 +256,7 @@ test('内部任务-339 stage 复审：引号包裹的被执行载荷与路径前
   assert.equal(cls("awk --include=inplace '{print}' f"), 'C2', 'gawk --include= 长形态');
 });
 
-test('内部任务-339 stage 复审：shadow 违例旗＝enforce 会拦（窄声明足额的受检 C2 不是违例）', () => {
+test('DEV-339 stage 复审：shadow 违例旗＝enforce 会拦（窄声明足额的受检 C2 不是违例）', () => {
   const tracked = () => 'tracked';
   const se = [{ reason: '本轮脚本编辑受检文件', declaredAt: new Date().toISOString() }];
   // shadow＋窄声明足额：enforce 档会放行（declared-edit-code）⇒ 非违例、wouldBeDeny=false
@@ -268,7 +268,7 @@ test('内部任务-339 stage 复审：shadow 违例旗＝enforce 会拦（窄声
   assert.equal(bad.trackedTierViolation, true, '重定向受检目标 enforce 恒拒 ⇒ 违例');
 });
 
-test('内部任务-285 tracked tier 裁决矩阵：C1 拒绝、C2–C4 仅窄声明、untracked 不变、unknown degraded、shadow 只记录', () => {
+test('DEV-285 tracked tier 裁决矩阵：C1 拒绝、C2–C4 仅窄声明、untracked 不变、unknown degraded、shadow 只记录', () => {
   const tracked = () => 'tracked';
   const untracked = () => 'untracked';
   const unknown = () => 'unknown';
@@ -313,7 +313,7 @@ test('内部任务-285 tracked tier 裁决矩阵：C1 拒绝、C2–C4 仅窄声
   assert.ok(String(bad.warning).includes('trackedTier'));
 });
 
-test('内部任务-341 受信写者含项目 skill 清单生成器 --apply', () => {
+test('DEV-341 受信写者含项目 skill 清单生成器 --apply', () => {
   const trusted = (cmd) => isTrustedCommand(cmd, { root: ROOT }).trusted;
   assert.equal(trusted('node workflow/scripts/generate-project-skills-manifest.mjs --apply'), true);
   assert.equal(trusted('node workflow/scripts/generate-project-skills-manifest.mjs --check'), false);

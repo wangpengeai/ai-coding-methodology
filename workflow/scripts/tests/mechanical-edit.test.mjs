@@ -57,7 +57,7 @@ function lastAudit(state) {
   return lines.length === 0 ? null : JSON.parse(lines[lines.length - 1]);
 }
 
-test('内部任务-261 计数不符整体不写：任一条 expectCount 不符 → exit 1、全部零写、审计 failed', () => {
+test('DEV-261 计数不符整体不写：任一条 expectCount 不符 → exit 1、全部零写、审计 failed', () => {
   const { root, state } = makeProject();
   try {
     const a = join(root, 'a.txt');

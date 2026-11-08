@@ -35,5 +35,5 @@ test('detectHostApp 平台注入：win32/darwin 候选展开与 hit/present 判�
   const linux = detectHostApp({}, 'linux');
   assert.equal(linux.present, false);
   assert.deepEqual(linux.candidates, []);
-  assert.ok(linux.reason.includes('空占位'), `${linux.reason}（须为空占位分支文案——钉分支专属拒因，内部任务-44 纪律）`);
+  assert.ok(linux.reason.includes('空占位'), `${linux.reason}（须为空占位分支文案——钉分支专属拒因，DEV-44 纪律）`);
 });

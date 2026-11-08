@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "name": "workflow",
-  "version": "0.23.4",
+  "version": "1.0.0",
   "description": "对话式开发流程引擎：workflow 的 20 个技能构成唯一路由体系（想法评估→澄清→计划→执行→调试→评审→收尾），含编码纪律、TDD、根因调试、只读定位 agent（code-reviewer 工具面含 Bash，受四命令白名单约束）与危险命令护栏 —— 触发条件：任何开发任务开始时先查 workflow 元技能路由表。",
   "displayName": "AI Coding 方法论 · 工作流",
   "author": "wangp",

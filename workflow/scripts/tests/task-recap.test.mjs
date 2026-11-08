@@ -108,7 +108,7 @@ test('本 turn 新增 → Stop 信封一行汇总＋归属分组（含证据面�
 
 // ── 内部任务-244 S04：账本 kind 注入面净化（枚举白名单＋控制字符剥除＋数据边界句） ──
 
-test('内部任务-244 S04：kind 注入文本/控制字符 → enum 化＋剥控制字符＋数据边界句', () => {
+test('DEV-244 S04：kind 注入文本/控制字符 → enum 化＋剥控制字符＋数据边界句', () => {
   const fx = fixture('inject');
   try {
     seedLedger(fx.incidentRoot, [
@@ -181,7 +181,7 @@ test('lease-loop 无视会话匹配强制注入（升级信号不静默）', () 
   try {
     seedLedger(fx.incidentRoot, [rec({ id: 'tr-loop', session: 'sess-OTHER', kind: 'lease-loop', cause: 'mechanism-escalation' })]);
     const { ctx } = runRecap(fx, { session_id: 'sess-r1', cwd: fx.proj, turnId: 't-loop' });
-    assert.ok(ctx.includes('lease-loop×1'), '他会话 lease-loop 仍注入（内部任务-LEASEGATE-1 不变量）');
+    assert.ok(ctx.includes('lease-loop×1'), '他会话 lease-loop 仍注入（TASK-LEASEGATE-1 不变量）');
     assert.ok(ctx.includes('本次任务新增 1 条'), '计入新增汇总');
   } finally {
     rmSync(fx.base, { recursive: true, force: true });
@@ -283,7 +283,7 @@ test('状态门：本 turn 内已 triage 的记录不计入新增汇总与归属
 
 // ── 内部任务-244 P01：Stop 索引清理（账本无 open 时删本会话索引） ──
 
-test('内部任务-244 P01：Stop 无 open → 清理本会话重试自愈索引；有 open 保留', () => {
+test('DEV-244 P01：Stop 无 open → 清理本会话重试自愈索引；有 open 保留', () => {
   const fx = fixture('idx');
   try {
     const leaseDir = join(fx.base, 'lease');
@@ -311,7 +311,7 @@ function initWriteFixture(fx) {
   return { stateDir: join(fx.base, 'lease'), sidDigest: sha16('s1'), projDigest: sha16(projectKey(fx.proj)) };
 }
 
-test('内部任务-261 写归因：unattributed → 独立行（非 clean 可见）；clean → 零输出', () => {
+test('DEV-261 写归因：unattributed → 独立行（非 clean 可见）；clean → 零输出', () => {
   const fx = fixture('write-attr');
   try {
     const { stateDir, sidDigest } = initWriteFixture(fx);
@@ -333,7 +333,7 @@ test('内部任务-261 写归因：unattributed → 独立行（非 clean 可见
   }
 });
 
-test('内部任务-261 写归因：本会话无 baseline → 静默（项目级 journal 存在也不误报 degraded）', () => {
+test('DEV-261 写归因：本会话无 baseline → 静默（项目级 journal 存在也不误报 degraded）', () => {
   const fx = fixture('write-deg');
   try {
     const { stateDir } = initWriteFixture(fx);
@@ -346,7 +346,7 @@ test('内部任务-261 写归因：本会话无 baseline → 静默（项目级 
   }
 });
 
-test('内部任务-261 写归因：baseline 快照失败留痕 → degraded 行可见（不得静默）', () => {
+test('DEV-261 写归因：baseline 快照失败留痕 → degraded 行可见（不得静默）', () => {
   const fx = fixture('write-basefail');
   try {
     const { stateDir } = initWriteFixture(fx);
@@ -359,7 +359,7 @@ test('内部任务-261 写归因：baseline 快照失败留痕 → degraded 行�
   }
 });
 
-test('内部任务-261 受信写者：最近 24h L1 失败 → task-recap 汇总行可见', () => {
+test('DEV-261 受信写者：最近 24h L1 失败 → task-recap 汇总行可见', () => {
   const fx = fixture('write-l1');
   try {
     const { stateDir, sidDigest } = initWriteFixture(fx);
@@ -376,7 +376,7 @@ test('内部任务-261 受信写者：最近 24h L1 失败 → task-recap 汇总
   }
 });
 
-test('内部任务-342 写归因行 external/internal 静默（仅明细）', (t) => {
+test('DEV-342 写归因行 external/internal 静默（仅明细）', (t) => {
   const fx = fixture('write-ext');
   try {
     const { stateDir, sidDigest } = initWriteFixture(fx);
@@ -390,7 +390,7 @@ test('内部任务-342 写归因行 external/internal 静默（仅明细）', (t
     // 他会话跨任务 edit → external（仅明细）
     appendJournal(stateDir, projDigest, { tool: 'edit', path: 'e.txt', sid: 'other', sidDigest: sha16('other'), taskId: 'DEV-OTHER', ts: new Date().toISOString() });
     // 本会话 internal 写 → attributed/internal（仅明细）
-    appendJournal(stateDir, projDigest, { tool: 'internal', shape: 'internal', targets: ['f.txt'], sid: 's1', sidDigest, taskId: '内部任务-342', ts: new Date().toISOString() });
+    appendJournal(stateDir, projDigest, { tool: 'internal', shape: 'internal', targets: ['f.txt'], sid: 's1', sidDigest, taskId: 'DEV-342', ts: new Date().toISOString() });
     const r = runRecap(fx, { session_id: 's1', cwd: fx.proj, turnId: 't-wext342' });
     assert.ok(!r.ctx.includes('【workflow 写归因】'), `external/internal 不得触发写归因行（Q3 仅明细）：${r.ctx}`);
   } finally {
@@ -398,7 +398,7 @@ test('内部任务-342 写归因行 external/internal 静默（仅明细）', (t
   }
 });
 
-test('内部任务-342 写归因 taskId：无本会话具名租约时报告 taskId=null（null 桶租约不归因）', async (t) => {
+test('DEV-342 写归因 taskId：无本会话具名租约时报告 taskId=null（null 桶租约不归因）', async (t) => {
   const fx = fixture('write-taskid');
   try {
     const { stateDir, sidDigest } = initWriteFixture(fx);
@@ -407,7 +407,7 @@ test('内部任务-342 写归因 taskId：无本会话具名租约时报告 task
     process.env.WF_ROUTING_STATE_DIR = stateDir;
     try {
       const ch = issueChallenge(projectKey(fx.proj));
-      assert.ok(activateLease(projectKey(fx.proj), { leaseId: ch.leaseId, taskId: '内部任务-950', skill: 'plan-execution' }).ok, '夹具租约激活失败');
+      assert.ok(activateLease(projectKey(fx.proj), { leaseId: ch.leaseId, taskId: 'DEV-950', skill: 'plan-execution' }).ok, '夹具租约激活失败');
     } finally {
       if (prev === undefined) delete process.env.WF_ROUTING_STATE_DIR;
       else process.env.WF_ROUTING_STATE_DIR = prev;

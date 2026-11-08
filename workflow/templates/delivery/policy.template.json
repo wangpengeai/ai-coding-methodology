@@ -19,7 +19,8 @@
     "requiredFields": ["name", "license"]
   },
   "rewrite": {
-    "rules": []
+    "rules": [],
+    "exclude": []
   },
   "visibility": {
     "overrides": {}

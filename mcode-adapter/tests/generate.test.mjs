@@ -77,7 +77,7 @@ describe('钩子声明翻译', () => {
     for (const plugin of PLUGINS) {
       const hooksPath = join(REPO_ROOT, plugin, 'hooks', 'hooks.json');
       if (!existsSync(hooksPath)) {
-        assert.equal(expected[plugin].handlers, 0, `${plugin} 无 hooks.json（零钩子插件，内部决策-047）`);
+        assert.equal(expected[plugin].handlers, 0, `${plugin} 无 hooks.json（零钩子插件，ADR-047）`);
         continue;
       }
       const zcode = JSON.parse(readFileSync(hooksPath, 'utf8'));
@@ -191,7 +191,7 @@ describe('钩子声明翻译', () => {
   });
 });
 
-describe('钩子分组单源（内部任务-295）', () => {
+describe('钩子分组单源（DEV-295）', () => {
   it('manifestToZcodeDoc 直接复用 renderArtifacts（等价护栏）', () => {
     const normalize = (value) => JSON.parse(JSON.stringify(value));
     for (const plugin of PLUGINS) {
@@ -206,7 +206,7 @@ describe('钩子分组单源（内部任务-295）', () => {
     assert.ok(badProblems.length > 0, '缺 args 的声明须受控拒绝（记 problem），不得抛穿');
   });
 
-  it('内部未决-276：hooks 非数组须记 problem（不得静默零声明）', () => {
+  it('OPEN-276：hooks 非数组须记 problem（不得静默零声明）', () => {
     const problems = [];
     const doc = manifestToZcodeDoc({ hooks: {} }, problems);
     assert.deepEqual(doc, { hooks: {} }, '非数组不得回落生成物（权威零声明）');
@@ -371,7 +371,7 @@ describe('命令面处置', () => {
       'spec-gate:gate→gate',
       'spec-gate:spec→spec-writing',
       'team-governance:eval→agent-eval',
-    ], '薄指针命令的覆盖目标发生漂移，须同步 README/内部模块-25 R-mc-5/内部接口-1 的措辞');
+    ], '薄指针命令的覆盖目标发生漂移，须同步 README/M25 R-mc-5/IF-HOST-1 的措辞');
     const sameName = covered.filter((item) => item.split('→')[0].split(':')[1] === item.split('→')[1]);
     assert.deepEqual(sameName, ['spec-gate:gate→gate'], '逐字复现的只有同名项 gate');
   });
@@ -466,7 +466,7 @@ describe('图标与解释器', () => {
     assert.equal(resolveNode({ env: {}, execPath: 'C:/x/other.exe', exists: () => true, probe: () => false }), null, '全不可得即 null，由安装器拒绝安装');
   });
 
-  it('解释器解析：PATH 命中须绝对化，不得写裸 node（内部任务-HANDOVER1002-1）', () => {
+  it('解释器解析：PATH 命中须绝对化，不得写裸 node（TASK-HANDOVER1002-1）', () => {
     const viaPath = resolveNode({
       env: {},
       execPath: 'C:/x/other.exe',
@@ -552,7 +552,7 @@ describe('B 批：展示元数据单源', () => {
 //
 // 唯一注入点与理由：PATH 名的 `node` 候选在本机**必然**探通（真机装了 Node），会吃掉整条
 // 回退链，故只对该候选返回 false；绝对路径候选的 probe 与绝对化读回**全部走真实实现**。
-describe('内部任务-55 步骤 1.6：内部未决-65 ① 解释器两级探测分支（Windows 真机）', () => {
+describe('DEV-55 步骤 1.6：OPEN-65 ① 解释器两级探测分支（Windows 真机）', () => {
   const onlyAbsolute = (candidate) => (candidate === 'node' ? false : probeNode(candidate));
   const skip = process.platform === 'win32'
     ? false
@@ -612,7 +612,7 @@ describe('内部任务-55 步骤 1.6：内部未决-65 ① 解释器两级探测
 //
 // 诚实记录：本组用例**晚于**实现落盘（纯函数面，无宿主依赖可先跑），故判别力以变异裁决补证
 // （删掉任一分支实现，其对应用例必红）——见 内部证据。
-describe('内部任务-55 步骤 2.1：解释器解析三态诊断（内部未决-63）', () => {
+describe('DEV-55 步骤 2.1：解释器解析三态诊断（OPEN-63）', () => {
   it('① 未装 Node：候选路径一个都不存在，PATH 探针也未通过', () => {
     const options = { env: { ProgramFiles: 'C:/pf', LOCALAPPDATA: 'C:/la' }, execPath: 'C:/x/other.exe', exists: () => false, probe: () => false };
     const d = diagnoseNode(options);
@@ -642,7 +642,7 @@ describe('内部任务-55 步骤 2.1：解释器解析三态诊断（内部未�
     assert.ok(!text.includes('安装 Node.js 后重跑'), '该态的下一步不得是「装 Node」——它装了');
   });
 
-  it('三态文案逐条不同（共用文案即 内部未决-63 的原始缺陷）', () => {
+  it('三态文案逐条不同（共用文案即 OPEN-63 的原始缺陷）', () => {
     const texts = [RESOLUTION_STATES.NOT_INSTALLED, RESOLUTION_STATES.READBACK_FAILED, RESOLUTION_STATES.UNUSABLE].map(nodeFailureText);
     assert.equal(new Set(texts).size, 3, '三态文案必须互不相同');
   });

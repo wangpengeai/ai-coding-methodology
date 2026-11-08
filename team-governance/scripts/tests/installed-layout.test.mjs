@@ -111,7 +111,7 @@ test('旧版本目录保留语义：指针更新后旧目录不删（运行中�
   }
 });
 
-test('仓库形态守卫：装机树形态运行本文件输出可读 SKIP 并退 0（内部未决-18 对拍判据）', () => {
+test('仓库形态守卫：装机树形态运行本文件输出可读 SKIP 并退 0（OPEN-18 对拍判据）', () => {
   const tmp = mkdtempSync(join(tmpdir(), 'tg-skip-'));
   try {
     // 把本文件拷贝成装机树形态（上溯三级落点是市场目录，无 workflow/.zcode-plugin）
@@ -129,7 +129,7 @@ test('仓库形态守卫：装机树形态运行本文件输出可读 SKIP 并�
   }
 });
 
-test('五 SessionStart hook 冒烟（安装树内 node 可执行、fail-open 退 0；零钩子插件跳过——research-loop Stage 1 无 hooks，内部决策-047）', async () => {
+test('五 SessionStart hook 冒烟（安装树内 node 可执行、fail-open 退 0；零钩子插件跳过——research-loop Stage 1 无 hooks，ADR-047）', async () => {
   // 仓库形态守卫前置：本文件在装机树形态会 process.exit(0)，故 lib 依赖用动态 import
   // （静态 import 会在守卫前求值，装机树形态直接 ENOENT——内部任务-254 H16 顺修）。
   const { osObserveHome } = await import('../lib/os-observe-store.mjs');

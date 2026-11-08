@@ -47,12 +47,12 @@ function writePromotion(root, ts, id) {
   writeFileSync(join(dir, `${ts}-${id}.md`), `# ${id}\n`);
 }
 
-test('内部模块-15 v2 摘要库：待排查派生与归属分组', () => {
+test('M15 v2 摘要库：待排查派生与归属分组', () => {
   const root = tmpRoot();
   const now = Date.now();
   try {
     // 待排查面：六 cause 中四类 + 旧记录回退命中项
-    appendIncident(root, rec({ id: 'v2-real', kind: 'tool-failure', session: 'sess-mine', taskId: '内部任务-192', errorClass: 'error-flag', cause: 'real-failure', ts: now }));
+    appendIncident(root, rec({ id: 'v2-real', kind: 'tool-failure', session: 'sess-mine', taskId: 'DEV-192', errorClass: 'error-flag', cause: 'real-failure', ts: now }));
     appendIncident(root, rec({ id: 'v2-loop', kind: 'lease-loop', session: 'sess-other', cause: 'mechanism-escalation', ts: now }));
     appendIncident(root, rec({ id: 'v2-corr', kind: 'user-correction', session: 'sess-other', cause: 'user-correction', ts: now }));
     // 证据面：三 cause + 旧记录回退命中的两类
@@ -65,7 +65,7 @@ test('内部模块-15 v2 摘要库：待排查派生与归属分组', () => {
     // 非 open：不计入待排查/证据面
     appendIncident(root, rec({ id: 'v2-triaged', kind: 'tool-failure', session: 'sess-other', status: 'triaged', cause: 'real-failure', ts: now }));
 
-    const s = buildSummary(root, { sessionId: 'sess-mine', host: null, taskId: '内部任务-192', now });
+    const s = buildSummary(root, { sessionId: 'sess-mine', host: null, taskId: 'DEV-192', now });
     assert.equal(s.total, 4, '待排查＝real-failure＋lease-loop＋user-correction＋旧行 error-flag（triaged 不计）');
     assert.equal(s.byTask, 1, '本任务归属按 taskId 命中');
     assert.equal(s.bySession, 0, '本会话桶不含已计入本任务者');
@@ -87,16 +87,16 @@ test('pendingRecords：待排查记录视图与 total 同源且排除证据面',
     appendIncident(root, rec({ id: 'pr-real', session: 'sess-mine', cause: 'real-failure' }));
     appendIncident(root, rec({ id: 'pr-probe', session: 'sess-mine', cause: 'probe-noise' }));
     appendIncident(root, rec({ id: 'pr-other', session: 'sess-other', kind: 'user-correction', cause: 'user-correction' }));
-    appendIncident(root, rec({ id: 'pr-task', session: 'sess-other', taskId: '内部任务-215', cause: 'real-failure' }));
+    appendIncident(root, rec({ id: 'pr-task', session: 'sess-other', taskId: 'DEV-215', cause: 'real-failure' }));
     // 双命中夹具（taskId 命中 ∧ 本会话命中）——生产常态（post-tool 同时写 session+taskId），
     // 用于判错 bySession 被误改成独立累加（双计）类回归。
-    appendIncident(root, rec({ id: 'pr-both', session: 'sess-mine', taskId: '内部任务-215', cause: 'real-failure' }));
-    const s = buildSummary(root, { sessionId: 'sess-mine', taskId: '内部任务-215', now: Date.now() });
+    appendIncident(root, rec({ id: 'pr-both', session: 'sess-mine', taskId: 'DEV-215', cause: 'real-failure' }));
+    const s = buildSummary(root, { sessionId: 'sess-mine', taskId: 'DEV-215', now: Date.now() });
     assert.equal(s.pendingRecords.length, s.total, '待排查记录视图长度恒等于 total');
     assert.deepEqual(s.pendingRecords.map((r) => r.id).sort(), ['pr-both', 'pr-other', 'pr-real', 'pr-task'], '只含待排查面');
     assert.equal(s.byTask, 2, 'taskId 分支命中 2（含双命中 1）');
     assert.equal(s.bySession, 1, '本会话分支命中 1（双命中不再计本会话）');
-    const owned = s.pendingRecords.filter((r) => r.taskId === '内部任务-215' || sessionMatches(r, 'sess-mine', null));
+    const owned = s.pendingRecords.filter((r) => r.taskId === 'DEV-215' || sessionMatches(r, 'sess-mine', null));
     assert.equal(owned.length, s.byTask + s.bySession, '归属投影恒等于本任务+本会话两桶之和（N≡byTask+bySession；双命中只计一次）');
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -205,7 +205,7 @@ test('countPromotions：目录缺席/坏文件名 fail-open 零计数不抛', ()
 
 // 内部任务-348 批 D（内部未决-214④）：读放大面可观测——countPromotions 的 readdir 注入缝计数目录枚举
 // （直调恰 1 次；buildSummary 嵌入消费恰 1 次——无复读放大；未来实现引入目录重复枚举即红）。
-test('内部任务-348 内部未决-214④ countPromotions 读放大面：目录枚举恰 1 次（直调与 buildSummary 嵌入）', () => {
+test('DEV-348 OPEN-214④ countPromotions 读放大面：目录枚举恰 1 次（直调与 buildSummary 嵌入）', () => {
   const root = tmpRoot();
   const now = Date.now();
   try {
@@ -320,6 +320,6 @@ test('评审修复 N9：formatPromotionLine 单源文案（归零空串；份数
   assert.equal(formatPromotionLine(null), '');
   assert.equal(
     formatPromotionLine({ promotions: 2 }),
-    '【workflow 自察】有 2 份 promote 草案待转正（内部工作流状态）——人工复核后按 learning/OPEN/架构反馈之一转正（禁止自动改写权威面）。',
+    '【workflow 自察】有 2 份 promote 草案待转正（.workflow/promotions/）——人工复核后按 learning/OPEN/架构反馈之一转正（禁止自动改写权威面）。',
   );
 });

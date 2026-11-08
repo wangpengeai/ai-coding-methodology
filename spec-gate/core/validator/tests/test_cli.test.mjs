@@ -42,10 +42,10 @@ test('干净 baseline 退 0；自由 TODO 退 1；draft OPEN-n 放行；模板�
   const todo = writeSuite(dir2, [['todo.md', '# 草案\n\nTODO: 以后补。\n', 'note']]);
   r = runCli(['--config', todo, '--mode', 'baseline']);
   assert.equal(r.status, 1);
-  assert.ok(JSON.parse(r.stdout).diagnostics.some((d) => d.ruleId === 'RULE-内部未决-001'));
+  assert.ok(JSON.parse(r.stdout).diagnostics.some((d) => d.ruleId === 'RULE-OPEN-001'));
 
   const dir3 = tmp();
-  const draft = writeSuite(dir3, [['draft.md', '# 草案\n\nTODO: 以后补。\n\n- 内部未决-1 状态 open：未决事项已登记。\n', 'note']], { 'draft.md': 'draft' });
+  const draft = writeSuite(dir3, [['draft.md', '# 草案\n\nTODO: 以后补。\n\n- OPEN-1 状态 open：未决事项已登记。\n', 'note']], { 'draft.md': 'draft' });
   r = runCli(['--config', draft, '--mode', 'draft']);
   assert.equal(r.status, 0, r.stdout + r.stderr);
 
@@ -68,7 +68,7 @@ test('未知模式/缺配置/坏 JSON/模式冲突退 2；text 格式含 fixHint
   const todo = writeSuite(dir, [['todo.md', 'TODO: x\n', 'note']]);
   const r = runCli(['--config', todo, '--mode', 'baseline', '--format', 'text']);
   assert.equal(r.status, 1);
-  assert.ok(r.stdout.includes('RULE-内部未决-001') && r.stdout.includes('fixHint'));
+  assert.ok(r.stdout.includes('RULE-OPEN-001') && r.stdout.includes('fixHint'));
 });
 
 test('诊断字段齐全；F-8 行号为文件真实行号', () => {
@@ -102,7 +102,7 @@ test('F-19：--help 退 0 且含 --root 保留说明；F-20：未知长选项拒
   assert.equal(runCli(['--bogus']).status, 2);
   const dir = tmp();
   const plan = join(dir, 'plan.md');
-  writeFileSync(plan, '---\nspecRefs: [内部需求-1]\n---\n# 计划\n\n## 步骤 1\n\n验收：x\n');
+  writeFileSync(plan, '---\nspecRefs: [FR-sg-1]\n---\n# 计划\n\n## 步骤 1\n\n验收：x\n');
   const r = runCli(['--mode', 'plan', '--plan', plan]);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const report = JSON.parse(r.stdout);
@@ -111,7 +111,7 @@ test('F-19：--help 退 0 且含 --root 保留说明；F-20：未知长选项拒
   // 有 .sdd 体系却漏传 --config：工具错误退 2（F-20 的 skipped 仅限无体系）
   const sddProject = tmp();
   mkdirSync(join(sddProject, '.sdd'));
-  writeFileSync(join(sddProject, 'plan.md'), '---\nspecRefs: [内部需求-1]\n---\n# 计划\n\n## 步骤 1\n\n验收：x\n');
+  writeFileSync(join(sddProject, 'plan.md'), '---\nspecRefs: [FR-sg-1]\n---\n# 计划\n\n## 步骤 1\n\n验收：x\n');
   const missingConfig = runCli(['--mode', 'plan', '--plan', join(sddProject, 'plan.md')]);
   assert.equal(missingConfig.status, 2);
   assert.ok(missingConfig.stdout.includes('缺少 --config'));
@@ -161,7 +161,7 @@ test('F-12：~~~ 与四反引号嵌套围栏内的内容不参与检查', () => 
   const config = writeSuite(dir, [['fence.md', doc, 'note']]);
   const r = runCli(['--config', config, '--mode', 'baseline']);
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.equal(JSON.parse(r.stdout).diagnostics.some((d) => d.ruleId === 'RULE-内部未决-001'), false);
+  assert.equal(JSON.parse(r.stdout).diagnostics.some((d) => d.ruleId === 'RULE-OPEN-001'), false);
 });
 
 test('F-13：小写占位符纳入扫描；implementationNoiseTerms 非数组退 2', () => {
@@ -192,7 +192,7 @@ test('F-11/F-13：null 配置值不得被 ?? [] 静默归一', () => {
   }
 });
 
-test('内部变更-19 缺陷A：占位符扫描排除代码语境（行内代码/顶层围栏/缩进围栏），正文裸写仍报；template 保持全文扫描', () => {
+test('CHG-19 缺陷A：占位符扫描排除代码语境（行内代码/顶层围栏/缩进围栏），正文裸写仍报；template 保持全文扫描', () => {
   const dir = tmp();
   const doc = '# 文档\n'
     + '\n'
@@ -241,7 +241,7 @@ test('内部变更-19 缺陷A：占位符扫描排除代码语境（行内代码
   assert.equal(ds4[0].fixHint.includes('{{in_code}}'), false, ds4[0].fixHint);
 });
 
-test('内部变更-19 缺陷B：列表项缩进围栏被识别——管线续行不触发 RULE-PACK-002；真表格缺分隔行仍报', () => {
+test('CHG-19 缺陷B：列表项缩进围栏被识别——管线续行不触发 RULE-PACK-002；真表格缺分隔行仍报', () => {
   const dir = tmp();
   const doc = '# 文档\n'
     + '\n'
@@ -263,7 +263,7 @@ test('内部变更-19 缺陷B：列表项缩进围栏被识别——管线续行
   assert.ok(JSON.parse(r2.stdout).diagnostics.some((d) => d.ruleId === 'RULE-PACK-002'));
 });
 
-test('内部变更-19：inlineCodeSpans 同长配对语义（多反引号/异长 run/未配对）', async () => {
+test('CHG-19：inlineCodeSpans 同长配对语义（多反引号/异长 run/未配对）', async () => {
   const { inlineCodeSpans } = await import('../core/markdown.mjs');
   assert.deepEqual(inlineCodeSpans('a `x` b'), [[2, 5]]);
   assert.deepEqual(inlineCodeSpans('``a`b`` c'), [[0, 7]]);
@@ -274,7 +274,7 @@ test('内部变更-19：inlineCodeSpans 同长配对语义（多反引号/异长
   assert.deepEqual(inlineCodeSpans('`` ` `` `'), [[0, 7]]);
 });
 
-test('表格列数不一致 → RULE-PACK-002（内部未决-120 守卫）', () => {
+test('表格列数不一致 → RULE-PACK-002（OPEN-120 守卫）', () => {
   const dir = tmp();
   const doc = '# 文档\n\n| 列A | 列B | 列C |\n|---|---|---|\n| 值1 | 值2 |\n';
   const config = writeSuite(dir, [['bad-table.md', doc, 'note']]);
@@ -319,7 +319,7 @@ test('可选边管（首尾竖线）不误报', () => {
 test('checkGt 行内代码 span 遮蔽（非 BMP 前置不错位）', () => {
   const dir = tmp();
   // emoji（非 BMP）在行内代码之前：码元/码点下标混用会让遮蔽区间错位。
-  const doc = '# 文档\n\n😀 示例 `内部时序-7` 与 内部时序-1 主编号。\n';
+  const doc = '# 文档\n\n😀 示例 `G-T7` 与 G-T1 主编号。\n';
   const config = writeSuite(dir, [['gt-span.md', doc, 'note']]);
   const r = runCli(['--config', config, '--mode', 'baseline']);
   assert.equal(r.status, 0, r.stdout + r.stderr);

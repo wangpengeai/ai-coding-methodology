@@ -18,6 +18,8 @@ import { projectKey } from '../../hooks/routing-lib.mjs';
 import { issueChallenge, activateLease } from '../../hooks/task-lease-lib.mjs';
 
 const SCRIPT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'hooks', 'user-prompt.mjs');
+// 公开包守卫（内部任务-365）：公开包安装路径长度超出源仓行长基线；行长断言仅在源仓执行。
+const IS_SOURCE_REPO = existsSync(join(dirname(SCRIPT), '..', '..', '.deliver'));
 /** 本仓插件根的声明命令期望值（内部未决-91 后恒为自身位置真路径形态）——行长预算推导与
  *  env 双清空用例共用同一期望（门①评审 S5：两处逐字重复收敛为单常量）。 */
 const EXPECTED_DECLARE_CMD = `node '${join(realpathSync(resolve(dirname(SCRIPT), '..')), 'hooks', 'routing-declare.mjs').replaceAll('\\', '/')}'`;
@@ -141,7 +143,7 @@ function seedDeclared(stateDir, session, skill) {
   try {
     const key = projectKey(REPO_CWD);
     const ch = issueChallenge(key, { sessionId: session });
-    const r = activateLease(key, { leaseId: ch.leaseId, taskId: '内部任务-1', skill });
+    const r = activateLease(key, { leaseId: ch.leaseId, taskId: 'DEV-1', skill });
     assert.ok(r.ok, `seed 声明须成功：${r.reason}`);
   } finally {
     if (prevEnv === undefined) delete process.env.WF_ROUTING_STATE_DIR;
@@ -149,16 +151,16 @@ function seedDeclared(stateDir, session, skill) {
   }
 }
 
-test('每条用户消息（含首条）都注入任务租约行，但首条不注入提醒', () => {
+test('每条用户消息（含首条）都注入任务租约行，但首条不注入提醒', { skip: IS_SOURCE_REPO ? false : '公开包安装路径长度超出源仓行长基线（源仓照跑）' }, () => {
   const r = run(PAYLOAD('s1', '帮我修这个 bug'));
   assert.equal(r.status, 0, '任何路径退出码都必须是 0（fail-open 姿态）');
   const ctx = ctxOf(r.stdout);
-  assert.ok(ctx.includes('任务租约'), '任务租约行每轮必注（内部规则-8：挑战签发不随提醒节流）');
+  assert.ok(ctx.includes('任务租约'), '任务租约行每轮必注（R-M8-8：挑战签发不随提醒节流）');
   assert.ok(ctx.includes('--lease'), '租约行必须携带可复制的声明参数');
   // P6 瘦身（2026-09-15）：长尾说明挪 deny 文案，租约行只留令牌+短命令模板+一句话
   assert.ok(!ctx.includes('纯净单命令'), '长尾说明（纯净单命令）只留 deny 文案，租约行不再携带');
   assert.ok(!ctx.includes('嵌套 git 仓'), '长尾说明（嵌套仓 cd）只留 deny 文案，租约行不再携带');
-  assert.ok(!ctx.includes('内部决策-018'), '轮换语义说明只留 deny 文案，租约行不再携带');
+  assert.ok(!ctx.includes('ADR-018'), '轮换语义说明只留 deny 文案，租约行不再携带');
   const leaseLineText = ctx.split('\n').find((l) => l.includes('任务租约'));
   assert.ok(leaseLineText.length <= 230, `租约行瘦身长度上限（实测 ${leaseLineText.length} 字符）`);
   assert.ok(!ctx.includes('路由提醒'), '首条消息不注入提醒（SessionStart 已注入全文）');
@@ -166,7 +168,7 @@ test('每条用户消息（含首条）都注入任务租约行，但首条不�
 
 // ── W3 丙案（2026-09-16 租约族缺陷批次）：签发键锚定工作区根 ──
 
-test('W3 锚单仓：锚仓根签发不随 cwd 漂移 + cwd 域并集兜底（内部任务-LEASEATT-1）；探针观测已收口不落盘（2026-09-19 评审修复批）', () => {
+test('W3 锚单仓：锚仓根签发不随 cwd 漂移 + cwd 域并集兜底（TASK-LEASEATT-1）；探针观测已收口不落盘（2026-09-19 评审修复批）', () => {
   const anchorRepo = mkdtempSync(join(tmpdir(), 'uprompt-anchor-'));
   const driftRepo = mkdtempSync(join(tmpdir(), 'uprompt-drift-'));
   try {
@@ -178,12 +180,12 @@ test('W3 锚单仓：锚仓根签发不随 cwd 漂移 + cwd 域并集兜底（�
     assert.equal(r.status, 0);
     const ctx = ctxOf(r.stdout);
     assert.ok(ctx.includes('任务租约'), '租约行照常注入');
-    assert.equal(ctx.split('\n').filter((l) => l.includes('任务租约')).length, 2, '锚仓与 cwd 仓各一行（内部任务-LEASEATT-1 并集）');
+    assert.equal(ctx.split('\n').filter((l) => l.includes('任务租约')).length, 2, '锚仓与 cwd 仓各一行（TASK-LEASEATT-1 并集）');
     const cur = readFileSync(join(leaseDir, `wf-lease-current-${keyDigestOf(anchorRepo)}-${digestOf('s:s-w3a')}.json`), 'utf8');
     const tok = JSON.parse(cur).leaseId;
     assert.ok(tok && ctx.includes(tok), '挑战须签发在锚仓键桶且令牌进租约行');
     assert.ok(existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(driftRepo)}-${digestOf('s:s-w3a')}.json`)),
-      'cwd 仓键并集同签（锚漂移时闸执法键恒有挑战，内部任务-LEASEATT-1）');
+      'cwd 仓键并集同签（锚漂移时闸执法键恒有挑战，TASK-LEASEATT-1）');
     const fwdDriftA = realpathSync(driftRepo).replaceAll('\\', '/');
     assert.ok(ctx.includes(`--project-root '${fwdDriftA}'`), 'cwd 仓行绑定 driftRepo 根（任意目录可复制声明，阶段复审发现 3 归并）');
     // 探针观测件（w3-anchor-probe）已随 2026-09-19 评审修复批移除：不再落 stop-probe.jsonl
@@ -208,20 +210,20 @@ test('W3 锚仓内嵌套仓：锚仓与嵌套仓同轮签发（评审 C1——�
     assert.equal(r.status, 0);
     const ctx = ctxOf(r.stdout);
     const lines = ctx.split('\n').filter((l) => l.includes('任务租约'));
-    assert.equal(lines.length, 3, '锚仓+嵌套仓+cwd 仓各一行（内部任务-LEASEATT-1 并集）');
+    assert.equal(lines.length, 3, '锚仓+嵌套仓+cwd 仓各一行（TASK-LEASEATT-1 并集）');
     for (const repo of [anchorRepo, nested]) {
       assert.ok(existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(repo)}-${digestOf('s:s-w3d')}.json`)),
         `${repo} 须有挑战签发（嵌套仓编辑的闸键可达）`);
     }
     assert.ok(existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(driftRepo)}-${digestOf('s:s-w3d')}.json`)),
-      'cwd 仓键并集同签（内部任务-LEASEATT-1）');
+      'cwd 仓键并集同签（TASK-LEASEATT-1）');
   } finally {
     rmSync(anchorRepo, { recursive: true, force: true });
     rmSync(driftRepo, { recursive: true, force: true });
   }
 });
 
-test('W3 多仓工作区：每仓一行租约行（各持令牌、行长 ≤ 基线300+命令段实测长——FB-1 放宽；内部未决-91 后命令恒真路径形态，预算随命令段动态推导），非仓目录不签发', () => {
+test('W3 多仓工作区：每仓一行租约行（各持令牌、行长 ≤ 基线300+命令段实测长——FB-1 放宽；OPEN-91 后命令恒真路径形态，预算随命令段动态推导），非仓目录不签发', () => {
   // 内部任务-250（2026-10-28 win32 回归修复）：夹具名前缀保持**短且定长**——多仓行长断言按
   // 内部规则-8 ④ 模板预算口径（不净出路径段），前缀过长会把「夹具路径长度」算进被测行为；
   // win32 tmpdir 路径随用户名变化且长于 linux /tmp（见 FIXTURE_ROOT 注）。
@@ -240,7 +242,7 @@ test('W3 多仓工作区：每仓一行租约行（各持令牌、行长 ≤ 基
     assert.equal(r.status, 0);
     const ctx = ctxOf(r.stdout);
     const lines = ctx.split('\n').filter((l) => l.includes('任务租约'));
-    assert.equal(lines.length, 3, '两仓与 cwd 仓各一行（内部任务-LEASEATT-1 并集）');
+    assert.equal(lines.length, 3, '两仓与 cwd 仓各一行（TASK-LEASEATT-1 并集）');
     // FB-1（2026-09-18 反馈批次）：多仓行命令附 --project-root「仓根」——任意目录可直接
     // 复制执行（解 cwd 耦合），行长口径随 actionable 信息量放宽（单行形态不变 ≤230）。
     // 内部未决-91（内部任务-48）：根推导收敛后命令恒为自身位置真路径，长度随仓库检出路径变化
@@ -268,7 +270,7 @@ test('W3 多仓工作区：每仓一行租约行（各持令牌、行长 ≤ 基
         `${repo} 须有挑战签发`);
     }
     assert.ok(existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(driftRepo)}-${digestOf('s:s-w3b')}.json`)),
-      'cwd 仓键并集同签（内部任务-LEASEATT-1）');
+      'cwd 仓键并集同签（TASK-LEASEATT-1）');
     assert.ok(!existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(join(ws, 'plain-dir'))}-${digestOf('s:s-w3b')}.json`)),
       '非仓目录不得作为签发键');
     const tokA = JSON.parse(readFileSync(join(leaseDir, `wf-lease-current-${keyDigestOf(repoA)}-${digestOf('s:s-w3b')}.json`), 'utf8')).leaseId;
@@ -281,7 +283,7 @@ test('W3 多仓工作区：每仓一行租约行（各持令牌、行长 ≤ 基
 
 // ── 内部任务-247 F4：多仓租约行 Bash 键控提示（单仓 tail 逐字节不变） ──
 
-test('多仓租约行 Bash 键控提示（内部任务-247）', () => {
+test('多仓租约行 Bash 键控提示（DEV-247）', () => {
   const ws = mkdtempSync(join(FIXTURE_ROOT, 'uprompt-ws-f4-')); // 工作区根：无 .git（多仓形态）
   const driftRepo = mkdtempSync(join(FIXTURE_ROOT, 'uprompt-drift-f4-')); // 负载 cwd 仓（签发面要求 cwd 在仓内，W3 同款）
   try {
@@ -336,7 +338,7 @@ test('标记域键签发（2026-09-19 评审修复 H3）：锚定多仓工作区
     assert.equal(r.status, 0);
     const ctx = ctxOf(r.stdout);
     const lines = ctx.split('\n').filter((l) => l.includes('任务租约'));
-    assert.equal(lines.length, 3, '仓键、标记域键与 cwd 仓各一行（内部任务-LEASEATT-1 并集）');
+    assert.equal(lines.length, 3, '仓键、标记域键与 cwd 仓各一行（TASK-LEASEATT-1 并集）');
     const fwdSdd = realpathSync(sddProj).replaceAll('\\', '/');
     assert.ok(lines.some((l) => l.includes(`--project-root '${fwdSdd}'`)), '标记域行绑定 .sdd 项目根');
     assert.ok(
@@ -344,7 +346,7 @@ test('标记域键签发（2026-09-19 评审修复 H3）：锚定多仓工作区
       '标记域键须有挑战签发（闸可达键集 ⊆ 签发键集）'
     );
     assert.ok(existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(driftRepo)}-${digestOf('s:s-wsm')}.json`)),
-      'cwd 仓键并集同签（内部任务-LEASEATT-1）');
+      'cwd 仓键并集同签（TASK-LEASEATT-1）');
     assert.ok(
       !existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(join(ws, 'plain-dir'))}-${digestOf('s:s-wsm')}.json`)),
       '无标记非仓目录不得作为签发键'
@@ -358,7 +360,7 @@ test('标记域键签发（2026-09-19 评审修复 H3）：锚定多仓工作区
     const leaseEnv = { ...process.env, WF_ROUTING_STATE_DIR: leaseDir };
     const dec = spawnSync(process.execPath, [
       join(hooksDir, 'routing-declare.mjs'), 'code-review',
-      '--lease', challenge.leaseId, '--task-id', '内部任务-2', '--project-root', sddProj,
+      '--lease', challenge.leaseId, '--task-id', 'DEV-2', '--project-root', sddProj,
     ], { encoding: 'utf8', env: leaseEnv });
     assert.equal(dec.status, 0, `标记域声明须成功：${dec.stderr}`);
     const gate = spawnSync(process.execPath, [join(hooksDir, 'routing-gate.mjs')], {
@@ -389,7 +391,7 @@ test('纯标记工作区（2026-09-19 评审修复 H3 评审门补口）：锚�
     assert.equal(r.status, 0);
     const ctx = ctxOf(r.stdout);
     const lines = ctx.split('\n').filter((l) => l.includes('任务租约'));
-    assert.equal(lines.length, 2, '标记域键与 cwd 仓各一行（内部任务-LEASEATT-1 并集兜底）');
+    assert.equal(lines.length, 2, '标记域键与 cwd 仓各一行（TASK-LEASEATT-1 并集兜底）');
     const fwdSdd = realpathSync(sddProj).replaceAll('\\', '/');
     const sddLine = lines.find((l) => l.includes(`--project-root '${fwdSdd}'`));
     assert.ok(sddLine, '标记域行须绑定 sddProj 根');
@@ -401,14 +403,14 @@ test('纯标记工作区（2026-09-19 评审修复 H3 评审门补口）：锚�
       '纯标记键须有挑战签发'
     );
     assert.ok(existsSync(join(leaseDir, `wf-lease-current-${keyDigestOf(driftRepo)}-${digestOf('s:s-wsp')}.json`)),
-      'cwd 仓键并集同签（内部任务-LEASEATT-1）');
+      'cwd 仓键并集同签（TASK-LEASEATT-1）');
   } finally {
     rmSync(ws, { recursive: true, force: true });
     rmSync(driftRepo, { recursive: true, force: true });
   }
 });
 
-test('锚覆盖 cwd 单键历史形态 + 外层祖先仓并集（内部任务-LEASEATT-1）', () => {
+test('锚覆盖 cwd 单键历史形态 + 外层祖先仓并集（TASK-LEASEATT-1）', () => {
   const cwdRepo = mkdtempSync(join(tmpdir(), 'uprompt-cwdL-'));
   const outer = mkdtempSync(join(tmpdir(), 'uprompt-outerL-'));
   try {
@@ -476,7 +478,7 @@ test('W3 无锚回退：签发键=负载 cwd 上溯（既有行为保持，形�
   }
 });
 
-test('冷却期外的后续消息：租约行 + 指针级提醒（信封事件名 = UserPromptSubmit）', () => {
+test('冷却期外的后续消息：租约行 + 指针级提醒（信封事件名 = UserPromptSubmit）', { skip: IS_SOURCE_REPO ? false : '公开包安装路径长度超出源仓行长基线（源仓照跑）' }, () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-state-'));
   try {
     run(PAYLOAD('s2', '第一条'), { stateDir }); // 建立状态
@@ -484,20 +486,20 @@ test('冷却期外的后续消息：租约行 + 指针级提醒（信封事件�
     assert.equal(r.status, 0);
     const env = envelope(r.stdout);
     assert.ok(env, '冷却期外应注入提醒');
-    assert.equal(env.hookSpecificOutput?.hookEventName, 'UserPromptSubmit', '信封事件名必须与触发事件一致（内部规则-6）');
+    assert.equal(env.hookSpecificOutput?.hookEventName, 'UserPromptSubmit', '信封事件名必须与触发事件一致（R-M8-6）');
     const ctx = env.hookSpecificOutput?.additionalContext ?? '';
     assert.ok(ctx.includes('任务租约'), '租约行持续注入');
     assert.ok(ctx.includes('路由表'), '提醒内容必须指向路由表');
-    assert.ok(ctx.includes('routing-declare.mjs'), '提醒必须携带机械声明命令（内部规则-7/内部规则-8 衔接）');
-    assert.ok(ctx.includes("node '"), '声明命令为单引号包裹形态（内部未决-94：bash/pwsh 双壳零展开，Git Bash 可直接复制执行）');
-    assert.ok(ctx.includes("/hooks/routing-declare.mjs'"), '命令路径正斜杠形态判别（内部未决-13 防回退反斜杠）');
+    assert.ok(ctx.includes('routing-declare.mjs'), '提醒必须携带机械声明命令（R-M1-7/R-M8-8 衔接）');
+    assert.ok(ctx.includes("node '"), '声明命令为单引号包裹形态（OPEN-94：bash/pwsh 双壳零展开，Git Bash 可直接复制执行）');
+    assert.ok(ctx.includes("/hooks/routing-declare.mjs'"), '命令路径正斜杠形态判别（OPEN-13 防回退反斜杠）');
     assert.ok(ctx.length < 500, '注入须保持指针级（租约行 + 提醒各一到两行），不重灌全文');
   } finally {
     rmSync(stateDir, { recursive: true, force: true });
   }
 });
 
-test('内部未决-91：env 双清空时声明命令走自身位置真路径（收敛前的 env-only 缺陷形态不复现）', () => {
+test('OPEN-91：env 双清空时声明命令走自身位置真路径（收敛前的 env-only 缺陷形态不复现）', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-state-'));
   try {
     run(PAYLOAD('s-o91', '第一条'), { stateDir });
@@ -674,14 +676,14 @@ test('套件级哨兵：兄弟插件失败计数告警并按插件归因落 hook
     const recs = incidentsOf(dir).filter((d) => d.kind === 'hook-failure');
     assert.equal(recs.length, 2, '按插件各落一条 hook-failure');
     const plugins = recs.map((d) => d.plugin).sort();
-    assert.deepEqual(plugins, ['scout', 'spec-gate'], 'plugin 归因字段正确（内部模块-15 数据格式）');
+    assert.deepEqual(plugins, ['scout', 'spec-gate'], 'plugin 归因字段正确（M15 数据格式）');
     assert.ok(recs.every((d) => d.event === 'SessionStart'), 'event 从 source 解析');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 });
 
-test('套件级哨兵（内部决策-046 扩面）：algo-loop 前缀失败按插件归因（五前缀清单回归锚）', () => {
+test('套件级哨兵（ADR-046 扩面）：algo-loop 前缀失败按插件归因（五前缀清单回归锚）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-algo-'));
   const log = join(dir, 'zcode-suite.jsonl');
   try {
@@ -829,7 +831,7 @@ test('非仓目录（无 .git 祖先）五跳一保：不注入租约/提醒/指
   }
 });
 
-test('待排查指针分层：open lease-deny 不计入计数（机制正常执法留痕，内部决策-022）', () => {
+test('待排查指针分层：open lease-deny 不计入计数（机制正常执法留痕，ADR-022）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-ld-'));
   const incidentsFile = join(dir, '.workflow', 'incidents.jsonl');
   try {
@@ -846,7 +848,7 @@ test('待排查指针分层：open lease-deny 不计入计数（机制正常执�
   }
 });
 
-test('待排查指针分层：open lease-loop 计入计数（升级信号人可见，内部任务-LEASEGATE-1）', () => {
+test('待排查指针分层：open lease-loop 计入计数（升级信号人可见，TASK-LEASEGATE-1）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-ll-'));
   const incidentsFile = join(dir, '.workflow', 'incidents.jsonl');
   try {
@@ -863,7 +865,7 @@ test('待排查指针分层：open lease-loop 计入计数（升级信号人可�
   }
 });
 
-test('待排查指针分层：open exit-nonzero 探针不计入计数（内部任务-OSNOISE-1）', () => {
+test('待排查指针分层：open exit-nonzero 探针不计入计数（TASK-OSNOISE-1）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-probe-'));
   const incidentsFile = join(dir, '.workflow', 'incidents.jsonl');
   try {
@@ -900,7 +902,7 @@ test('待排查指针分层：open exit-nonzero 探针不计入计数（内部�
   }
 });
 
-test('待排查指针归属拆分：本会话 / 其他会话（内部任务-DEBTFIX-1）', () => {
+test('待排查指针归属拆分：本会话 / 其他会话（TASK-DEBTFIX-1）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-own-'));
   const incidentsFile = join(dir, '.workflow', 'incidents.jsonl');
   try {
@@ -1076,7 +1078,7 @@ test('漂移重置：声明切换 skill 后，再回到评审类声明可重新�
 // **无**＝围栏（行内规则会把围栏标记成对吃光）与 `‘’`（防御性剥离，已如实标注）。
 // 注：`“”` 的证伪面来自下面"取舍边界·整条引号包裹"那条用例——收尾期新增用例后它由"防御性剥离"
 // 变回"有证伪面"，声明面随之改正（这类"证据面变化使声明过期"由上述验证器机械复核）。
-test('纠正捕获（内部未决-44①）：信封/引文/长清单不记，短促直指记', async () => {
+test('纠正捕获（OPEN-44①）：信封/引文/长清单不记，短促直指记', async () => {
   const { matchCorrections } = await import('../../hooks/user-prompt.mjs');
   // —— RED 用例 ——
   assert.deepEqual(
@@ -1162,10 +1164,10 @@ test('纠正捕获（内部未决-44①）：信封/引文/长清单不记，短
 // ── 内部任务-8 阶段 5（2026-10-07）：RC-4 签发自校验 + 签发探针 ──
 // 规格锚：内部规则-19 第⑥条 + 内部决策-018 修正案 5。
 
-test('内部任务-8 任务 5.1/5.4：租约行正常注入 + 签发探针落盘（ts/sessionId/keysIssued/verifyOk）', () => {
+test('DEV-8 任务 5.1/5.4：租约行正常注入 + 签发探针落盘（ts/sessionId/keysIssued/verifyOk）', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-dev8-probe-'));
   try {
-    const r = run(JSON.stringify({ session_id: 'sess-DEV8', cwd: REPO_CWD, prompt: '执行 内部任务-8' }), { stateDir });
+    const r = run(JSON.stringify({ session_id: 'sess-DEV8', cwd: REPO_CWD, prompt: '执行 DEV-8' }), { stateDir });
     assert.equal(r.status, 0, 'hook 恒 exit 0');
     const ctx = ctxOf(r.stdout);
     assert.ok(ctx.includes('【workflow 任务租约】'), '租约行在场（正常注入回归锚）');
@@ -1187,12 +1189,12 @@ test('内部任务-8 任务 5.1/5.4：租约行正常注入 + 签发探针落盘
   }
 });
 
-test('内部任务-8 任务 5.2：签发回读失败 → 不注入令牌行、改注入降级指引（可执行出路）', () => {
+test('DEV-8 任务 5.2：签发回读失败 → 不注入令牌行、改注入降级指引（可执行出路）', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-dev8-degrade-'));
   try {
     // 注入缝（先例：GUARD_HOOK_INJECT_CRASH）：签发后即删挑战文件，模拟「写后立读不可见」的
     // 罕见态（AV 锁/NFS 延迟/磁盘满——RC-4 的必败注入成因族）
-    const r = run(JSON.stringify({ session_id: 'sess-DEV8D', cwd: REPO_CWD, prompt: '执行 内部任务-8' }), {
+    const r = run(JSON.stringify({ session_id: 'sess-DEV8D', cwd: REPO_CWD, prompt: '执行 DEV-8' }), {
       stateDir,
       extraEnv: { WF_UPROMPT_INJECT_DROP_CHALLENGE: '1' },
     });
@@ -1212,14 +1214,14 @@ test('内部任务-8 任务 5.2：签发回读失败 → 不注入令牌行、�
 
 // ── 内部任务-20 A1/F4：委派会话注入面收窄（含 A2 裁决 a 的哨兵告警保留）──
 
-test('内部任务-20 A1/F4：委派会话（delegation_depth>0）只注入租约行 + 探针留痕', () => {
+test('DEV-20 A1/F4：委派会话（delegation_depth>0）只注入租约行 + 探针留痕', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-deleg-'));
   try {
     seedPending(dir, 's-deleg', 'ri-deleg-1');
     // nudgeEvery='1' 让「周期提示缺席」成为**有鉴别力**的断言（缺省 20 轮时顶层会话同样不注入
     // ⇒ 断言恒真、删实现也不转红——评审 C3）。
     const ctx = ctxOf(run(PAYLOAD_D('s-deleg', '任务', 1), { stateDir: dir, nudgeEvery: '1' }).stdout);
-    assert.ok(ctx.includes('任务租约'), '委派会话仍注入租约行（内部未决-81：子代理仍需声明）');
+    assert.ok(ctx.includes('任务租约'), '委派会话仍注入租约行（OPEN-81：子代理仍需声明）');
     // 内部决策-061 D4（内部任务-227）：无父会话标识/继承不可解析时不出具体号，给停报重派指引。
     assert.ok(ctx.includes('本轮令牌') && ctx.includes('停止写操作') && ctx.includes('回报父会话'), '委派继承不可解析须给停报重派指引（禁止同轮重试）');
     assert.ok(!ctx.includes('待排查'), '委派会话不注入自察指针（F4 收窄面）');
@@ -1232,7 +1234,7 @@ test('内部任务-20 A1/F4：委派会话（delegation_depth>0）只注入租�
   }
 });
 
-test('内部任务-20 A1/A2(a)：委派会话保留哨兵告警（子代理自身 hook 失败的唯一可见面）', () => {
+test('DEV-20 A1/A2(a)：委派会话保留哨兵告警（子代理自身 hook 失败的唯一可见面）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-deleg-alert-'));
   const log = join(dir, 'zcode-suite.jsonl');
   try {
@@ -1245,7 +1247,7 @@ test('内部任务-20 A1/A2(a)：委派会话保留哨兵告警（子代理自�
   }
 });
 
-test('内部任务-20 A1/F4：委派会话不注入漂移提醒（已声明评审类 + 句首修复意图）', () => {
+test('DEV-20 A1/F4：委派会话不注入漂移提醒（已声明评审类 + 句首修复意图）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-deleg-drift-'));
   try {
     seedDeclared(dir, 's-deleg-drift', 'code-review');
@@ -1257,7 +1259,7 @@ test('内部任务-20 A1/F4：委派会话不注入漂移提醒（已声明评�
   }
 });
 
-test('内部任务-20 A1/F4：顶层会话注入面零变化（depth 缺省 / 0 / 非法形态）', () => {
+test('DEV-20 A1/F4：顶层会话注入面零变化（depth 缺省 / 0 / 非法形态）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-top-'));
   try {
     seedPending(dir, 's-top', 'ri-top-1');
@@ -1276,7 +1278,7 @@ test('内部任务-20 A1/F4：顶层会话注入面零变化（depth 缺省 / 0 
 
 // ── 内部任务-20 A2/F6：签发侧并入跨域请求（两步通道第二跳）──
 
-test('内部任务-20 A2/F6：签发侧并入本会话跨域请求（目标域租约行 + 授予审计行）', async () => {
+test('DEV-20 A2/F6：签发侧并入本会话跨域请求（目标域租约行 + 授予审计行）', async () => {
   const { hostOf } = await import('../../hooks/task-lease-lib.mjs');
   const { projectKey } = await import('../../hooks/routing-lib.mjs');
   const base = mkdtempSync(join(tmpdir(), 'uprompt-domain-'));
@@ -1306,7 +1308,7 @@ test('内部任务-20 A2/F6：签发侧并入本会话跨域请求（目标域�
   }
 });
 
-test('内部任务-20 A2/F6：超 TTL 的跨域请求不并入签发键集', async () => {
+test('DEV-20 A2/F6：超 TTL 的跨域请求不并入签发键集', async () => {
   const { hostOf } = await import('../../hooks/task-lease-lib.mjs');
   const { projectKey } = await import('../../hooks/routing-lib.mjs');
   const base = mkdtempSync(join(tmpdir(), 'uprompt-domain-ttl-'));
@@ -1328,7 +1330,7 @@ test('内部任务-20 A2/F6：超 TTL 的跨域请求不并入签发键集', asy
   }
 });
 
-test('内部任务-20 A2/F6：已授予的跨域请求不再并入（授予即消费——阻塞缺陷 1 的回归钉）', async () => {
+test('DEV-20 A2/F6：已授予的跨域请求不再并入（授予即消费——阻塞缺陷 1 的回归钉）', async () => {
   const { hostOf } = await import('../../hooks/task-lease-lib.mjs');
   const { projectKey } = await import('../../hooks/routing-lib.mjs');
   const base = mkdtempSync(join(tmpdir(), 'uprompt-domain-granted-'));
@@ -1352,7 +1354,7 @@ test('内部任务-20 A2/F6：已授予的跨域请求不再并入（授予即�
   }
 });
 
-test('内部任务-27 坑4：单域仓租约行内联建议号，零域仓默认域兜底内联（内部任务-75），行长 ≤230', () => {
+test('DEV-27 坑4：单域仓租约行内联建议号，零域仓默认域兜底内联（DEV-75），行长 ≤230', { skip: IS_SOURCE_REPO ? false : '公开包安装路径长度超出源仓行长基线（源仓照跑）' }, () => {
   const repo = mkdtempSync(join(tmpdir(), 'uprompt-d27-'));
   let bare = '';
   try {
@@ -1363,7 +1365,7 @@ test('内部任务-27 坑4：单域仓租约行内联建议号，零域仓默认
     assert.equal(r.status, 0, r.stderr);
     const line = ctxOf(r.stdout).split('\n').find((l) => l.includes('任务租约'));
     assert.ok(line, '租约行在场');
-    assert.ok(line.includes('--task-id 内部任务-1'), '单域仓内联建议号（可照抄声明）');
+    assert.ok(line.includes('--task-id DEV-1'), '单域仓内联建议号（可照抄声明）');
     assert.ok(!line.includes('<任务号>'), '占位符已替换');
     assert.ok(line.length <= 230, `行长口径（实测 ${line.length}）`);
     // 零域仓：默认域兜底内联 内部任务-1（内部任务-75/IMP-4——旧「占位符保持」形态废止：零配置新仓
@@ -1373,7 +1375,7 @@ test('内部任务-27 坑4：单域仓租约行内联建议号，零域仓默认
     const r2 = run(PAYLOAD('s-d27b', '任务', bare), { anchor: bare });
     assert.equal(r2.status, 0, r2.stderr);
     const line2 = ctxOf(r2.stdout).split('\n').find((l) => l.includes('任务租约'));
-    assert.ok(line2.includes('--task-id 内部任务-1'), '零域仓默认域兜底内联建议号（内部任务-75）');
+    assert.ok(line2.includes('--task-id DEV-1'), '零域仓默认域兜底内联建议号（DEV-75）');
     assert.ok(!line2.includes('<任务号>'), '占位符已被默认域建议替换');
   } finally {
     rmSync(repo, { recursive: true, force: true });
@@ -1381,7 +1383,7 @@ test('内部任务-27 坑4：单域仓租约行内联建议号，零域仓默认
   }
 });
 
-test('内部未决-103：租约行建议号排除观察会话自身占用（内部任务-52）', () => {
+test('OPEN-103：租约行建议号排除观察会话自身占用（DEV-52）', () => {
   const repo = mkdtempSync(join(tmpdir(), 'uprompt-o103-'));
   const state = mkdtempSync(join(tmpdir(), 'uprompt-state-'));
   try {
@@ -1394,7 +1396,7 @@ test('内部未决-103：租约行建议号排除观察会话自身占用（内�
     try {
       const key = projectKey(repo);
       const ch = issueChallenge(key, { sessionId: 's-o103' });
-      const r = activateLease(key, { leaseId: ch.leaseId, taskId: '内部任务-7', skill: 'tdd' });
+      const r = activateLease(key, { leaseId: ch.leaseId, taskId: 'DEV-7', skill: 'tdd' });
       assert.ok(r.ok, `种子声明须成功：${r.reason}`);
     } finally {
       if (prevEnv === undefined) delete process.env.WF_ROUTING_STATE_DIR;
@@ -1404,15 +1406,15 @@ test('内部未决-103：租约行建议号排除观察会话自身占用（内�
     assert.equal(r.status, 0, r.stderr);
     const line = ctxOf(r.stdout).split('\n').find((l) => l.includes('任务租约'));
     assert.ok(line, '租约行在场');
-    assert.ok(line.includes('--task-id 内部任务-1'), '排除自身后建议回到空态取号（照抄即延续同号）');
-    assert.ok(!line.includes('--task-id 内部任务-8'), '未接线排除时会被自身占用顶成 内部任务-8——删接线即红');
+    assert.ok(line.includes('--task-id DEV-1'), '排除自身后建议回到空态取号（照抄即延续同号）');
+    assert.ok(!line.includes('--task-id DEV-8'), '未接线排除时会被自身占用顶成 DEV-8——删接线即红');
   } finally {
     rmSync(repo, { recursive: true, force: true });
     rmSync(state, { recursive: true, force: true });
   }
 });
 
-test('内部决策-045：维护者段仓租约行内联——三段 ≤11 字符内联、超长回退占位符（soleTaskIdSuggestion 单源）', () => {
+test('ADR-045：维护者段仓租约行内联——三段 ≤11 字符内联、超长回退占位符（soleTaskIdSuggestion 单源）', () => {
   const repo = mkdtempSync(join(tmpdir(), 'uprompt-adr45-'));
   const long = mkdtempSync(join(tmpdir(), 'uprompt-adr45b-'));
   try {
@@ -1424,7 +1426,7 @@ test('内部决策-045：维护者段仓租约行内联——三段 ≤11 字符
     const r = run(PAYLOAD('s-adr45a', '任务', repo), { anchor: repo });
     assert.equal(r.status, 0, r.stderr);
     const line = ctxOf(r.stdout).split('\n').find((l) => l.includes('任务租约'));
-    assert.ok(line.includes('--task-id 内部任务-WP-1'), '三段建议 7 字符 ≤11 → 内联（本地指针上下文）');
+    assert.ok(line.includes('--task-id DEV-WP-1'), '三段建议 7 字符 ≤11 → 内联（本地指针上下文）');
     assert.ok(!line.includes('<任务号>'), '占位符已替换');
     // 超长：4+4 段形态 × 播种 {1..11} → 建议 DEVX-WPXY-12（12 字符 >11）→ 回退占位符（内部任务-117 稠密形态）
     mkdirSync(join(long, '.git'));
@@ -1436,7 +1438,7 @@ test('内部决策-045：维护者段仓租约行内联——三段 ≤11 字符
     const r2 = run(PAYLOAD('s-adr45b', '任务', long), { anchor: long });
     assert.equal(r2.status, 0, r2.stderr);
     const line2 = ctxOf(r2.stdout).split('\n').find((l) => l.includes('任务租约'));
-    assert.ok(line2.includes('<任务号>'), '超 11 字符三段建议回退占位符（内部规则-7 行长口径不变）');
+    assert.ok(line2.includes('<任务号>'), '超 11 字符三段建议回退占位符（R-M1-7 行长口径不变）');
     assert.ok(!line2.includes('DEVX-WPXY-12'), '超长建议不内联');
   } finally {
     rmSync(repo, { recursive: true, force: true });
@@ -1453,7 +1455,7 @@ function bareRepo(name) {
   return root;
 }
 
-test('内部任务-62 G1 零域仓首条消息注入两途引导行，24h 窗内第二条不重复', () => {
+test('DEV-62 G1 零域仓首条消息注入两途引导行，24h 窗内第二条不重复', () => {
   const repo = bareRepo('uprompt-zero-');
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-zero-st-'));
   try {
@@ -1470,7 +1472,7 @@ test('内部任务-62 G1 零域仓首条消息注入两途引导行，24h 窗内
   }
 });
 
-test('内部任务-62 G2 建 domains.json 后触发条件恒假——永不再注入', () => {
+test('DEV-62 G2 建 domains.json 后触发条件恒假——永不再注入', () => {
   const repo = bareRepo('uprompt-dom-');
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-dom-st-'));
   try {
@@ -1486,7 +1488,7 @@ test('内部任务-62 G2 建 domains.json 后触发条件恒假——永不再�
   }
 });
 
-test('内部任务-62 G3 已声明域的仓（有 domains.json）从首条起即无引导', () => {
+test('DEV-62 G3 已声明域的仓（有 domains.json）从首条起即无引导', () => {
   const repo = bareRepo('uprompt-dom2-');
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-dom2-st-'));
   try {
@@ -1501,7 +1503,7 @@ test('内部任务-62 G3 已声明域的仓（有 domains.json）从首条起即
   }
 });
 
-test('内部任务-227 P1 租约行 degraded：不出具体号＋给「取号暂不可得」说明（内部验收-27 租约行消费面）', () => {
+test('DEV-227 P1 租约行 degraded：不出具体号＋给「取号暂不可得」说明（A-M8-27 租约行消费面）', () => {
   const repo = bareRepo('uprompt-dev227-');
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-dev227-st-'));
   try {
@@ -1511,7 +1513,7 @@ test('内部任务-227 P1 租约行 degraded：不出具体号＋给「取号暂
     });
     const ctx = ctxOf(r.stdout);
     assert.ok(ctx.includes('任务租约'), '委派之外常态仍注入租约行');
-    assert.doesNotMatch(ctx, /--task-id DEV-\d/, 'degraded 时租约行不得内联任何具体号（内部决策-061 D5）');
+    assert.doesNotMatch(ctx, /--task-id DEV-\d/, 'degraded 时租约行不得内联任何具体号（ADR-061 D5）');
     assert.match(ctx, /取号暂不可得/, 'degraded 时给出「取号暂不可得」说明行');
     assert.match(ctx, /占用源降级/, '说明行须列出降级来源');
   } finally {
@@ -1520,7 +1522,7 @@ test('内部任务-227 P1 租约行 degraded：不出具体号＋给「取号暂
   }
 });
 
-test('内部任务-227 委派继承注入：父链 issued 行→租约行内联继承号（depth=1/2 两跳；超 3 层停报重派）', () => {
+test('DEV-227 委派继承注入：父链 issued 行→租约行内联继承号（depth=1/2 两跳；超 3 层停报重派）', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-inherit-'));
   try {
     const leaseDir = join(stateDir, 'lease');
@@ -1532,24 +1534,24 @@ test('内部任务-227 委派继承注入：父链 issued 行→租约行内联�
     );
     const delegatedPayload = (child, depth, parent) => JSON.stringify({ session_id: child, prompt: '任务', cwd: REPO_CWD, delegation_depth: depth, parent_session_id: parent });
     // depth=1：直接父会话行带 taskId
-    writeLedger([{ sessionId: 'parent-1', taskId: '内部任务-9' }]);
+    writeLedger([{ sessionId: 'parent-1', taskId: 'DEV-9' }]);
     const ctx1 = ctxOf(run(delegatedPayload('child-1', 1, 'parent-1'), { stateDir }).stdout);
     assert.ok(ctx1.includes('任务租约'), '委派会话仍注入租约行');
-    assert.match(ctx1, /--task-id 内部任务-9/, '继承成功须内联父链交付号');
+    assert.match(ctx1, /--task-id DEV-9/, '继承成功须内联父链交付号');
     assert.match(ctx1, /继承/, '内联行须标注继承（禁止自取新号）');
     // depth=2：两跳链 pA→pB(taskId)
-    writeLedger([{ sessionId: 'pA', parentSessionId: 'pB' }, { sessionId: 'pB', taskId: '内部任务-9' }]);
+    writeLedger([{ sessionId: 'pA', parentSessionId: 'pB' }, { sessionId: 'pB', taskId: 'DEV-9' }]);
     const ctx2 = ctxOf(run(delegatedPayload('child-2', 2, 'pA'), { stateDir }).stdout);
-    assert.match(ctx2, /--task-id 内部任务-9/, 'depth=2 两跳须可解析继承号');
+    assert.match(ctx2, /--task-id DEV-9/, 'depth=2 两跳须可解析继承号');
     // 超 3 层：链 p1→p2→p3→p4 且 taskId 在链外 → 不出具体号＋停报重派
     writeLedger([{ sessionId: 'p1', parentSessionId: 'p2' }, { sessionId: 'p2', parentSessionId: 'p3' }, { sessionId: 'p3', parentSessionId: 'p4' }]);
     const ctx3 = ctxOf(run(delegatedPayload('child-3', 1, 'p1'), { stateDir }).stdout);
     assert.doesNotMatch(ctx3, /--task-id DEV-\d/, '父链超 3 层不得内联任何具体号');
     assert.match(ctx3, /停止写操作/, '失败出路须为停报重派（禁止同轮重试）');
     // 正向 3 跳：p1→p2→p3(taskId) 应可解析（≤3 层上溯成功路径；最新行语义由链上行推进）
-    writeLedger([{ sessionId: 'p3', taskId: '内部任务-9' }, { sessionId: 'p2', parentSessionId: 'p3' }, { sessionId: 'p1', parentSessionId: 'p2' }]);
+    writeLedger([{ sessionId: 'p3', taskId: 'DEV-9' }, { sessionId: 'p2', parentSessionId: 'p3' }, { sessionId: 'p1', parentSessionId: 'p2' }]);
     const ctx4 = ctxOf(run(delegatedPayload('child-4', 1, 'p1'), { stateDir }).stdout);
-    assert.match(ctx4, /--task-id 内部任务-9/, '第 3 层才出现 taskId 的正向链须可解析');
+    assert.match(ctx4, /--task-id DEV-9/, '第 3 层才出现 taskId 的正向链须可解析');
   } finally {
     rmSync(stateDir, { recursive: true, force: true });
   }
@@ -1579,12 +1581,12 @@ const v2rec = (over = {}) => ({
   ...over,
 });
 
-test('内部模块-15 v2 待排查派生与归属分组（锚：内部验收-24）', () => {
+test('M15 v2 待排查派生与归属分组（锚：A-M15-24）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-v2-split-'));
   try {
     seedLedger(dir, [
       // 本任务（租约 taskId=内部任务-1，见下方 seedDeclared）
-      v2rec({ id: 'v2-task', session: 'sess-v2p', taskId: '内部任务-1', cause: 'real-failure', digest: 'dv2task000000001' }),
+      v2rec({ id: 'v2-task', session: 'sess-v2p', taskId: 'DEV-1', cause: 'real-failure', digest: 'dv2task000000001' }),
       // 本会话（无 taskId）
       v2rec({ id: 'v2-sess', session: 'sess-v2p', cause: 'user-correction', kind: 'user-correction', digest: 'dv2sess000000001' }),
       // 其他会话（lease-loop 升级信号）
@@ -1606,7 +1608,7 @@ test('内部模块-15 v2 待排查派生与归属分组（锚：内部验收-24�
   }
 });
 
-test('内部模块-15 v2 证据面按 cause 排除：纯证据账本零指针，混入真失败即恢复', () => {
+test('M15 v2 证据面按 cause 排除：纯证据账本零指针，混入真失败即恢复', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-v2-evidence-'));
   try {
     seedLedger(dir, [
@@ -1624,7 +1626,7 @@ test('内部模块-15 v2 证据面按 cause 排除：纯证据账本零指针，
   }
 });
 
-test('内部模块-15 v2 纠正记录走规则分类（cause=user-correction/ruleId/observationSource）', () => {
+test('M15 v2 纠正记录走规则分类（cause=user-correction/ruleId/observationSource）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-v2-corr-'));
   try {
     const r = run(PAYLOAD('sess-c2', '不对，这里错了'), { stateDir: dir });
@@ -1649,7 +1651,7 @@ test('内部模块-15 v2 纠正记录走规则分类（cause=user-correction/rul
   }
 });
 
-test('内部模块-15 v2 哨兵合并：账本 hook-failure（emit 来源）与本会话日志告警去重为一次', () => {
+test('M15 v2 哨兵合并：账本 hook-failure（emit 来源）与本会话日志告警去重为一次', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-v2-merge-'));
   const log = join(dir, 'zcode-merge.jsonl');
   try {
@@ -1704,7 +1706,7 @@ test('内部模块-15 v2 哨兵合并：账本 hook-failure（emit 来源）与�
   }
 });
 
-test('内部模块-15 v2 promotions 轻提醒：未过龄草案提示一行，过龄草案不提醒，委派会话不注入', () => {
+test('M15 v2 promotions 轻提醒：未过龄草案提示一行，过龄草案不提醒，委派会话不注入', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-v2-promo-'));
   try {
     mkdirSync(join(dir, '.workflow', 'promotions'), { recursive: true });
@@ -1729,20 +1731,20 @@ test('内部模块-15 v2 promotions 轻提醒：未过龄草案提示一行，�
   }
 });
 
-test('内部模块-15 v2：委派会话不注入待排查指针（注入面收窄不变），但账本口径不变', () => {
+test('M15 v2：委派会话不注入待排查指针（注入面收窄不变），但账本口径不变', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-v2-deleg-'));
   try {
     seedLedger(dir, [v2rec({ id: 'dl-1', session: 'sess-dl', cause: 'real-failure', digest: 'dvl10000000000001' })]);
     const top = ctxOf(run(PAYLOAD('sess-dl', '任务'), { stateDir: dir }).stdout);
     assert.ok(top.includes('待排查'), '顶层会话注入指针');
     const delegatedCtx = ctxOf(run(PAYLOAD_D('sess-dl', '任务', 1), { stateDir: dir }).stdout);
-    assert.ok(!delegatedCtx.includes('待排查'), '委派会话不注入指针（内部任务-20 A1/F4 收窄面）');
+    assert.ok(!delegatedCtx.includes('待排查'), '委派会话不注入指针（DEV-20 A1/F4 收窄面）');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 });
 
-test('内部模块-15 v2：--selftest 项数随批增长（≥40）且全过', () => {
+test('M15 v2：--selftest 项数随批增长（≥40）且全过', () => {
   const r = run('', { args: ['--selftest'] });
   assert.equal(r.status, 0, `selftest 须退 0：${r.stdout}`);
   const m = /OK user-prompt\.mjs selftest（(\d+) 项通过）/.exec(r.stdout);
@@ -1754,7 +1756,7 @@ test('内部模块-15 v2：--selftest 项数随批增长（≥40）且全过', (
 // 现行 hostOf 按 DSH_ → KIMI_ → MCODE_ → ZCODE_ 优先级扫描 process.env；在 DSH/Kimi
 // 宿主会话内跑 --selftest 时，mcode 分支断言会因环境前缀抢先而恒红。本用例锁定
 // 「DSH_*/KIMI_* 在场时 selftest 仍退 0」的回归面。
-test('内部未决-282：DSH_/KIMI_ 环境在场时 --selftest 仍退 0（mcode 分支断言环境隔离）', () => {
+test('OPEN-282：DSH_/KIMI_ 环境在场时 --selftest 仍退 0（mcode 分支断言环境隔离）', () => {
   const r = run('', {
     args: ['--selftest'],
     extraEnv: {
@@ -1769,7 +1771,7 @@ test('内部未决-282：DSH_/KIMI_ 环境在场时 --selftest 仍退 0（mcode 
 });
 
 // ── 内部任务-308 / 内部未决-259：host×source 四格告警指引（DSH 不再误指 ZCode 日志） ──
-test('内部未决-259：DSH/账本来源指引四格（不指 zcode 日志；账本指向项目账本）', () => {
+test('OPEN-259：DSH/账本来源指引四格（不指 zcode 日志；账本指向项目账本）', () => {
   const r = run('', {
     args: ['--selftest'],
     extraEnv: { DSH_HOME: 'C:/tmp/dsh-open259', DSH_SESSION_ID: 'session-open259' },
@@ -1809,7 +1811,7 @@ test('评审修复 N5：哨兵 hook-failure 记录带 cause=real-failure/ruleId/
 
 // ── 内部任务-244 P02/P04：占用缓存复用与宿主日志截断读 ──
 
-test('内部任务-244 P02：同 repo 第二轮 UPS 复用占用缓存（git spawn 计数不变）', () => {
+test('DEV-244 P02：同 repo 第二轮 UPS 复用占用缓存（git spawn 计数不变）', () => {
   const dir = mkdtempSync(join(tmpdir(), 'uprompt-cache-'));
   const log = join(dir, 'fake-git.log');
   const script = join(dir, 'fake-git.mjs');
@@ -1834,7 +1836,7 @@ test('内部任务-244 P02：同 repo 第二轮 UPS 复用占用缓存（git spa
   }
 });
 
-test('内部任务-244 P04：宿主日志 >8MB 只扫尾部、truncated 可见（hook-errors 每会话一行）', () => {
+test('DEV-244 P04：宿主日志 >8MB 只扫尾部、truncated 可见（hook-errors 每会话一行）', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-biglog-'));
   const log = join(stateDir, 'big-guard.jsonl');
   try {
@@ -1862,7 +1864,7 @@ test('内部任务-244 P04：宿主日志 >8MB 只扫尾部、truncated 可见�
   }
 });
 
-test('内部任务-244 E04：单键签发异常 → DEGRADED_LEASE_TEXT 注入且 hook-errors 留痕', () => {
+test('DEV-244 E04：单键签发异常 → DEGRADED_LEASE_TEXT 注入且 hook-errors 留痕', () => {
   const stateDir = mkdtempSync(join(tmpdir(), 'uprompt-e04-'));
   try {
     const r = run(JSON.stringify({ session_id: 'sess-e04', cwd: REPO_CWD, prompt: '继续任务' }), {
@@ -1880,10 +1882,10 @@ test('内部任务-244 E04：单键签发异常 → DEGRADED_LEASE_TEXT 注入�
   }
 });
 
-test('内部任务-342 归因 taskId：user-prompt hook-failure 记录 own-only（null 桶→null；具名桶→任务号）', () => {
+test('DEV-342 归因 taskId：user-prompt hook-failure 记录 own-only（null 桶→null；具名桶→任务号）', () => {
   const cases = [
-    { sid: 'sess-342null', taskId: '内部任务-970', named: false, expect: null },
-    { sid: 'sess-342named', taskId: '内部任务-971', named: true, expect: '内部任务-971' },
+    { sid: 'sess-342null', taskId: 'DEV-970', named: false, expect: null },
+    { sid: 'sess-342named', taskId: 'DEV-971', named: true, expect: 'DEV-971' },
   ];
   for (const c of cases) {
     const dir = mkdtempSync(join(tmpdir(), 'uprompt-d342-'));
