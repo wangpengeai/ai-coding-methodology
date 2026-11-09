@@ -263,8 +263,8 @@
     },
     {
       "path": "algo-loop/README.md",
-      "sha256": "9c54995a57675984ed5338a28bbab5e701cfead80bcc01bfb9214908bc687dab",
-      "bytes": 5386
+      "sha256": "9d0a179bee6368090e33fe15937fcaf9a77f4f52c5d54b8329c0ed83d856695d",
+      "bytes": 5637
     },
     {
       "path": "algo-loop/scripts/algo-state.mjs",
@@ -758,13 +758,13 @@
     },
     {
       "path": "README.en.md",
-      "sha256": "27578ba313da3af533814536e33b9f41699c2b7a1cb4ca0f8364e5f2bd42b002",
-      "bytes": 6481
+      "sha256": "c802cdeef673c04a73652a71410c52d7500df43e8a1995253fd8d0ec65ce2186",
+      "bytes": 7237
     },
     {
       "path": "README.md",
-      "sha256": "21223cc2e8569f6c745edc8179bf84e6be87668b189fc7d8f4d5ca9d593dd5fa",
-      "bytes": 6067
+      "sha256": "9755fe912102eb641107e1ad20d589cf99aed55eb0e2c766a23e689a5b21b7b3",
+      "bytes": 6730
     },
     {
       "path": "research-loop/.zcode-plugin/plugin.json",
@@ -788,8 +788,8 @@
     },
     {
       "path": "research-loop/README.md",
-      "sha256": "e7ded6d4a2afa78df0160f72efda9ddd65b9e76a99edf6414191643416976f8a",
-      "bytes": 3678
+      "sha256": "31d3ebd06f54bcbea30c4d07c660f7505e9762c87579217f85d4d04ad4a386f6",
+      "bytes": 3929
     },
     {
       "path": "research-loop/skills/experiment-design/SKILL.md",

@@ -4,6 +4,12 @@ Turn AI pair development from ad-hoc edits into an engineering method with **pro
 
 This is an **AI Coding and Research Methodology** project (domain anchor: algorithm research, computer science, software engineering). The same assets and discipline run on ZCode, DeepSeek Harness, MiniMax Code, and Kimi Code. The repository is also the development home of the methodology; its design specs (`specs/`) and development-process records (`docs/`) are not published with the source code.
 
+## Project status
+
+- **Unmaintained**: this repository is no longer maintained; no feature updates or bug fixes are accepted. A fully redesigned rewrite is in progress and will supersede this codebase once released.
+- **Experimental modules**: `algo-loop` and `research-loop` are experimental and have not been fully functionally validated; interfaces, behavior, and documentation may change without notice. Not recommended for production use.
+- **Cost warning**: the suite significantly increases token consumption — every task goes through routing injection, planning, review, evidence, and gating — so use it with care if you are cost-sensitive.
+
 ## What it solves
 
 - **No skipped steps**: every development task first hits the single routing table in the workflow meta skill, then enters idea review, planning, execution, debugging, review, or closing.
@@ -18,8 +24,8 @@ This is an **AI Coding and Research Methodology** project (domain anchor: algori
 | **spec-gate** | Spec-asset governance and machine validation: spec/plan validators, aggregate completion gate, task ledger, evidence capture |
 | **scout** | Project-level low-discipline mode for exploratory work and one-shot deliverables: mode declaration, expiry checkpoints, graduation handoff |
 | **team-governance** | Optional: AI Run Manifest, model policy, collaboration leases, content-bound approvals, replay evaluation, governance reports |
-| **algo-loop** | Optional: metric contracts, experiment ledger, bad-case library, baseline registry (`.algo/` five-file state) |
-| **research-loop** | Optional: rival explanations, preregistration cards, CS experiment-design decision tree; zero hooks/state, explicit research intent |
+| **algo-loop** (experimental) | Optional, experimental (not fully validated): metric contracts, experiment ledger, bad-case library, baseline registry (`.algo/` five-file state) |
+| **research-loop** (experimental) | Optional, experimental (not fully validated): rival explanations, preregistration cards, CS experiment-design decision tree; zero hooks/state, explicit research intent |
 
 Installation tiers: `workflow` is the core and is required; `spec-gate` needs the project to opt into `.sdd/`; the other four are installed per project need and do not affect the rest when absent.
 
